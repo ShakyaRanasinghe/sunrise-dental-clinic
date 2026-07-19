@@ -1,0 +1,118 @@
+@startuml use_case
+' Sunrise Dental Clinic - Use Case Diagram
+' Layout: pure-Java Smetana engine (no Graphviz dependency)
+!pragma layout smetana
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #F4F9FF
+  BorderColor #2C6EBB
+  ArrowColor #2C6EBB
+}
+title Sunrise Dental Clinic - Appointment & Patient Management System\nUse Case Diagram
+
+left to right direction
+
+' ---- Primary (human) actors ----
+actor "Patient" as PT
+actor "Receptionist" as RC
+actor "Dentist" as DN
+actor "Administrator" as AD
+
+' ---- Secondary (system) actors ----
+actor "Firebase\nAuthentication" as FB <<system>>
+actor "Email / SMS\nGateway" as GW <<system>>
+
+rectangle "Sunrise Dental Clinic System" {
+
+  ' Shared / security
+  usecase "Login" as UC_LOGIN
+  usecase "Logout" as UC_LOGOUT
+  usecase "View Help" as UC_HELP
+  usecase "Authenticate\nCredentials" as UC_AUTH
+  usecase "Lock Account After\nFailed Attempts" as UC_LOCK
+
+  ' Patient self-service
+  usecase "Register\nAccount" as UC_REG
+  usecase "View Dentist\nAvailability\n(today / this week)" as UC_AVAIL
+  usecase "Book\nAppointment" as UC_BOOK
+  usecase "View My\nAppointments" as UC_MYAPT
+  usecase "Cancel My\nAppointment" as UC_CANCEL
+  usecase "View / Download\nMy Bill" as UC_MYBILL
+
+  ' Shared appointment sub-cases
+  usecase "Validate\nDetails" as UC_VALID
+  usecase "Check Slot\nAvailability" as UC_CHECK
+  usecase "Send Confirmation\nNotification" as UC_NOTIFY
+
+  ' Receptionist
+  usecase "Manage Dentist\nAvailability (Slots)" as UC_SLOTS
+  usecase "Register Appointment\n(walk-in / phone)" as UC_REGAPT
+  usecase "Search / Display\nAppointment" as UC_SEARCH
+  usecase "Update /\nReschedule" as UC_UPD
+  usecase "Manage Patient\nRecords" as UC_PREC
+  usecase "Calculate &\nPrint Bill" as UC_BILL
+  usecase "Calculate\nTreatment Cost" as UC_COST
+
+  ' Dentist
+  usecase "View My\nSchedule" as UC_SCHED
+  usecase "Mark Treatment\nCompleted" as UC_DONE
+
+  ' Admin
+  usecase "Manage Staff\nAccounts (RBAC)" as UC_STAFF
+  usecase "Manage Treatment\nCatalogue & Pricing" as UC_CAT
+  usecase "View Reports" as UC_RPT
+}
+
+' ---- Patient associations ----
+PT --> UC_REG
+PT --> UC_AVAIL
+PT --> UC_BOOK
+PT --> UC_MYAPT
+PT --> UC_CANCEL
+PT --> UC_MYBILL
+PT --> UC_LOGIN
+PT --> UC_HELP
+
+' ---- Receptionist associations ----
+RC --> UC_SLOTS
+RC --> UC_REGAPT
+RC --> UC_SEARCH
+RC --> UC_UPD
+RC --> UC_PREC
+RC --> UC_BILL
+RC --> UC_LOGIN
+RC --> UC_HELP
+
+' ---- Dentist associations ----
+DN --> UC_SCHED
+DN --> UC_DONE
+DN --> UC_LOGIN
+
+' ---- Admin associations (superset of receptionist) ----
+AD --> UC_STAFF
+AD --> UC_CAT
+AD --> UC_RPT
+AD --> UC_SLOTS
+AD --> UC_LOGIN
+
+' ---- Secondary actor associations ----
+UC_AUTH --> FB
+UC_NOTIFY --> GW
+
+' ---- <<include>> relationships ----
+UC_LOGIN ..> UC_AUTH : <<include>>
+UC_BOOK ..> UC_VALID : <<include>>
+UC_BOOK ..> UC_CHECK : <<include>>
+UC_REGAPT ..> UC_VALID : <<include>>
+UC_REGAPT ..> UC_CHECK : <<include>>
+UC_BILL ..> UC_COST : <<include>>
+
+' ---- <<extend>> relationships ----
+UC_NOTIFY ..> UC_BOOK : <<extend>>
+UC_NOTIFY ..> UC_REGAPT : <<extend>>
+UC_LOCK ..> UC_LOGIN : <<extend>>
+
+@enduml
