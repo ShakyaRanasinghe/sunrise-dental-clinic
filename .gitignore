@@ -1,0 +1,45 @@
+# ===== Build artifacts =====
+# Java / Maven
+backend/target/
+*.class
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+functions/node_modules/
+functions/lib/
+npm-debug.log*
+yarn-error.log*
+
+# ===== Tooling that must never be committed =====
+# PlantUML renderer (large binary; not part of the project)
+UML/plantuml.jar
+
+# ===== Secrets & local config =====
+.env
+.env.*
+!.env.example
+**/serviceAccountKey.json
+**/firebase-service-account*.json
+*.local
+
+# ===== Firebase =====
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# ===== IDE / OS =====
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ===== Private working notes (kept outside the repo anyway; belt-and-suspenders) =====
+/notes/
+/_notes/
+*.private.md
+*.notes.md
