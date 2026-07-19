@@ -17,9 +17,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final FirebaseAuthFilter firebaseAuthFilter;
     private final DevHeaderAuthFilter devHeaderAuthFilter;
 
-    public SecurityConfig(DevHeaderAuthFilter devHeaderAuthFilter) {
+    public SecurityConfig(FirebaseAuthFilter firebaseAuthFilter, DevHeaderAuthFilter devHeaderAuthFilter) {
+        this.firebaseAuthFilter = firebaseAuthFilter;
         this.devHeaderAuthFilter = devHeaderAuthFilter;
     }
 
@@ -29,6 +31,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                // Firebase token first (production); dev-header fallback second (local/QA).
+                .addFilterBefore(firebaseAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(devHeaderAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

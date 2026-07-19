@@ -10,6 +10,8 @@ clinic:
     dentist-treatment-share: 0.60  # dentist keeps 60% of treatment cost, clinic 40%
   mail:
     enabled: false               # set true + configure spring.mail.* to send real email
+  firebase:
+    enabled: false               # set true (+ GOOGLE_APPLICATION_CREDENTIALS) to verify Firebase ID tokens
 
 # Springdoc / Swagger UI at /swagger-ui.html
 springdoc:
