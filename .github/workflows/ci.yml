@@ -1,0 +1,35 @@
+name: CI
+
+# Quality gate: build and test on every PR and on pushes to the long-lived branches.
+on:
+  pull_request:
+    branches: [main, qa, develop]
+  push:
+    branches: [main, qa, develop]
+
+jobs:
+  backend:
+    name: Backend — build & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build & run tests
+        working-directory: backend
+        run: mvn -B --no-transfer-progress test
+
+      - name: Publish test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
