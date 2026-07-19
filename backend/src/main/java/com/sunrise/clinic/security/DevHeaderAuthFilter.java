@@ -27,6 +27,11 @@ public class DevHeaderAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+        // If Firebase (or anything upstream) already authenticated the request, don't override it.
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            chain.doFilter(request, response);
+            return;
+        }
         String uid = request.getHeader("X-User-Uid");
         String roleHeader = request.getHeader("X-User-Role");
         if (uid != null && roleHeader != null) {
