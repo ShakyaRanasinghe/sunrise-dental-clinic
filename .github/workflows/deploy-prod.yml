@@ -1,0 +1,44 @@
+name: Deploy — prod
+
+# On a published GitHub Release (or a v* tag): deploy the frontend to the LIVE Firebase
+# Hosting channel. The "prod" GitHub Environment carries a required-approval rule, so a
+# human must approve before this runs. Gated like the other deploy workflows.
+on:
+  release:
+    types: [published]
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+jobs:
+  deploy-prod:
+    name: Build & deploy to production (live)
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check prerequisites
+        id: pre
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -f frontend/package.json ] && [ -n "$SA" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping deploy — frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
+          fi
+      - name: Build frontend
+        if: steps.pre.outputs.ready == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Firebase Hosting (live)
+        if: steps.pre.outputs.ready == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: sunrise-dental-clinic
+          channelId: live

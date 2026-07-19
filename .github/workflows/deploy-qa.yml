@@ -1,0 +1,54 @@
+name: Deploy — qa
+
+# On push to qa (or a *-qa-rc-* tag): run the full backend test suite, then deploy the
+# frontend to the Firebase Hosting "qa" channel. Gated like deploy-dev.
+on:
+  push:
+    branches: [qa]
+    tags: ['v*-qa-rc-*']
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Full backend test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17', cache: maven }
+      - name: Test
+        working-directory: backend
+        run: mvn -B --no-transfer-progress test
+
+  deploy-qa:
+    name: Build & deploy to qa channel
+    needs: test
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check prerequisites
+        id: pre
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -f frontend/package.json ] && [ -n "$SA" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping deploy — frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
+          fi
+      - name: Build frontend
+        if: steps.pre.outputs.ready == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Firebase Hosting (channel: qa)
+        if: steps.pre.outputs.ready == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: sunrise-dental-clinic
+          channelId: qa
