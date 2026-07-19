@@ -1,4 +1,4 @@
-name: Deploy — prod
+name: Deploy - prod
 
 # On a published GitHub Release (or a v* tag): deploy the frontend to the LIVE Firebase
 # Hosting channel. The "prod" GitHub Environment carries a required-approval rule, so a
@@ -12,11 +12,12 @@ on:
 
 jobs:
   deploy-prod:
-    name: Build & deploy to production (live)
+    name: Build and deploy to production
     runs-on: ubuntu-latest
     environment: prod
     steps:
       - uses: actions/checkout@v4
+
       - name: Check prerequisites
         id: pre
         env:
@@ -26,15 +27,23 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skipping deploy — frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
+            echo "Skipping deploy - frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
           fi
+
+      - name: Set up Node
+        if: steps.pre.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Build frontend
         if: steps.pre.outputs.ready == 'true'
         working-directory: frontend
         run: |
           npm ci
           npm run build
-      - name: Deploy to Firebase Hosting (live)
+
+      - name: Deploy to Firebase Hosting live channel
         if: steps.pre.outputs.ready == 'true'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
