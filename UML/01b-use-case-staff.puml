@@ -1,0 +1,76 @@
+@startuml use_case_staff
+' Sunrise Dental Clinic - Use Case Diagram (Staff back-office)
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 14
+skinparam ranksep 60
+skinparam usecase {
+  BackgroundColor #F4F9FF
+  BorderColor #2C6EBB
+  ArrowColor #2C6EBB
+}
+title Sunrise Dental Clinic - Staff Back-Office\nUse Case Diagram (2 of 2)
+
+left to right direction
+
+actor "Receptionist" as RC
+actor "Dentist" as DN
+actor "Administrator" as AD
+actor "Firebase\nAuthentication" as FB <<system>>
+actor "Email / SMS\nGateway" as GW <<system>>
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Login" as UC_LOGIN
+  usecase "Authenticate\nCredentials" as UC_AUTH
+
+  usecase "Manage Dentist\nAvailability (Slots)" as UC_SLOTS
+  usecase "Register Appointment\n(walk-in / phone)" as UC_REGAPT
+  usecase "Validate Details" as UC_VALID
+  usecase "Check Slot\nAvailability" as UC_CHECK
+  usecase "Send Confirmation\nNotification" as UC_NOTIFY
+  usecase "Search / Display\nAppointment" as UC_SEARCH
+  usecase "Update /\nReschedule" as UC_UPD
+  usecase "Manage Patient\nRecords" as UC_PREC
+  usecase "Calculate &\nPrint Bill" as UC_BILL
+  usecase "Calculate\nTreatment Cost" as UC_COST
+
+  usecase "View My\nSchedule" as UC_SCHED
+  usecase "Mark Treatment\nCompleted" as UC_DONE
+
+  usecase "Manage Staff\nAccounts (RBAC)" as UC_STAFF
+  usecase "Manage Treatment\nCatalogue & Pricing" as UC_CAT
+  usecase "View Reports" as UC_RPT
+}
+
+RC --> UC_LOGIN
+RC --> UC_SLOTS
+RC --> UC_REGAPT
+RC --> UC_SEARCH
+RC --> UC_UPD
+RC --> UC_PREC
+RC --> UC_BILL
+
+DN --> UC_LOGIN
+DN --> UC_SCHED
+DN --> UC_DONE
+
+AD --> UC_LOGIN
+AD --> UC_STAFF
+AD --> UC_CAT
+AD --> UC_RPT
+AD --> UC_SLOTS
+
+UC_AUTH --> FB
+UC_NOTIFY --> GW
+
+UC_LOGIN ..> UC_AUTH : <<include>>
+UC_REGAPT ..> UC_VALID : <<include>>
+UC_REGAPT ..> UC_CHECK : <<include>>
+UC_BILL ..> UC_COST : <<include>>
+UC_NOTIFY ..> UC_REGAPT : <<extend>>
+
+@enduml

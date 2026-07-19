@@ -1,0 +1,60 @@
+@startuml use_case_patient
+' Sunrise Dental Clinic - Use Case Diagram (Patient self-service portal)
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 14
+skinparam ranksep 60
+skinparam usecase {
+  BackgroundColor #F4F9FF
+  BorderColor #2C6EBB
+  ArrowColor #2C6EBB
+}
+
+left to right direction
+title <color:#FFFFFF>.\n.</color>
+
+actor "Patient" as PT
+actor "Firebase\nAuthentication" as FB <<system>>
+actor "Email / SMS\nGateway" as GW <<system>>
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Register Account" as UC_REG
+  usecase "Login" as UC_LOGIN
+  usecase "Authenticate\nCredentials" as UC_AUTH
+  usecase "Lock Account After\nFailed Attempts" as UC_LOCK
+  usecase "View Dentist\nAvailability" as UC_AVAIL
+  usecase "Book Appointment" as UC_BOOK
+  usecase "Validate Details" as UC_VALID
+  usecase "Check Slot\nAvailability" as UC_CHECK
+  usecase "Send Confirmation\nNotification" as UC_NOTIFY
+  usecase "View My\nAppointments" as UC_MYAPT
+  usecase "Cancel My\nAppointment" as UC_CANCEL
+  usecase "View / Download\nMy Bill" as UC_MYBILL
+  usecase "View Help" as UC_HELP
+  usecase "Logout" as UC_LOGOUT
+}
+
+PT --> UC_REG
+PT --> UC_LOGIN
+PT --> UC_AVAIL
+PT --> UC_BOOK
+PT --> UC_MYAPT
+PT --> UC_CANCEL
+PT --> UC_MYBILL
+PT --> UC_HELP
+PT --> UC_LOGOUT
+
+UC_AUTH --> FB
+UC_NOTIFY --> GW
+
+UC_LOGIN ..> UC_AUTH : <<include>>
+UC_LOCK ..> UC_LOGIN : <<extend>>
+UC_BOOK ..> UC_VALID : <<include>>
+UC_BOOK ..> UC_CHECK : <<include>>
+UC_NOTIFY ..> UC_BOOK : <<extend>>
+
+@enduml

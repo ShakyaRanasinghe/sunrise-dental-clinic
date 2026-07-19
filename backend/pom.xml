@@ -40,6 +40,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        <!-- Email: real SMTP send when configured, logged fallback otherwise -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- Firebase Admin SDK: Auth verification + Firestore (data tier) -->
         <dependency>
             <groupId>com.google.firebase</groupId>
