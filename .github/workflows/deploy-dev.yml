@@ -1,4 +1,4 @@
-name: Deploy — dev
+name: Deploy - dev
 
 # Deploys the frontend to the Firebase Hosting "dev" channel on every push to develop.
 # Gated: no-ops cleanly until the frontend exists and the FIREBASE_SERVICE_ACCOUNT secret
@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy-dev:
-    name: Build & deploy to dev channel
+    name: Build and deploy to dev channel
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -25,13 +25,14 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skipping deploy — frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
+            echo "Skipping deploy - frontend and/or FIREBASE_SERVICE_ACCOUNT not yet configured."
           fi
 
       - name: Set up Node
         if: steps.pre.outputs.ready == 'true'
-        uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '17' }
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Build frontend
         if: steps.pre.outputs.ready == 'true'
@@ -40,7 +41,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Firebase Hosting (channel: dev)
+      - name: Deploy to Firebase Hosting dev channel
         if: steps.pre.outputs.ready == 'true'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
