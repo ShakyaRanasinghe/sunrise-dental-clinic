@@ -1,0 +1,123 @@
+/* Sunrise Dental Clinic — design system. Light/dark aware, calm dental teal palette. */
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-2: #eef3f9;
+  --border: #dbe4ee;
+  --text: #16222e;
+  --text-muted: #5d6b7a;
+  --primary: #0e7c86;      /* dental teal */
+  --primary-ink: #ffffff;
+  --primary-soft: #e2f2f3;
+  --accent: #2c6ebb;
+  --success: #1f9d55;
+  --warn: #c9820a;
+  --danger: #d1495b;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(16,34,46,.06), 0 4px 16px rgba(16,34,46,.06);
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1720; --surface: #16212c; --surface-2: #1c2937; --border: #26333f;
+    --text: #e7eef5; --text-muted: #93a2b2; --primary: #29b6c4; --primary-soft: #113036;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+  }
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+a { color: var(--accent); text-decoration: none; }
+h1,h2,h3 { line-height: 1.25; margin: 0 0 .5rem; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1.05rem; }
+small { color: var(--text-muted); }
+
+/* ---- App shell ---- */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 6px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; padding: 6px 8px 16px; }
+.brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: 1.1rem; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: var(--text); font-weight: 500; }
+.nav-link:hover { background: var(--surface-2); }
+.nav-link.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.nav-spacer { flex: 1; }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 5; }
+.content { padding: 24px 28px 56px; max-width: 1100px; width: 100%; }
+.role-pill { font-size: .75rem; font-weight: 600; text-transform: capitalize; background: var(--primary-soft); color: var(--primary); padding: 4px 10px; border-radius: 999px; }
+
+/* ---- Cards & grid ---- */
+.grid { display: grid; gap: 16px; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.card h3 { margin-top: 0; }
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat .value { font-size: 1.8rem; font-weight: 700; }
+.stat .label { color: var(--text-muted); font-size: .85rem; }
+.stat .delta.up { color: var(--success); } .stat .delta.down { color: var(--danger); }
+
+/* ---- Buttons ---- */
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 9px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: .92rem; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.btn.primary:hover { filter: brightness(1.05); }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.sm { padding: 6px 11px; font-size: .82rem; }
+
+/* ---- Forms ---- */
+label { display: block; font-weight: 600; font-size: .85rem; margin: 12px 0 5px; }
+input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 160px; }
+
+/* ---- Table ---- */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: .9rem; }
+th { color: var(--text-muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+.table-wrap { overflow-x: auto; }
+
+/* ---- Badges ---- */
+.badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.badge.CONFIRMED, .badge.OPEN { background: #e2f0ff; color: #1e5aa8; }
+.badge.COMPLETED { background: #e6f6ec; color: #1f7a45; }
+.badge.BILLED { background: #efe7fb; color: #6b3fb0; }
+.badge.CANCELLED, .badge.BOOKED { background: #f4e4e7; color: #b03a4c; }
+.badge.urgent { background: #f9e0e4; color: #c0324a; }
+.badge.soon { background: #fbefd6; color: #9a6a06; }
+.badge.routine { background: #e6f6ec; color: #1f7a45; }
+
+/* ---- Misc ---- */
+.muted { color: var(--text-muted); }
+.spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.center { display: grid; place-items: center; padding: 40px; }
+.banner { padding: 12px 14px; border-radius: 10px; margin: 8px 0; font-size: .9rem; }
+.banner.error { background: #f8e2e5; color: #a02c3e; border: 1px solid #eebcc4; }
+.banner.info { background: var(--primary-soft); color: var(--primary); }
+.banner.warn { background: #fbf0d8; color: #8a5d05; border: 1px solid #efd9a6; }
+.disclaimer { font-size: .82rem; color: var(--text-muted); border-left: 3px solid var(--warn); padding: 8px 12px; background: var(--surface-2); border-radius: 0 8px 8px 0; }
+.page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.steps { display: flex; gap: 8px; margin-bottom: 18px; }
+.step { flex: 1; height: 6px; border-radius: 999px; background: var(--border); }
+.step.done { background: var(--primary); } .step.active { background: var(--primary); opacity: .6; }
+.chat { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding: 4px; }
+.msg { padding: 10px 13px; border-radius: 12px; max-width: 80%; }
+.msg.user { align-self: flex-end; background: var(--primary); color: #fff; }
+.msg.bot { align-self: flex-start; background: var(--surface-2); }
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.login-card { width: 100%; max-width: 420px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; text-align: center; font-weight: 600; }
+.tile:hover { border-color: var(--primary); background: var(--surface-2); }
+.tile.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: row; overflow-x: auto; position: sticky; top: 0; z-index: 6; }
+  .nav-spacer { display: none; }
+  .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+}
