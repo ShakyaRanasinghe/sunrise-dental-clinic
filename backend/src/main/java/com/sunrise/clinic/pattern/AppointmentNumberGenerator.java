@@ -15,9 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * so two threads can never mint the same number.</p>
  *
  * <p><b>Thread safety:</b> a {@link ConcurrentHashMap} of {@link AtomicInteger}
- * counters (one per day) makes {@link #next(LocalDate)} atomic without locking.
- * In production the same guarantee is provided by a Firestore transaction on a
- * {@code counters/{yyyymmdd}} document — see {@code FirestoreCounterRepository}.</p>
+ * counters (one per day) makes {@link #next(LocalDate)} atomic without locking,
+ * which is sufficient within a single JVM. The {@code appointment_counter} table
+ * in the schema extends the same guarantee across restarts and multiple nodes.</p>
  */
 public final class AppointmentNumberGenerator {
 

@@ -3,14 +3,12 @@ package com.sunrise.clinic.security;
 import com.sunrise.clinic.domain.Appointment;
 import com.sunrise.clinic.repository.DentistRepository;
 import com.sunrise.clinic.repository.PatientRepository;
-import org.springframework.stereotype.Component;
 
 /**
  * Centralises the confidentiality decision: <b>who may see an appointment's clinical
  * diagnosis</b>. Only the treating dentist (their own patient) or the patient themselves —
  * never Admin or Receptionist. Callers use this to choose which DTO to return.
  */
-@Component
 public class ClinicAccess {
 
     private final PatientRepository patients;

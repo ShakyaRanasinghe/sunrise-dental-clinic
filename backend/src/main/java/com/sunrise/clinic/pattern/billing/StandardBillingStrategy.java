@@ -1,13 +1,11 @@
 package com.sunrise.clinic.pattern.billing;
 
-import org.springframework.stereotype.Component;
 
 /**
  * Default {@link BillingStrategy}: total = consultation + treatment + service charge
  * (minus discount, plus tax). Registered as the primary Spring bean; another
  * strategy (e.g. {@code PromotionalBillingStrategy}) could be swapped in via config.
  */
-@Component
 public class StandardBillingStrategy implements BillingStrategy {
 
     @Override

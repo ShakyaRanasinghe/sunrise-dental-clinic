@@ -3,15 +3,12 @@ package com.sunrise.clinic.repository.inmemory;
 import com.sunrise.clinic.domain.Slot;
 import com.sunrise.clinic.repository.InMemoryRepository;
 import com.sunrise.clinic.repository.SlotRepository;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /** In-memory {@link SlotRepository}. */
-@Repository
-@Profile("!firestore")
 public class InMemorySlotRepository
         extends InMemoryRepository<Slot, String>
         implements SlotRepository {
@@ -19,6 +16,19 @@ public class InMemorySlotRepository
     @Override
     protected String idOf(Slot entity) {
         return entity.getId();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>There are no row locks over a map, so this is an ordinary read. The
+     * exclusion the contract requires is supplied by {@code SerialTransactionRunner},
+     * which lets only one unit of work run at a time — so a caller inside a
+     * transaction still cannot be interleaved with another booking.</p>
+     */
+    @Override
+    public Optional<Slot> findByIdForUpdate(String slotId) {
+        return findById(slotId);
     }
 
     @Override

@@ -1,21 +1,19 @@
 package com.sunrise.clinic.service.notification;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * OBSERVER pattern subject. Spring injects every {@link AppointmentObserver}
- * bean; {@link #publish(AppointmentEvent)} fans the event out to all of them.
+ * OBSERVER pattern subject. {@code AppContext} registers every
+ * {@link AppointmentObserver}; {@link #publish(AppointmentEvent)} fans the event
+ * out to all of them.
  * One misbehaving observer never breaks the others (or the triggering action) —
  * each is called defensively.
  */
-@Component
 public class AppointmentEventPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(AppointmentEventPublisher.class);
+    private static final Logger log = Logger.getLogger(AppointmentEventPublisher.class.getName());
 
     private final List<AppointmentObserver> observers;
 
@@ -29,8 +27,8 @@ public class AppointmentEventPublisher {
                 observer.onEvent(event);
             } catch (Exception e) {
                 // Observers are best-effort — log and continue, never propagate.
-                log.warn("observer_failed observer={} error={}",
-                        observer.getClass().getSimpleName(), e.toString());
+                log.log(Level.WARNING,
+                        "observer_failed observer=" + observer.getClass().getSimpleName(), e);
             }
         }
     }

@@ -7,10 +7,8 @@ import com.sunrise.clinic.dto.AppointmentDetailResponse;
 import com.sunrise.clinic.dto.AppointmentResponse;
 import com.sunrise.clinic.dto.BillResponse;
 import com.sunrise.clinic.dto.SlotResponse;
-import org.springframework.stereotype.Component;
 
 /** Maps domain entities to the appropriate response DTOs (DTO pattern). */
-@Component
 public class ClinicMapper {
 
     public SlotResponse toSlotResponse(Slot s) {

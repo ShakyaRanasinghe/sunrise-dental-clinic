@@ -2,7 +2,6 @@ package com.sunrise.clinic.service.notification;
 
 import com.sunrise.clinic.domain.AuditEvent;
 import com.sunrise.clinic.repository.AuditRepository;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,7 +10,6 @@ import java.util.UUID;
  * Observer that writes an immutable audit record for every appointment event —
  * the append-only trail the Admin can review.
  */
-@Component
 public class AuditObserver implements AppointmentObserver {
 
     private final AuditRepository audit;
