@@ -28,6 +28,7 @@ import com.sunrise.clinic.security.ClinicAccess;
 import com.sunrise.clinic.security.LoginAttemptService;
 import com.sunrise.clinic.service.AppointmentService;
 import com.sunrise.clinic.service.BillingService;
+import com.sunrise.clinic.service.ReportService;
 import com.sunrise.clinic.service.SlotService;
 import com.sunrise.clinic.service.notification.AppointmentEventPublisher;
 import com.sunrise.clinic.service.notification.AppointmentObserver;
@@ -87,6 +88,7 @@ public class AppContext implements AutoCloseable {
     private final AppointmentService appointmentService;
     private final SlotService slotService;
     private final BillingService billingService;
+    private final ReportService reportService;
     private final AuthService authService;
     private final LoginAttemptService loginAttemptService;
     private final ClinicAccess clinicAccess;
@@ -134,6 +136,8 @@ public class AppContext implements AutoCloseable {
                 appointments, bills, dentists, treatments,
                 billingStrategy, revenueSplitStrategy,
                 config.getDouble("clinic.billing.service-charge", 200));
+
+        this.reportService = new ReportService(bills, appointments);
 
         this.loginAttemptService = new LoginAttemptService();
         this.authService = new AuthService(users, loginAttemptService);
@@ -195,6 +199,10 @@ public class AppContext implements AutoCloseable {
         return auditEvents;
     }
 
+    public TransactionRunner transactionRunner() {
+        return transactionRunner;
+    }
+
     public AppointmentService appointmentService() {
         return appointmentService;
     }
@@ -205,6 +213,10 @@ public class AppContext implements AutoCloseable {
 
     public BillingService billingService() {
         return billingService;
+    }
+
+    public ReportService reportService() {
+        return reportService;
     }
 
     public AuthService authService() {

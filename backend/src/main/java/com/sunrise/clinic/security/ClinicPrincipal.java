@@ -24,6 +24,28 @@ public record ClinicPrincipal(String uid, String displayName, Role role) impleme
     /** The request attribute servlets and JSPs read. */
     public static final String REQUEST_KEY = "currentUser";
 
+    // -----------------------------------------------------------------
+    // JavaBean-style accessors, for JSP only.
+    //
+    // Expression Language 5.0 — the version in Tomcat 10.1 — resolves a
+    // property by looking for getX(); it does not understand a record's x()
+    // accessor. (EL 6.0 does, but requires Tomcat 11.) Without these, every
+    // page that reads ${user.role} fails at render time. They delegate to the
+    // record components, so there is one source of truth either way.
+    // -----------------------------------------------------------------
+
+    public String getUid() {
+        return uid;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
     public boolean hasRole(Role... allowed) {
         for (Role candidate : allowed) {
             if (role == candidate) {

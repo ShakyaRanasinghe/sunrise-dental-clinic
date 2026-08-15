@@ -195,6 +195,6 @@ CREATE TABLE IF NOT EXISTS audit_event (
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS appointment_counter (
     day_key   CHAR(8) NOT NULL,   -- yyyyMMdd
-    last_value INT    NOT NULL DEFAULT 0,
+    counter_value INT NOT NULL DEFAULT 0,
     PRIMARY KEY (day_key)
 ) ENGINE=InnoDB;
