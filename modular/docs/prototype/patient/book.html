@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">PATIENT SCREEN</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /patient/book</span>
+  <span>&rarr; appointments/book.jsp</span>
+</div>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="home.html">Sunrise <span>Dental</span></a>
+    <nav class="site-nav">
+        <a href="home.html">My appointments</a>
+        <a href="book.html" class="active">Book</a>
+        <a href="profile.html">My profile</a>
+        <a href="complaints.html">Concerns</a>
+        <a href="../shared/help.html">Help</a>
+    </nav>
+    <div class="who">
+      Nimal Perera <span class="role-tag">PATIENT</span>
+      <a class="btn small secondary"
+         href="../access/portal-chooser.html">Sign out</a>
+    </div>
+  </div>
+</header>
+<main>
+
+<h1 class="page-title">Book an appointment</h1>
+<p class="page-subtitle">Choose a dentist and a day, then pick a time that suits you.</p>
+
+<div class="card">
+  <h2>1 &nbsp;Choose a dentist and date</h2>
+  <div class="form-row">
+    <div class="field"><label>Dentist</label>
+      <select>
+        <option>Dr. Ranil Silva &mdash; General Dentistry &mdash; Rs 1,500</option>
+        <option>Dr. Malini Jayasuriya &mdash; Orthodontics &mdash; Rs 2,500</option>
+      </select></div>
+    <div class="field"><label>Date</label><input type="date" value="2026-09-01"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>2 &nbsp;Pick a time <span class="count">4 open</span></h2>
+  <div class="slots">
+    <div class="slot"><input type="radio" name="slot" id="s1" checked><label for="s1">09:00</label></div>
+    <div class="slot"><input type="radio" name="slot" id="s2"><label for="s2">09:30</label></div>
+    <div class="slot"><input type="radio" name="slot" id="s3"><label for="s3">11:00</label></div>
+    <div class="slot"><input type="radio" name="slot" id="s4"><label for="s4">11:30</label></div>
+  </div>
+  <p class="page-subtitle">Times already booked are not shown.</p>
+</div>
+
+<div class="card">
+  <h2>3 &nbsp;What do you need?</h2>
+  <div class="field"><label>Treatment</label>
+    <select>
+      <option>Routine check-up &mdash; Rs 1,000</option>
+      <option selected>Scaling &amp; polishing &mdash; Rs 3,500</option>
+      <option>Composite filling &mdash; Rs 4,500</option>
+      <option>Extraction &mdash; Rs 5,000</option>
+    </select></div>
+  <div class="notice info">Total on your bill after treatment:
+    consultation Rs 1,500 + treatment Rs 3,500 + service Rs 200.</div>
+  <div class="form-actions"><button class="btn">Confirm booking</button></div>
+</div>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>

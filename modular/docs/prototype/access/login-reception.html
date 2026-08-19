@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Reception — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">PUBLIC</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /login/reception</span>
+  <span>&rarr; access/login-reception.jsp</span>
+</div>
+<div class="narrow">
+  <div class="brand-block">
+    <div class="name">Sunrise Dental Clinic</div>
+    <div class="tagline">Appointments &amp; patient records</div>
+  </div>
+  <div class="card">
+    <span class="portal-label">Reception</span>
+    <p class="page-subtitle" style="margin-top:0">Front desk access.</p>
+    <form method="post" action="#">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn" style="width:100%">Sign in</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="alt"><a href="../shared/help.html">Need help signing in?</a></div>
+  <div class="alt"><a href="portal-chooser.html">&larr; All sign-in options</a></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Records — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">RECEPTION SCREEN</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /reception/patients</span>
+  <span>&rarr; patients/records.jsp</span>
+</div>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="day.html">Sunrise <span>Dental</span></a>
+    <nav class="site-nav">
+        <a href="day.html">Today</a>
+        <a href="../patient/book.html">Book</a>
+        <a href="availability.html">Availability</a>
+        <a href="patients.html" class="active">Patients</a>
+        <a href="billing.html">Billing</a>
+        <a href="../shared/help.html">Help</a>
+    </nav>
+    <div class="who">
+      Kumari Silva <span class="role-tag">RECEPTIONIST</span>
+      <a class="btn small secondary"
+         href="../access/portal-chooser.html">Sign out</a>
+    </div>
+  </div>
+</header>
+<main>
+
+<h1 class="page-title">Patient records</h1>
+<p class="page-subtitle">Search the register, or add someone who has just walked in.</p>
+
+<div class="grid two">
+  <div class="card">
+    <h2>Search</h2>
+    <div class="field"><label>Name, contact number or email</label>
+      <input type="search" placeholder="e.g. Perera or 077&hellip;"></div>
+    <div class="form-actions"><button class="btn">Search</button></div>
+    <p class="page-subtitle">One field covers all three &mdash; type whatever the patient gives you.</p>
+  </div>
+  <div class="card">
+    <h2>Add a walk-in</h2>
+    <div class="field"><label>Full name</label><input type="text"></div>
+    <div class="form-row">
+      <div class="field"><label>Contact number</label><input type="tel"></div>
+      <div class="field"><label>Email <span class="page-subtitle">(optional)</span></label><input type="email"></div>
+    </div>
+    <div class="notice">This creates a patient record, not a login. The patient can create
+      their own account later if they want online booking.</div>
+    <div class="form-actions"><button class="btn">Add patient</button></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>All patients <span class="count">3</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Date of birth</th><th>Portal account</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Nimal Perera</td><td>0771234567</td><td>nimal@example.lk</td><td>1988-04-12</td>
+            <td><span class="pill open">Yes</span></td><td><a class="btn small" href="../patient/book.html">Book</a></td></tr>
+        <tr><td>Sanduni Rathnayake</td><td>0759876543</td><td>sanduni@example.lk</td><td>1995-11-02</td>
+            <td><span class="pill">Walk-in</span></td><td><a class="btn small" href="../patient/book.html">Book</a></td></tr>
+        <tr><td>Arun Wickrama</td><td>0712223334</td><td></td><td>1972-01-25</td>
+            <td><span class="pill">Walk-in</span></td><td><a class="btn small" href="../patient/book.html">Book</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>
