@@ -130,6 +130,13 @@ public abstract class AbstractLoginServlet extends PageServlet {
                             String error, String email) throws IOException, jakarta.servlet.ServletException {
         request.setAttribute("error", error);
         request.setAttribute("email", email == null ? "" : email);
+        // Where the form posts back to. It cannot be read from the request: this
+        // JSP is reached by a forward, so getServletPath() returns the view's own
+        // path, and the form posted to /WEB-INF/jsp/access/login-dentist.jsp -
+        // which Tomcat refuses, so sign-in from a browser answered 404 while the
+        // same credentials over curl worked, because curl posts to the URL and
+        // never reads the form's action.
+        request.setAttribute("loginPath", RolePolicy.of(acceptedRole()).loginPath());
         request.setAttribute("allowsSelfRegistration", allowsSelfRegistration());
         request.setAttribute("portalLabel", portalLabel());
         render(request, response, viewName());
