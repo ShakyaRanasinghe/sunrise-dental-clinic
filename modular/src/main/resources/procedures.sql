@@ -256,6 +256,20 @@ END$$
 -- ---------------------------------------------------------------------
 --  trg_audit_appointment_status
 --
+--  The second of two audit paths, and deliberately so. AuditObserver in
+--  the application records WHO changed an appointment; this records THAT
+--  it changed, even when the application was not involved - a correction
+--  applied by direct SQL, a migration, a support script. The database
+--  cannot know an actor, so actor_uid is NULL here, and that null is the
+--  signal: a status change with no actor did not come through the
+--  application.
+--
+--  So a completed appointment produces two records, not one:
+--    APPOINTMENT_COMPLETED               u-dent1   (who)
+--    APPOINTMENT_CONFIRMED_TO_COMPLETED  NULL      (that it happened)
+--  The action names differ, so neither is mistaken for a duplicate of the
+--  other.
+--
 --  FR-AUD-01. Every status change is recorded, whatever changed it. An
 --  audit trail written only by the application is an audit trail with a
 --  hole in it.
@@ -270,7 +284,7 @@ BEGIN
         VALUES
             (UUID(), NULL, NULL,
              CONCAT('APPOINTMENT_', OLD.status, '_TO_', NEW.status),
-             'appointment', NEW.appointment_no, NOW());
+             'Appointment', NEW.appointment_no, NOW());
     END IF;
 END$$
 

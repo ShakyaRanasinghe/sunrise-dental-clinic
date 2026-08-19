@@ -453,16 +453,56 @@ local SMTP catcher rather than a real mailbox.
 
 Reads from billing and appointments, so it comes after both.
 
-- [ ] `reporting/service` ← `ReportService`
-- [ ] **New** `reporting/data/ReportRepository`, `JdbcReportDao`, in-memory — closes the one
+- [x] `reporting/service` ← `ReportService`
+- [x] **New** `reporting/data/ReportRepository`, `JdbcReportDao`, in-memory — closes the one
       service that imports a concrete `BillDao`
-- [ ] `reporting/web` ← `AdminReportsServlet`; **new** `CsvExportServlet`, `AccountsServlet`,
+- [x] `reporting/web` ← `AdminReportsServlet`; **new** `CsvExportServlet`, `AccountsServlet`,
       `AuditTrailServlet`
-- [ ] Views: `reporting/reports.jsp`, `accounts.jsp`, `audit.jsp`
-- [ ] Add the "Supports:" line under every report — FR-ADM-16
-- [ ] `ReportServiceTest`
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] `refactor(reporting): move reports and add accounts and audit screens`
+- [x] Views: `reporting/reports.jsp`, `accounts.jsp`, `audit.jsp`
+- [x] Add the "Supports:" line under every report — FR-ADM-16
+- [x] `ReportServiceTest`
+- [x] Gate 1 + 2 + 3 pass
+- [x] `refactor(reporting): move reports and add accounts and audit screens`
+
+#### Beyond the list, and why
+- [x] **A no-show rate with no new column — FR-ADM-19.** There is no `NO_SHOW` status, and adding one
+      would mean somebody at the desk remembering to set it, which is the record that never gets
+      kept. Derived instead: the date has passed, nobody cancelled, and no dentist recorded a
+      treatment. The rate is of *concluded* appointments, not of all — counting upcoming ones as
+      attended would make it drift down every time somebody books
+- [x] **Aggregation moved into SQL.** `ReportService` read every bill in the range and summed them
+      across four maps. A year's reporting meant reading a year of bills into memory to produce
+      twenty numbers
+- [x] **Names come from the query.** The old signature took two `Map<String, String>` of names as
+      parameters, which pushed "who are these people" onto the caller — and the caller was a servlet
+- [x] **A bill issued by departed staff still counts.** `fk_bill_receptionist` is ON DELETE SET NULL,
+      so the LEFT JOIN reports it as "Former staff" rather than dropping the rupees
+- [x] **CSV fields are quoted.** A dentist called "Silva, Ranil" would become two columns and shift
+      every figure on the row one place left — a report that is wrong rather than broken
+- [x] **A UTF-8 BOM on the CSV**, which is what makes Excel open it as UTF-8 rather than the system
+      code page
+- [x] **One-time passwords, never stored — FR-ADM-25.** Shown once on the response that created the
+      account, which is why that action renders instead of redirecting: a redirect would either lose
+      the password or carry it in a URL, where it would sit in the browser history and the access log
+
+#### Found by running it
+- [x] **Every date was computed in the wrong timezone.** The container runs UTC; the clinic is at
+      +05:30. So for five and a half hours every night an appointment booked for today had its bill
+      counted under **yesterday's** takings, and the report disagreed with the appointment book —
+      "patients seen 0" beside two bills was how it showed up. Fixed with `clinic.timezone`, used for
+      the report clock and for shifting `issued_at` into the clinic's day. Startup now logs the
+      clinic zone beside the JVM's, so a misconfigured deployment says so instead of quietly
+      mis-dating every report
+- [x] **`CONVERT_TZ` was the obvious fix and is the wrong one** — it needs MySQL's timezone tables,
+      which are absent from the standard container image, and it returns NULL when they are, which
+      would have silently emptied every report. An interval in minutes instead, with a note that a
+      daylight-saving zone would be approximate near a transition
+- [x] **The two audit paths disagreed on `target_type`** — `'Appointment'` from the application,
+      `'appointment'` from `trg_audit_appointment_status`, so a filter on type would have shown half
+      a trail while looking complete. Aligned, and the trigger now documents why there are two paths:
+      the application records **who**, the trigger records **that it happened** even when the
+      application was not involved, and its NULL actor is the signal that it did not come through
+      the application
 
 **On screen after this step:** the admin's three screens. Create a staff account, unlock a locked
 patient, read the audit trail, export a report as CSV.

@@ -1,5 +1,6 @@
 package com.sunrise.clinic.access.domain;
 
+import java.util.List;
 import java.util.Set;
 
 /** What a {@code ADMIN} may do. */
@@ -49,5 +50,14 @@ public final class AdminPolicy extends RolePolicy {
     @Override
     public Set<String> enterablePrefixes() {
         return Set.of(ownedPrefix(), RolePolicy.of(Role.RECEPTIONIST).ownedPrefix());
+    }
+
+    /** The administrator's own screens. */
+    @Override
+    protected List<NavItem> ownNavigation() {
+        return List.of(
+                new NavItem("Reports", "/admin/reports"),
+                new NavItem("Accounts", "/admin/accounts"),
+                new NavItem("Audit", "/admin/audit"));
     }
 }

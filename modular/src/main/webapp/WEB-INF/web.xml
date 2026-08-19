@@ -18,8 +18,8 @@
     start and then answer 500 with a ClassNotFoundException on first request,
     which is a worse failure than a clean 404.
 
-    After step 5: access, patients, scheduling, appointments and billing are migrated. One
-    temporary stub remains, for the administrator's landing page. Four temporary stub
+    After step 7: access, patients, scheduling, appointments, billing and reporting are
+    migrated. No temporary stubs remain — every role lands on a real screen. Four temporary stub
     mappings still stand in for the role landing pages.
 -->
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -278,6 +278,46 @@
     <!--  reporting                                                   -->
     <!-- ============================================================ -->
 
+    <servlet>
+        <servlet-name>AdminReports</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.AdminReportsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminReports</servlet-name>
+        <url-pattern>/admin/reports</url-pattern>
+    </servlet-mapping>
+
+    <!--
+        An exact mapping, not *.csv. An extension mapping would claim every .csv path in
+        the application, and this is one report.
+    -->
+    <servlet>
+        <servlet-name>CsvExport</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.CsvExportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CsvExport</servlet-name>
+        <url-pattern>/admin/reports.csv</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Accounts</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.AccountsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Accounts</servlet-name>
+        <url-pattern>/admin/accounts</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AuditTrail</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.AuditTrailServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuditTrail</servlet-name>
+        <url-pattern>/admin/audit</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  feedback — complaints and reviews                           -->
     <!-- ============================================================ -->
@@ -355,21 +395,6 @@
         <url-pattern>/api/accounts</url-pattern>
     </servlet-mapping>
 
-    <!--
-        TEMPORARY - delete when the reporting module lands.
-
-        Three of the four stub landings became real screens with the appointments
-        module. This is the last one: /admin/reports is the administrator's home
-        path, and without it signing in as an administrator would redirect to a 404.
-    -->
-    <servlet>
-        <servlet-name>StubHome</servlet-name>
-        <servlet-class>com.sunrise.clinic.access.web.StubHomeServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>StubHome</servlet-name>
-        <url-pattern>/admin/reports</url-pattern>
-    </servlet-mapping>
 
     <!-- ============================================================ -->
     <!--  Sessions and error pages                                    -->

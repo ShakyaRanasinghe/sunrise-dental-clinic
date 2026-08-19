@@ -4,8 +4,11 @@ import com.sunrise.clinic.platform.data.JdbcDao;
 
 import com.sunrise.clinic.platform.db.Database;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +68,43 @@ public class AuditDao extends JdbcDao<AuditEvent, String> implements AuditReposi
                     statement.setString(2, targetId);
                 },
                 AuditDao::mapEvent);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Built as a dynamic {@code WHERE} rather than four separate queries, because the
+     * filters combine. Every value still goes in as a bound parameter - the clauses are
+     * chosen by the code, never assembled from what the administrator typed.</p>
+     */
+    @Override
+    public List<AuditEvent> search(String actorUid, String targetId,
+                                   LocalDate from, LocalDate to, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT " + COLUMNS + " FROM audit_event WHERE 1 = 1");
+        List<Object> values = new ArrayList<>();
+        if (actorUid != null && !actorUid.isBlank()) {
+            sql.append(" AND actor_uid = ?");
+            values.add(actorUid.trim());
+        }
+        if (targetId != null && !targetId.isBlank()) {
+            sql.append(" AND target_id = ?");
+            values.add(targetId.trim());
+        }
+        if (from != null) {
+            sql.append(" AND DATE(event_time) >= ?");
+            values.add(Date.valueOf(from));
+        }
+        if (to != null) {
+            sql.append(" AND DATE(event_time) <= ?");
+            values.add(Date.valueOf(to));
+        }
+        sql.append(" ORDER BY event_time DESC LIMIT ").append(Math.max(1, Math.min(limit, 1000)));
+
+        return queryList(sql.toString(), statement -> {
+            for (int i = 0; i < values.size(); i++) {
+                statement.setObject(i + 1, values.get(i));
+            }
+        }, AuditDao::mapEvent);
     }
 
     @Override

@@ -28,6 +28,10 @@ import com.sunrise.clinic.billing.service.BillingService;
 import com.sunrise.clinic.billing.service.DefaultRevenueSplitStrategy;
 import com.sunrise.clinic.billing.service.StandardBillingStrategy;
 import com.sunrise.clinic.platform.db.Database;
+import com.sunrise.clinic.reporting.data.JdbcReportDao;
+import com.sunrise.clinic.reporting.data.ReportRepository;
+import com.sunrise.clinic.reporting.service.AccountAdminService;
+import com.sunrise.clinic.reporting.service.ReportService;
 import com.sunrise.clinic.scheduling.data.DentistDao;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
 import com.sunrise.clinic.scheduling.data.SessionDao;
@@ -79,6 +83,9 @@ import com.sunrise.clinic.scheduling.service.SlotService;
  */
 public class AppContext implements AutoCloseable {
 
+    private static final java.util.logging.Logger log =
+            java.util.logging.Logger.getLogger(AppContext.class.getName());
+
     private final AppConfig config;
     private final Database database;
     private final TransactionRunner transactionRunner;
@@ -94,6 +101,7 @@ public class AppContext implements AutoCloseable {
     private final AppointmentRepository appointments;
     private final CounterRepository counters;
     private final BillRepository bills;
+    private final ReportRepository reports;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
@@ -106,6 +114,8 @@ public class AppContext implements AutoCloseable {
     private final AppointmentEventPublisher appointmentEvents;
     private final AppointmentService appointmentService;
     private final BillingService billingService;
+    private final ReportService reportService;
+    private final AccountAdminService accountAdminService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -122,6 +132,7 @@ public class AppContext implements AutoCloseable {
         this.appointments = new AppointmentDao(database);
         this.counters = new CounterDao(database);
         this.bills = new BillDao(database);
+        this.reports = new JdbcReportDao(database, clinicZone());
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
@@ -150,6 +161,38 @@ public class AppContext implements AutoCloseable {
                         config.getDecimal("clinic.revenue.receptionist-service-share", "0")),
                 config.getDecimal("clinic.billing.service-charge", "200"),
                 transactionRunner);
+
+        // The clinic's zone, not the server's. A clock injected rather than
+        // LocalDate.now() inside the service, so a test can fix "today" and the no-show
+        // derivation is checkable.
+        this.reportService = new ReportService(reports, java.time.Clock.system(clinicZone()));
+        this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
+                dentists, auditEvents);
+    }
+
+    /**
+     * The clinic's own timezone - the one every date is judged in.
+     *
+     * <p>Warns rather than fails when the JVM is running somewhere else, which it normally
+     * is: the container runs UTC and the clinic is in Colombo. Everything that derives a
+     * date from an instant uses this value, so the mismatch is harmless - but it is worth
+     * saying out loud, because a silently wrong report is the failure this replaced.</p>
+     */
+    private java.time.ZoneId clinicZone() {
+        String configured = config.get("clinic.timezone", "Asia/Colombo");
+        java.time.ZoneId zone;
+        try {
+            zone = java.time.ZoneId.of(configured);
+        } catch (java.time.DateTimeException e) {
+            log.warning("clinic_timezone_unknown value=" + configured + " using=Asia/Colombo");
+            zone = java.time.ZoneId.of("Asia/Colombo");
+        }
+        java.time.ZoneId jvm = java.time.ZoneId.systemDefault();
+        if (!jvm.equals(zone)) {
+            log.info("clinic_timezone clinic=" + zone + " jvm=" + jvm
+                    + " (dates are computed in the clinic's zone, not the JVM's)");
+        }
+        return zone;
     }
 
     public AppConfig config() {
@@ -191,6 +234,28 @@ public class AppContext implements AutoCloseable {
     /** Bills, pricing and the revenue split. */
     public BillingService billingService() {
         return billingService;
+    }
+
+    /** The administrator's reports, and their CSV export. */
+    public ReportService reportService() {
+        return reportService;
+    }
+
+    /** Creating, unlocking and deactivating accounts. */
+    public AccountAdminService accountAdminService() {
+        return accountAdminService;
+    }
+
+    /**
+     * The audit trail, for the administrator's screen.
+     *
+     * <p>The one repository exposed directly, and deliberately: the trail has no behaviour
+     * to wrap. A service over it would be a method that forwards a search and adds nothing,
+     * and the screen guards itself with {@code READ_AUDIT}. Reads are not audited - an
+     * audit of reading the audit grows without bound.</p>
+     */
+    public AuditRepository auditTrail() {
+        return auditEvents;
     }
 
     /** Who may see an appointment's clinical detail. */
