@@ -13,17 +13,17 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 
 | | |
 |---|---|
-| **Active step** | **0 — decide what ships** |
-| Steps complete | 0 of 9 |
+| **Active step** | **2 — `access` + stub landings** |
+| Steps complete | **1 of 9** — `platform` |
 | First deployable | **end of step 2** |
 | First real screen | **end of step 3** |
 | Core journey working | **end of step 4** |
 | `layered/` | **out of scope** — source and history only, not run or shipped |
-| `modular/` | scaffolding complete, 0 Java classes |
+| `modular/` | 19 Java files, compiles, **15 tests green** |
 
 ```
  0  decide what ships          ◻  ← START HERE, blocks everything
- 1  platform                   ◻   help page renders
+ 1  platform                   ✅  18 classes · Json fix · 15 tests
  2  access + stub landings     ◻   ✱ sign in as all four roles — FIRST DEPLOY
  3  patients + scheduling      ◻   ✱ patient register, dentist and treatment lists
  4  appointments               ◻   ✱✱ three dashboards live, booking works
