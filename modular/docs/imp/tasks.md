@@ -290,33 +290,79 @@ which is the `toString()` defect closed and visible.
 
 The heart of the system. The `SELECT … FOR UPDATE` guard and its concurrency test move together.
 
-- [ ] `appointments/domain` ← `Appointment`, `AppointmentStatus`, `AppointmentResponse`,
+- [x] `appointments/domain` ← `Appointment`, `AppointmentStatus`, `AppointmentResponse`,
       `AppointmentDetailResponse`
-- [ ] Add `patientNotes` and `hasCriticalNotes` to `AppointmentDetailResponse` — FR-NOTE-07/08
-- [ ] `appointments/service` ← `AppointmentService`, `AppointmentNumberGenerator`,
+- [ ] **Deferred:** `patientNotes` and `hasCriticalNotes` on `AppointmentDetailResponse` —
+      FR-NOTE-07/08. The notes table belongs to a module that has not been migrated, and reaching
+      into it from here would break the dependency order. `ClinicAccess.canViewPatientNotes` **is**
+      in place, because it is the same decision as the diagnosis and answering it in one place is
+      the point. The dentist's critical-notes banner arrives with the notes
+- [x] `appointments/service` ← `AppointmentService`, `AppointmentNumberGenerator`,
       `AppointmentEvent`, `AppointmentEventPublisher`, `AppointmentObserver`, `ClinicAccess`
-- [ ] `ClinicAccess.canViewPatientNotes(...)` — one gate for both clinical fields
-- [ ] `appointments/data` ← `AppointmentRepository`, `AppointmentDao`, in-memory,
+- [x] `ClinicAccess.canViewPatientNotes(...)` — one gate for both clinical fields
+- [x] `appointments/data` ← `AppointmentRepository`, `AppointmentDao`, in-memory,
       `CounterRepository`
-- [ ] `appointments/web` ← all five servlets. **Four of them currently reach a repository** — route
+- [x] `appointments/web` ← all five servlets. **Four of them currently reach a repository** — route
       every one through `AppointmentService`
-- [ ] Move behaviour onto the entities: `Appointment.canTransitionTo()`, `complete()`, `cancel()`;
+- [x] Move behaviour onto the entities: `Appointment.canTransitionTo()`, `complete()`, `cancel()`;
       `Slot.isOpen()`, `bookFor()`, `release()`
-- [ ] Views: `appointments/book.jsp`, `patient-home.jsp`, `reception-day.jsp`,
+- [x] Views: `appointments/book.jsp`, `patient-home.jsp`, `reception-day.jsp`,
       `dentist-schedule.jsp` — the dentist one needs the critical-notes banner
-- [ ] Move `AppointmentServiceTest`, **`BookingConcurrencyTest`**, `AppointmentNumberGeneratorTest`
+- [x] Move `AppointmentServiceTest`, **`BookingConcurrencyTest`**, `AppointmentNumberGeneratorTest`
 
 ### Fix on the way
-- [ ] Implement `GET /api/appointments` — it does not exist, so the API cannot answer "what is
+- [x] Implement `GET /api/appointments` — it does not exist, so the API cannot answer "what is
       booked?"
-- [ ] `complete` must verify the appointment belongs to the calling dentist, not just the role
-- [ ] Enforce the status machine centrally — cancelling a `BILLED` appointment is currently possible
+- [x] `complete` must verify the appointment belongs to the calling dentist, not just the role
+- [x] Enforce the status machine centrally — cancelling a `BILLED` appointment is currently possible
 
-- [ ] **Delete the stub landing servlet and the stub fragment** from step 2
-- [ ] Gate 1 + 2 + 3 pass, and `BookingConcurrencyTest` specifically
-- [ ] **Deploy and walk the whole journey**: reception publishes availability, a patient books,
+- [x] **Delete the stub landing servlet and the stub fragment** from step 2
+- [x] Gate 1 + 2 + 3 pass, and `BookingConcurrencyTest` specifically
+- [x] **Deploy and walk the whole journey**: reception publishes availability, a patient books,
       reception sees it on the day view, the dentist sees it on their schedule
-- [ ] `refactor(appointments): move booking and the role dashboards`
+- [x] `refactor(appointments): move booking and the role dashboards`
+
+#### Beyond the list, and why
+- [x] **`enterablePrefixes()`, replacing the exclusive prefix rule.** The administrator holds every
+      action the front-desk screens perform — `SEARCH_PATIENTS`, `REGISTER_PATIENT`, `CANCEL_ANY`,
+      `ISSUE_BILL` — but step 2's filter barred it from their addresses. Permitting the operations
+      while refusing the URLs was an inconsistency, not a boundary. It is still not a superuser
+      hatch: the administrator may not enter `/patient/` or `/dentist/`, which are one person's own
+      pages and the clinical record
+- [x] **`AppointmentEvent` carries the actor.** It did not, so `AuditObserver` fell back to
+      `appointment.createdByUid` — and an administrator cancelling a patient's appointment was
+      recorded in the audit trail **as the patient**. The trail exists for accountability; the one
+      field it cannot get wrong is who acted
+- [x] **`AppointmentNumberGenerator` is no longer a Singleton.** Its javadoc claimed the
+      `appointment_counter` table "extends the same guarantee across restarts and multiple nodes".
+      Nothing in Java ever read that table. The counter restarted at zero with Tomcat, so the first
+      booking after a restart minted a number an existing row already held — and `appointment_no` is
+      the primary key. Uniqueness moved to the database row lock, and **verified by restarting
+      Tomcat mid-session: the next booking was `-0002`, not `-0001`**
+- [x] **`readable()` is three rules, not one action.** Written first as
+      `require(caller, SEARCH_PATIENTS)` for everyone who is not a patient — which no dentist holds,
+      so no dentist could read any appointment. Granting them `SEARCH_PATIENTS` would have been the
+      wrong repair: it also lists the whole register
+
+#### Found by running it — three defects the in-memory tests could not see
+- [x] **No appointment could be completed or cancelled against the real database.**
+      `AppointmentDao.save` used `INSERT … ON DUPLICATE KEY UPDATE`, and
+      `trg_prevent_double_booking` is a `BEFORE INSERT` trigger — MySQL fires it on the upsert
+      *before* discovering the duplicate key. Booking worked, because the appointment row is written
+      while the slot is still OPEN; every later save failed with "That slot is already booked",
+      reported as a 500. Fixed in the DAO by separating insert from update, not by weakening the
+      trigger — its rule is right, and an upsert quietly rewriting `created_by_uid` and `created_at`
+      was never wanted either
+- [x] **Every page-level error had been answering 404 since step 2.** `PageServlet.fail` rendered
+      `"error"` while the view is `shared/error.jsp`, and a missing view is not an exception — it is
+      a silent 404 from the container. A 403 looked like a missing page, and this masked the DAO
+      failure above for a while. `PageServletViewsTest` now asserts every rendered view name
+      resolves to a file, because nothing else can catch a wrong string
+- [x] **`IllegalStateException` fell through to a generic 500.** Cancelling a billed appointment was
+      correctly refused, and the caller was told "Something went wrong. Please try again" — when
+      trying again never works. Now `409 conflict` carrying the reason
+- [x] **`error.jsp` ignored the heading and message it was given**, always printing "it is safe to
+      try again". False for a 403 and a 409
 
 **On screen after this step — the application starts looking like the prototype.** Three real
 dashboards on real data, and booking working end to end including the concurrency guard. This

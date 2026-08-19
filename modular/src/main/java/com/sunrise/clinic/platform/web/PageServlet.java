@@ -127,6 +127,12 @@ public abstract class PageServlet extends HttpServlet {
         } catch (AccessControl.AccessDeniedException e) {
             fail(request, response, HttpServletResponse.SC_FORBIDDEN,
                     "Not permitted", e.getMessage());
+        } catch (IllegalStateException e) {
+            // The appointment cannot make this move - already completed, already
+            // billed. A conflict with the record's state, not a fault in the form,
+            // and the message says which because "please try again" would be a lie.
+            fail(request, response, HttpServletResponse.SC_CONFLICT,
+                    "That is no longer possible", e.getMessage());
         } catch (IllegalArgumentException e) {
             fail(request, response, HttpServletResponse.SC_BAD_REQUEST,
                     "Please check the form", e.getMessage());
@@ -152,6 +158,13 @@ public abstract class PageServlet extends HttpServlet {
         response.setStatus(status);
         request.setAttribute("errorHeading", heading);
         request.setAttribute("errorMessage", message);
-        render(request, response, "error");
+        // "shared/error", not "error". The view lives in shared/, and naming it
+        // "error" forwarded to /WEB-INF/jsp/error.jsp, which does not exist - so
+        // EVERY page-level error answered 404 with "That address does not exist",
+        // whatever had actually gone wrong. It hid a 403 as a missing page, and it
+        // hid a database failure during this step's own testing. A missing view is a
+        // silent 404 from the container, which is why PageServletViewsTest now
+        // asserts that every name a servlet renders resolves to a file.
+        render(request, response, "shared/error");
     }
 }

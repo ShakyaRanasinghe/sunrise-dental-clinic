@@ -153,6 +153,12 @@ public abstract class BaseServlet extends HttpServlet {
             error(response, HttpServletResponse.SC_UNAUTHORIZED, "unauthenticated", e.getMessage());
         } catch (AccessControl.AccessDeniedException e) {
             error(response, HttpServletResponse.SC_FORBIDDEN, "forbidden", e.getMessage());
+        } catch (IllegalStateException e) {
+            // 409 Conflict - the request is legitimate but the resource is not in a state
+            // that allows it: completing an appointment twice, cancelling a billed one.
+            // Without this it fell to the generic 500 below and the caller was told
+            // "Something went wrong. Please try again", when trying again never works.
+            error(response, HttpServletResponse.SC_CONFLICT, "conflict", e.getMessage());
         } catch (IllegalArgumentException e) {
             error(response, HttpServletResponse.SC_BAD_REQUEST, "bad_request", e.getMessage());
         } catch (DataAccessException e) {

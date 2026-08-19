@@ -110,6 +110,46 @@ public class Slot {
         return "Slot{id=" + id + "}";
     }
 
+    // --- behaviour -------------------------------------------------------
+
+    /** @return true if this slot can still be booked. */
+    public boolean isOpen() {
+        return status == SlotStatus.OPEN;
+    }
+
+    /**
+     * Claim this slot for an appointment.
+     *
+     * <p>The service used to set the status and the appointment number as two separate
+     * assignments. Doing it here means the pair cannot come apart - a slot marked
+     * BOOKED with no appointment number would take the time out of the diary with
+     * nothing to trace it to, and {@code uq_slot_appointment} would not catch it
+     * because NULL is not a duplicate.</p>
+     *
+     * @throws IllegalStateException if the slot is already taken. The caller must have
+     *         read it with {@code findByIdForUpdate} inside a transaction; this is the
+     *         check that the lock makes meaningful, not a substitute for it
+     */
+    public void bookFor(String appointmentNo) {
+        if (!isOpen()) {
+            throw new IllegalStateException("Slot " + id + " is already booked.");
+        }
+        this.status = SlotStatus.BOOKED;
+        this.appointmentNo = appointmentNo;
+    }
+
+    /**
+     * Return this slot to the pool.
+     *
+     * <p>Clears the appointment number as well as the status. {@code appointment_no}
+     * carries a unique key, so a released slot that kept its old number would block
+     * the next booking of that time with a constraint violation.</p>
+     */
+    public void release() {
+        this.status = SlotStatus.OPEN;
+        this.appointmentNo = null;
+    }
+
     public static Builder builder() {
         return new Builder();
     }

@@ -13,6 +13,15 @@ import com.sunrise.clinic.platform.data.TransactionRunner;
 import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.service.PatientService;
+import com.sunrise.clinic.appointments.data.AppointmentDao;
+import com.sunrise.clinic.appointments.data.AppointmentRepository;
+import com.sunrise.clinic.appointments.data.CounterDao;
+import com.sunrise.clinic.appointments.data.CounterRepository;
+import com.sunrise.clinic.appointments.service.AppointmentEventPublisher;
+import com.sunrise.clinic.appointments.service.AppointmentNumberGenerator;
+import com.sunrise.clinic.appointments.service.AppointmentService;
+import com.sunrise.clinic.appointments.service.AuditObserver;
+import com.sunrise.clinic.appointments.service.ClinicAccess;
 import com.sunrise.clinic.platform.db.Database;
 import com.sunrise.clinic.scheduling.data.DentistDao;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
@@ -77,6 +86,8 @@ public class AppContext implements AutoCloseable {
     private final TreatmentRepository treatments;
     private final SessionRepository sessions;
     private final SlotRepository slots;
+    private final AppointmentRepository appointments;
+    private final CounterRepository counters;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
@@ -85,6 +96,9 @@ public class AppContext implements AutoCloseable {
     private final PatientService patientService;
     private final ReferenceService referenceService;
     private final SlotService slotService;
+    private final ClinicAccess clinicAccess;
+    private final AppointmentEventPublisher appointmentEvents;
+    private final AppointmentService appointmentService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -98,6 +112,8 @@ public class AppContext implements AutoCloseable {
         this.treatments = new TreatmentDao(database);
         this.sessions = new SessionDao(database);
         this.slots = new SlotDao(database);
+        this.appointments = new AppointmentDao(database);
+        this.counters = new CounterDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
@@ -105,6 +121,17 @@ public class AppContext implements AutoCloseable {
         this.patientService = new PatientService(patients);
         this.referenceService = new ReferenceService(dentists, treatments);
         this.slotService = new SlotService(sessions, slots, referenceService);
+        this.clinicAccess = new ClinicAccess(patients, dentists);
+
+        // The Observer pattern's subject. Observers are registered here, at the one place
+        // that knows the whole graph, so AppointmentService never learns who is listening.
+        // NotificationObserver joins them when the notifications module lands.
+        this.appointmentEvents = new AppointmentEventPublisher(java.util.List.of(
+                new AuditObserver(auditEvents)));
+
+        this.appointmentService = new AppointmentService(slots, appointments, referenceService,
+                clinicAccess, new AppointmentNumberGenerator(counters),
+                appointmentEvents, transactionRunner);
     }
 
     public AppConfig config() {
@@ -136,6 +163,16 @@ public class AppContext implements AutoCloseable {
     /** Published availability and the slots it produces. */
     public SlotService slotService() {
         return slotService;
+    }
+
+    /** Booking, cancelling and completing. */
+    public AppointmentService appointmentService() {
+        return appointmentService;
+    }
+
+    /** Who may see an appointment's clinical detail. */
+    public ClinicAccess clinicAccess() {
+        return clinicAccess;
     }
 
     public UserAccountFactory accountFactory() {

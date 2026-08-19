@@ -18,7 +18,8 @@
     start and then answer 500 with a ClassNotFoundException on first request,
     which is a worse failure than a clean 404.
 
-    After step 3b: access, the patient register and scheduling are migrated. Four temporary stub
+    After step 4: access, patients, scheduling and appointments are migrated. One
+    temporary stub remains, for the administrator's landing page. Four temporary stub
     mappings still stand in for the role landing pages.
 -->
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -206,6 +207,42 @@
     <!--  appointments                                                -->
     <!-- ============================================================ -->
 
+    <servlet>
+        <servlet-name>PatientHome</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.PatientHomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientHome</servlet-name>
+        <url-pattern>/patient/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BookAppointment</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.BookAppointmentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookAppointment</servlet-name>
+        <url-pattern>/patient/book</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ReceptionDay</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.ReceptionDayServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceptionDay</servlet-name>
+        <url-pattern>/reception/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DentistSchedule</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.DentistScheduleServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistSchedule</servlet-name>
+        <url-pattern>/dentist/schedule</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->
@@ -246,6 +283,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AppointmentApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.AppointmentApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AppointmentApi</servlet-name>
+        <url-pattern>/api/appointments/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AvailabilityApi</servlet-name>
         <servlet-class>com.sunrise.clinic.scheduling.web.AvailabilityApiServlet</servlet-class>
     </servlet>
@@ -283,29 +329,16 @@
     </servlet-mapping>
 
     <!--
-        TEMPORARY - delete at step 4 (three of these) and step 7 (the fourth).
+        TEMPORARY - delete when the reporting module lands.
 
-        The four role home paths, so sign-in has somewhere to go before the
-        modules that own these screens are migrated. Without them HomeServlet
-        would redirect a signed-in receptionist to /reception/home and Tomcat
-        would answer 404.
+        Three of the four stub landings became real screens with the appointments
+        module. This is the last one: /admin/reports is the administrator's home
+        path, and without it signing in as an administrator would redirect to a 404.
     -->
     <servlet>
         <servlet-name>StubHome</servlet-name>
         <servlet-class>com.sunrise.clinic.access.web.StubHomeServlet</servlet-class>
     </servlet>
-    <servlet-mapping>
-        <servlet-name>StubHome</servlet-name>
-        <url-pattern>/patient/home</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>StubHome</servlet-name>
-        <url-pattern>/reception/home</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>StubHome</servlet-name>
-        <url-pattern>/dentist/schedule</url-pattern>
-    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>StubHome</servlet-name>
         <url-pattern>/admin/reports</url-pattern>

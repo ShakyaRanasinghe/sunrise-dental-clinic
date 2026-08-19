@@ -1,5 +1,6 @@
 package com.sunrise.clinic.access.domain;
 
+import java.util.List;
 import java.util.Set;
 
 /** What a {@code PATIENT} may do. */
@@ -32,5 +33,11 @@ public final class PatientPolicy extends RolePolicy {
     @Override
     protected Set<Action> permitted() {
         return PERMITTED;
+    }
+
+    /** A patient's own pages: their appointments, and booking another. */
+    @Override
+    protected List<NavItem> ownNavigation() {
+        return List.of(new NavItem("Book", "/patient/book"));
     }
 }

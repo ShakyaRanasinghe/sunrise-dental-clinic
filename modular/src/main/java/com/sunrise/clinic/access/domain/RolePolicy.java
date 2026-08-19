@@ -84,6 +84,24 @@ public abstract class RolePolicy {
         return List.of();
     }
 
+    /**
+     * The prefixes this role may enter.
+     *
+     * <p>Its own by default. {@link AdminPolicy} widens it, because the administrator
+     * holds every action the front-desk screens use - {@code SEARCH_PATIENTS},
+     * {@code REGISTER_PATIENT}, {@code CANCEL_ANY}, {@code ISSUE_BILL} - so barring it
+     * from those addresses while permitting the operations behind them was an
+     * inconsistency, not a boundary.</p>
+     *
+     * <p>It is still not a superuser hatch. The administrator may not enter
+     * {@code /patient/} or {@code /dentist/}: those are one person's own pages and the
+     * clinical record, and the administrator deliberately lacks
+     * {@code READ_CLINICAL}. Authority follows purpose here, not rank.</p>
+     */
+    public Set<String> enterablePrefixes() {
+        return Set.of(ownedPrefix());
+    }
+
     /** Every role-owned prefix, for the filter's structural check. */
     public static java.util.List<String> allOwnedPrefixes() {
         return java.util.Arrays.stream(Role.values()).map(RolePolicy::of)
