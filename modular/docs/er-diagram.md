@@ -317,7 +317,7 @@ Sixteen foreign keys are declared:
 | `fk_bill_appointment` | `bill.appointment_no` | `appointment.appointment_no` |
 | `fk_notification_appointment` | `notification.appointment_no` | `appointment.appointment_no` |
 
-**Nine further references are unconstrained** — plain `VARCHAR` columns holding a uid or id
+**Three further references are unconstrained** — plain `VARCHAR` columns holding a uid or id
 that the database does not check. These are the dotted lines in the diagram:
 
 | Column | Should point at | Risk today |

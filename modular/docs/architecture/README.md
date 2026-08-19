@@ -10,6 +10,9 @@ How the **modular** implementation is put together, and why it is put together t
 | [`4-database.md`](4-database.md) | Where MySQL sits and how it is reached |
 | [`5-security.md`](5-security.md) | Authentication, and why it is a session rather than a token |
 
+Implementation sequencing is in [`../migration-plan.md`](../migration-plan.md); the servlet and
+route contract is [`../servlets.md`](../servlets.md).
+
 Aligns with [`../srs/srs.md`](../srs/srs.md), [`../class-diagram.md`](../class-diagram.md),
 [`../er-diagram.md`](../er-diagram.md), [`../use-case-diagram.md`](../use-case-diagram.md) and
 [`../sequence-diagrams.md`](../sequence-diagrams.md).
