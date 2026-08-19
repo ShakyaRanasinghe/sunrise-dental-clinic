@@ -1,0 +1,293 @@
+%% Sunrise Dental Clinic - class design: 2-domain-model
+%% Source of truth: modular/docs/class-diagram.md
+
+classDiagram
+    direction TB
+
+    namespace access {
+        class UserAccount {
+            -uid : String
+            -email : String
+            -passwordHash : String
+            -displayName : String
+            -role : Role
+            -active : boolean
+            -failedAttempts : int
+            -locked : boolean
+            -createdAt : Instant
+            +getUid() String
+            +getRole() Role
+            +isLocked() boolean
+            +policy() RolePolicy
+        }
+        class Role {
+            <<enumeration>>
+            PATIENT
+            RECEPTIONIST
+            DENTIST
+            ADMIN
+        }
+    }
+
+    namespace feedback {
+        class DentistReview {
+            -id : String
+            -appointmentNo : String
+            -dentistId : String
+            -patientId : String
+            -rating : int
+            -comment : String
+            -submittedAt : Instant
+            -updatedAt : Instant
+            +isEditable(now) boolean
+        }
+        class RatingSummary {
+            <<record>>
+            +dentistId : String
+            +mean : double
+            +count : int
+            +isPublishable() boolean
+        }
+        class Complaint {
+            -id : String
+            -patientId : String
+            -dentistId : String
+            -appointmentNo : String
+            -category : ComplaintCategory
+            -detail : String
+            -status : ComplaintStatus
+            -submittedAt : Instant
+            -reviewedByUid : String
+            -resolution : String
+            -resolvedAt : Instant
+            +isOpen() boolean
+            +canTransitionTo(status) boolean
+            +resolve(note, adminUid) void
+        }
+        class ComplaintCategory {
+            <<enumeration>>
+            CONDUCT
+            CLINICAL_CONCERN
+            WAIT_TIME
+            BILLING
+            OTHER
+        }
+        class ComplaintStatus {
+            <<enumeration>>
+            SUBMITTED
+            UNDER_REVIEW
+            RESOLVED
+            DISMISSED
+        }
+    }
+
+    namespace patients {
+        class PatientNote {
+            -id : String
+            -patientId : String
+            -category : NoteCategory
+            -detail : String
+            -critical : boolean
+            -createdAt : Instant
+            -updatedAt : Instant
+            +isCritical() boolean
+            +getCategory() NoteCategory
+        }
+        class NoteCategory {
+            <<enumeration>>
+            ALLERGY
+            MEDICATION
+            CONDITION
+            OTHER
+        }
+        class Patient {
+            -id : String
+            -userUid : String
+            -name : String
+            -address : String
+            -contactNumber : String
+            -email : String
+            -dob : LocalDate
+            +getId() String
+            +getName() String
+            +getContactNumber() String
+            +hasPortalAccount() boolean
+        }
+    }
+
+    namespace scheduling {
+        class Dentist {
+            -id : String
+            -userUid : String
+            -name : String
+            -specialization : String
+            -consultationFee : double
+            -active : boolean
+            +getConsultationFee() double
+            +isActive() boolean
+        }
+        class DentistSession {
+            -id : String
+            -dentistId : String
+            -date : LocalDate
+            -startTime : LocalTime
+            -endTime : LocalTime
+            -slotDurationMinutes : int
+            -publishedByUid : String
+            +divideIntoSlots() List~Slot~
+        }
+        class Slot {
+            -id : String
+            -sessionId : String
+            -dentistId : String
+            -date : LocalDate
+            -startTime : LocalTime
+            -durationMinutes : int
+            -status : SlotStatus
+            -appointmentNo : String
+            +isOpen() boolean
+            +bookFor(appointmentNo) void
+            +release() void
+        }
+        class Treatment {
+            -id : String
+            -name : String
+            -description : String
+            -baseCost : double
+            -active : boolean
+            +getBaseCost() double
+        }
+        class SlotStatus {
+            <<enumeration>>
+            OPEN
+            BOOKED
+        }
+    }
+
+    namespace appointments {
+        class Appointment {
+            -appointmentNo : String
+            -patientId : String
+            -dentistId : String
+            -slotId : String
+            -treatmentId : String
+            -date : LocalDate
+            -time : LocalTime
+            -status : AppointmentStatus
+            -diagnosis : String
+            -createdByUid : String
+            -createdByRole : Role
+            -createdAt : Instant
+            +getAppointmentNo() String
+            +getDiagnosis() String
+            +complete(diagnosis) void
+            +cancel() void
+            +canTransitionTo(status) boolean
+        }
+        class AppointmentStatus {
+            <<enumeration>>
+            CONFIRMED
+            COMPLETED
+            BILLED
+            CANCELLED
+        }
+    }
+
+    namespace billing {
+        class Bill {
+            -id : String
+            -appointmentNo : String
+            -patientId : String
+            -dentistId : String
+            -receptionistUid : String
+            -issuedAt : Instant
+            -issuedByUid : String
+            +getTotal() double
+        }
+        class BillBreakdown {
+            <<record>>
+            +consultationFee : double
+            +treatmentCost : double
+            +serviceCharge : double
+            +discount : double
+            +tax : double
+            +total() double
+        }
+        class RevenueSplit {
+            <<record>>
+            +dentistEarning : double
+            +clinicEarning : double
+            +receptionistEarning : double
+        }
+    }
+
+    namespace notifications {
+        class Notification {
+            -id : String
+            -appointmentNo : String
+            -channel : ChannelType
+            -recipient : String
+            -subject : String
+            -body : String
+            -status : NotificationStatus
+            -sentAt : Instant
+        }
+        class ChannelType {
+            <<enumeration>>
+            EMAIL
+            SMS
+        }
+        class NotificationStatus {
+            <<enumeration>>
+            SENT
+            FAILED
+            LOGGED
+        }
+    }
+
+    namespace platform {
+        class AuditEvent {
+            -id : String
+            -actorUid : String
+            -actorRole : Role
+            -action : String
+            -targetType : String
+            -targetId : String
+            -timestamp : Instant
+        }
+    }
+
+    Patient *-- "0..*" PatientNote : declares
+    Patient "1" --> "0..*" Complaint : raises
+    Dentist "1" --> "0..*" Complaint : named in
+    Complaint --> "1" ComplaintCategory
+    Complaint --> "1" ComplaintStatus
+
+    Appointment "1" --> "0..1" DentistReview : rated by
+    Dentist "1" --> "0..*" DentistReview : rated
+    Patient "1" --> "0..*" DentistReview : writes
+    PatientNote --> "1" NoteCategory
+
+    UserAccount --> "1" Role : has
+    UserAccount o-- "0..1" Patient : profile
+    UserAccount o-- "0..1" Dentist : profile
+
+    Dentist *-- "0..*" DentistSession : works
+    DentistSession *-- "1..*" Slot : divides into
+    Slot --> "1" SlotStatus
+
+    Appointment --> "1" Patient : for
+    Appointment --> "1" Dentist : treated by
+    Appointment --> "0..1" Treatment : of type
+    Appointment --> "1" AppointmentStatus
+    Slot "0..1" <--> "0..1" Appointment : booked as
+
+    Appointment *-- "0..1" Bill : billed by
+    Appointment *-- "0..*" Notification : triggers
+
+    Bill *-- "1" BillBreakdown : itemises
+    Bill *-- "1" RevenueSplit : divides into
+    Notification --> "1" ChannelType
+    Notification --> "1" NotificationStatus
+
+    AuditEvent --> "0..1" UserAccount : actor
