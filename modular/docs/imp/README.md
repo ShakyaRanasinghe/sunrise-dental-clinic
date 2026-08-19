@@ -24,7 +24,7 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 ```
  0  decide what ships          ◻  ← START HERE, blocks everything
  1  platform                   ✅  18 classes · Json fix · 15 tests
- 2  access + stub landings     ✅  30 classes · 4 portals · 15 views · 49 tests · 4 defects found
+ 2  access + stub landings     ✅  30 classes · 4 portals · 15 views · 50 tests · 5 defects found
  3  patients + scheduling      ◻   ✱ patient register, dentist and treatment lists
  4  appointments               ◻   ✱✱ three dashboards live, booking works
  5  billing                    ◻   ✱✱ all six of the brief's functions work
@@ -50,10 +50,12 @@ Verified by driving the deployed WAR, not by reading it:
 | Role isolation | a clean diagonal — each role reaches only its own prefix, 403 otherwise |
 | Anonymous protected path | redirected to `/login?next=…`; API paths get 401 JSON |
 | Sign-out | session invalidated, protected paths redirect again |
+| Signing in **from a browser**, by clicking the button | works — and did not, until the form's action was fixed |
 
-Running it also found four defects that reading it had not — see the end of step 2 in
+Running it also found five defects that reading it had not — see the end of step 2 in
 [`tasks.md`](tasks.md). The most serious was that a signed-in patient could open every role's
-landing page.
+landing page; the one only a browser could find was that the sign-in form posted to the view's own
+path, so clicking **Sign in** answered 404 while `curl` against the same route succeeded.
 
 ---
 

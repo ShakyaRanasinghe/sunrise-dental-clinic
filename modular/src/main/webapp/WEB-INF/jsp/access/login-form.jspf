@@ -5,7 +5,7 @@
     than by discipline - the same argument as AbstractLoginServlet, one layer up.
     JSP has no inheritance, so composition is the equivalent.
 
-    Expects: error, email, portalLabel, allowsSelfRegistration
+    Expects: error, email, portalLabel, allowsSelfRegistration, loginPath
 --%>
 <span class="portal-label"><c:out value="${portalLabel}" /></span>
 
@@ -13,7 +13,9 @@
     <div class="notice error"><c:out value="${error}" /></div>
 </c:if>
 
-<form method="post" action="${ctx}${pageContext.request.servletPath}">
+<%-- loginPath comes from the servlet, not from the request. This page is reached
+     by a forward, so ${pageContext.request.servletPath} is this JSP's own path. --%>
+<form method="post" action="${ctx}${loginPath}">
     <div class="field">
         <label for="email">Email</label>
         <input type="email" id="email" name="email" autocomplete="username" autofocus

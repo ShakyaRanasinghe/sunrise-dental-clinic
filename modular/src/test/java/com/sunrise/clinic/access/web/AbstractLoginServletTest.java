@@ -120,6 +120,24 @@ class AbstractLoginServletTest {
         }
     }
 
+    @Test
+    void theSignInFormPostsToAPathTheServletSupplies() throws Exception {
+        // A guard against the one defect in this step that no test without a
+        // browser could see. The form's action was
+        // ${pageContext.request.servletPath}, and because the view is reached by a
+        // forward that evaluates to the view's own path - so the browser posted to
+        // /WEB-INF/jsp/access/login-dentist.jsp and got a 404, while the same
+        // credentials over curl worked, because curl posts to the URL and never
+        // reads the form. Cheap to assert, and it fails loudly if reintroduced.
+        String form = java.nio.file.Files.readString(
+                java.nio.file.Path.of("src/main/webapp/WEB-INF/jsp/access/login-form.jspf"));
+
+        assertTrue(form.contains("action=\"${ctx}${loginPath}\""),
+                "the form must post to the path the servlet supplies");
+        assertFalse(form.contains("action=\"${ctx}${pageContext.request.servletPath}\""),
+                "servletPath is the view's own path inside a forward");
+    }
+
     private static String shortName(Role role) {
         return switch (role) {
             case PATIENT -> "patient";

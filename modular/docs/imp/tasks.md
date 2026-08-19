@@ -170,6 +170,13 @@ have reached the report as a working feature.
       `/api/auth/` is in the filter's public list and `AccessControl` raised one exception for both
       "not signed in" and "wrong role". Split into `NotAuthenticatedException`
 
+- [x] **The sign-in form posted to the view's own path**, so signing in from a browser answered 404
+      while the identical credentials over `curl` succeeded. The action was
+      `${pageContext.request.servletPath}`, and inside a forward that is the JSP's path, not the
+      request's. The servlet now supplies `loginPath` from `RolePolicy`. Found only by clicking the
+      button — every check up to that point had posted straight to the URL. A test now reads the
+      fragment and asserts the action, because nothing without a browser can catch it
+
 Also fixed while getting the first deploy to answer: every view used `<c:set>` before
 `header.jspf` declared the `c` prefix, which Jasper refuses outright — the taglib directives moved
 into `shared/taglibs.jspf`, included first by every view. Static includes are now absolute
