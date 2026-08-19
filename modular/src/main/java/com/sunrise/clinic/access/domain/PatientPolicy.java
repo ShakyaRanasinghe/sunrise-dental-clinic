@@ -38,6 +38,8 @@ public final class PatientPolicy extends RolePolicy {
     /** A patient's own pages: their appointments, and booking another. */
     @Override
     protected List<NavItem> ownNavigation() {
-        return List.of(new NavItem("Book", "/patient/book"));
+        return List.of(
+                new NavItem("Book", "/patient/book"),
+                new NavItem("My details", "/patient/profile"));
     }
 }

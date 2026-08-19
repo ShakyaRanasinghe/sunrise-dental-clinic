@@ -515,18 +515,46 @@ Nothing to move — every class here is new. This is the feature work the earlie
 made room for, and it is last because it depends on appointments and billing.
 
 ### 8a — medical notes, in `patients`
-- [ ] **New** `PatientNote`, `NoteCategory`, `PatientNoteResponse`
-- [ ] **New** `PatientNoteRepository`, `PatientNoteDao`, in-memory
-- [ ] **New** `patients/service/PatientNoteService`
-- [ ] **New** `PatientProfileServlet` + `patients/profile.jsp`, from
+- [x] **New** `PatientNote`, `NoteCategory`, `PatientNoteResponse`
+- [x] **New** `PatientNoteRepository`, `PatientNoteDao`, in-memory
+- [x] **New** `patients/service/PatientNoteService`
+- [x] **New** `PatientProfileServlet` + `patients/profile.jsp`, from
       [`../prototype/patient/profile.html`](../prototype/patient/profile.html)
-- [ ] Note endpoints on `PatientApiServlet` — `/api/patients/{id}/notes`, all four methods
-- [ ] Add `patientNotes` and `hasCriticalNotes` to the dentist's appointment view, and the critical
+- [x] Note endpoints on `PatientApiServlet` — `/api/patients/{id}/notes`, all four methods
+- [x] Add `patientNotes` and `hasCriticalNotes` to the dentist's appointment view, and the critical
       banner on the schedule — FR-NOTE-07, FR-NOTE-08, FR-DEN-42
-- [ ] Confirm reception and the administrator receive a response object with **no field** for them
-- [ ] Confirm a patient with no notes renders "None declared", never a blank — FR-NOTE-12
-- [ ] `PatientNoteServiceTest`
-- [ ] `feat(patients): medical notes declared by the patient`
+- [x] Confirm reception and the administrator receive a response object with **no field** for them
+- [x] Confirm a patient with no notes renders "None declared", never a blank — FR-NOTE-12
+- [x] `PatientNoteServiceTest`
+- [x] `feat(patients): medical notes declared by the patient`
+
+#### Beyond the list, and why
+- [x] **`TreatmentRelationship`, declared in `patients` and implemented in `appointments`.** FR-NOTE-09
+      says a dentist may read notes only for patients on their own schedule — a question only the
+      appointments module can answer. Having `patients` import `appointments` would invert the
+      dependency order everything else rests on and create a cycle between two modules. So the module
+      that needs the answer declares the question. **This is the only place in the application where
+      that inversion was necessary**, and it is necessary because the rule genuinely spans both
+- [x] **`/dentist/appointment`, a per-appointment clinical view.** FR-NOTE-07 wants the notes beside
+      the appointment; the schedule shows a flag, and this shows what the flag is about. Loading every
+      patient's notes to render a day would fetch a great deal of medical information to print one line
+- [x] **`PatientNote.toString()` omits the detail.** It ends up in logs and exception messages, and
+      the detail is the one field there that is medical information about a named person. A test
+      asserts it
+- [x] **A note the patient corrects keeps its original `created_at`.** An upsert would have moved it
+      forward on every edit; a corrected note is still one declared on the day it was declared
+- [x] **A note that is not yours is `404`, not `403`.** Confirming it exists would tell the caller
+      that some other patient has declared something
+
+#### Found by running it
+- [x] **Every non-ASCII character in the seed data was double-encoded.** `dev-up.sh` loaded SQL with
+      the MySQL client's default charset, which is **latin1** — so the file's UTF-8 bytes were
+      declared latin1 and converted again, storing `â€”` where an em dash belonged. It round-tripped
+      through the CLI cleanly because the same wrong charset undid it on the way out, so it was
+      invisible until the application read a note and rendered "Penicillin â€” rash". Verified by hex:
+      `C3A2E282AC` stored where `E28094` belonged. Fixed with `--default-character-set=utf8mb4`, and
+      the application's own write path confirmed clean by storing an em dash and `café` through the
+      form and reading them back
 
 ### 8b — complaints and reviews, in `feedback`
 - [ ] **New** `Complaint`, `ComplaintCategory`, `ComplaintStatus`, `ComplaintResponse`

@@ -10,6 +10,8 @@ import com.sunrise.clinic.appointments.domain.AppointmentDetailResponse;
 import com.sunrise.clinic.appointments.domain.AppointmentResponse;
 import com.sunrise.clinic.appointments.domain.AppointmentStatus;
 import com.sunrise.clinic.patients.domain.Patient;
+import com.sunrise.clinic.patients.domain.PatientNoteResponse;
+import com.sunrise.clinic.patients.service.PatientNoteService;
 import com.sunrise.clinic.platform.data.TransactionRunner;
 import com.sunrise.clinic.platform.error.ResourceNotFoundException;
 import com.sunrise.clinic.platform.error.SlotUnavailableException;
@@ -68,6 +70,7 @@ public class AppointmentService {
     private final ReferenceService reference;
     private final ClinicAccess clinicAccess;
     private final AppointmentNumberGenerator numbers;
+    private final PatientNoteService patientNotes;
     private final AppointmentEventPublisher publisher;
     private final TransactionRunner transaction;
 
@@ -76,6 +79,7 @@ public class AppointmentService {
                              ReferenceService reference,
                              ClinicAccess clinicAccess,
                              AppointmentNumberGenerator numbers,
+                             PatientNoteService patientNotes,
                              AppointmentEventPublisher publisher,
                              TransactionRunner transaction) {
         this.slots = slots;
@@ -83,6 +87,7 @@ public class AppointmentService {
         this.reference = reference;
         this.clinicAccess = clinicAccess;
         this.numbers = numbers;
+        this.patientNotes = patientNotes;
         this.publisher = publisher;
         this.transaction = transaction;
     }
@@ -164,8 +169,7 @@ public class AppointmentService {
     public Object findDetail(ClinicPrincipal caller, String appointmentNo) {
         Appointment appointment = readable(caller, appointmentNo);
         if (clinicAccess.canViewClinical(appointment, caller)) {
-            return AppointmentDetailResponse.of(appointment,
-                    patientName(appointment), dentistName(appointment), treatmentName(appointment));
+            return detailWithNotes(caller, appointment);
         }
         return describe(appointment);
     }
@@ -227,8 +231,7 @@ public class AppointmentService {
         log.log(Level.INFO, "appointment_completed no={0} by={1}",
                 new Object[] { appointmentNo, caller.uid() });
         announce(AppointmentEvent.Type.COMPLETED, appointment, caller);
-        return AppointmentDetailResponse.of(appointment,
-                patientName(appointment), dentistName(appointment), treatmentName(appointment));
+        return detailWithNotes(caller, appointment);
     }
 
     /**
@@ -363,6 +366,42 @@ public class AppointmentService {
         publisher.publish(AppointmentEvent.of(type, appointment, actor,
                 patient.map(Patient::getEmail).orElse(null),
                 patient.map(Patient::getName).orElse("Patient")));
+    }
+
+    /**
+     * The clinical view, with the patient's declared notes attached - FR-NOTE-07.
+     *
+     * <p>The same gate guards both: {@code canViewPatientNotes} is
+     * {@code canViewClinical}, so a caller who may read the diagnosis may read the notes and
+     * one who may not gets neither. Asked through {@link PatientNoteService} rather than
+     * decided here, so the rule lives in one place.</p>
+     */
+    private AppointmentDetailResponse detailWithNotes(ClinicPrincipal caller, Appointment appointment) {
+        List<PatientNoteResponse> notes = List.of();
+        if (clinicAccess.canViewPatientNotes(appointment, caller)) {
+            notes = patientNotes.forPatient(caller, appointment.getPatientId());
+        }
+        return AppointmentDetailResponse.of(appointment, patientName(appointment),
+                dentistName(appointment), treatmentName(appointment), notes);
+    }
+
+    /**
+     * A dentist's day, each appointment flagged if the patient has declared anything
+     * critical - FR-NOTE-08.
+     *
+     * <p>A flag, not the notes: the schedule warns, and opening the appointment shows what
+     * the warning is about. Loading every patient's notes to render a day would read a great
+     * deal of medical information to print one exclamation mark.</p>
+     */
+    public List<DentistDay> forDentistWithWarnings(ClinicPrincipal caller, LocalDate date) {
+        return forDentistOn(caller, date).stream()
+                .map(appointment -> new DentistDay(appointment,
+                        patientNotes.hasCriticalNotes(caller, appointment.patientId())))
+                .toList();
+    }
+
+    /** One row of a dentist's day: the appointment, and whether to warn about it. */
+    public record DentistDay(AppointmentResponse appointment, boolean hasCriticalNotes) {
     }
 
     private List<AppointmentResponse> describeAll(List<Appointment> found) {

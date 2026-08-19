@@ -10,7 +10,11 @@ import com.sunrise.clinic.platform.audit.AuditRepository;
 import com.sunrise.clinic.platform.config.AppConfig;
 import com.sunrise.clinic.platform.data.JdbcTransactionRunner;
 import com.sunrise.clinic.platform.data.TransactionRunner;
+import com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship;
 import com.sunrise.clinic.patients.data.PatientDao;
+import com.sunrise.clinic.patients.data.PatientNoteDao;
+import com.sunrise.clinic.patients.data.PatientNoteRepository;
+import com.sunrise.clinic.patients.service.PatientNoteService;
 import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.appointments.data.AppointmentDao;
@@ -94,6 +98,7 @@ public class AppContext implements AutoCloseable {
     private final UserRepository users;
     private final AuditRepository auditEvents;
     private final PatientRepository patients;
+    private final PatientNoteRepository patientNotes;
     private final DentistRepository dentists;
     private final TreatmentRepository treatments;
     private final SessionRepository sessions;
@@ -108,6 +113,7 @@ public class AppContext implements AutoCloseable {
     private final AuthService authService;
     private final UserAccountFactory accountFactory;
     private final PatientService patientService;
+    private final PatientNoteService patientNoteService;
     private final ReferenceService referenceService;
     private final SlotService slotService;
     private final ClinicAccess clinicAccess;
@@ -125,6 +131,7 @@ public class AppContext implements AutoCloseable {
         this.users = new UserDao(database);
         this.auditEvents = new AuditDao(database);
         this.patients = new PatientDao(database);
+        this.patientNotes = new PatientNoteDao(database);
         this.dentists = new DentistDao(database);
         this.treatments = new TreatmentDao(database);
         this.sessions = new SessionDao(database);
@@ -148,8 +155,13 @@ public class AppContext implements AutoCloseable {
         this.appointmentEvents = new AppointmentEventPublisher(java.util.List.of(
                 new AuditObserver(auditEvents)));
 
+        // The inversion described in TreatmentRelationship: patients declares the question,
+        // appointments answers it, and this is the one place that knows both.
+        this.patientNoteService = new PatientNoteService(patientNotes, patients,
+                new AppointmentTreatmentRelationship(appointments, dentists));
+
         this.appointmentService = new AppointmentService(slots, appointments, referenceService,
-                clinicAccess, new AppointmentNumberGenerator(counters),
+                clinicAccess, new AppointmentNumberGenerator(counters), patientNoteService,
                 appointmentEvents, transactionRunner);
 
         // The two strategies are chosen here, once. Swapping in a promotional pricing rule
@@ -209,6 +221,11 @@ public class AppContext implements AutoCloseable {
 
     public LoginAttemptService loginAttemptService() {
         return loginAttempts;
+    }
+
+    /** The patient's own declared medical notes. */
+    public PatientNoteService patientNoteService() {
+        return patientNoteService;
     }
 
     /** The patient register. */
