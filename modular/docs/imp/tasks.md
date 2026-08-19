@@ -28,35 +28,65 @@ environment. Nothing below starts until then.
 
 ---
 
-## Step 1 — `platform` · ~24 classes · no business logic
+## Step 1 — `platform` · ✅ **done** · 18 classes moved
 
-Safest first move. Proves the new layout and `pom.xml` before anything valuable depends on them.
+Moved, compiling, 15 tests green. `platform` imports nothing outside `platform`, verified by grep.
 
-- [ ] `platform/config` ← `AppConfig`
-- [ ] `platform/db` ← `Database`, `PooledConnection`
-- [ ] `platform/json` ← `Json` — **and add the non-record branch**, the cause of the five
-      endpoints that answer `["Dentist{id=d-silva}"]` instead of JSON
-- [ ] `platform/error` ← `DataAccessException`, `ResourceNotFoundException`,
+- [x] `platform/config` ← `AppConfig`
+- [x] `platform/db` ← `Database`, `PooledConnection`
+- [x] `platform/json` ← `Json` — **plus the `writeBean` branch**, see below
+- [x] `platform/error` ← `DataAccessException`, `ResourceNotFoundException`,
       `SlotUnavailableException`, `ErrorResponse`
-- [ ] `platform/data` ← `Repository<T,ID>`, `InMemoryRepository`, `TransactionRunner`, `JdbcDao`,
+- [x] `platform/data` ← `Repository<T,ID>`, `InMemoryRepository`, `TransactionRunner`, `JdbcDao`,
       `JdbcTransactionRunner`, `SerialTransactionRunner`
-- [ ] `platform/web` ← `BaseServlet`, `PageServlet`, `HelpServlet`
-- [ ] `platform/audit` ← `AuditEvent`, `AuditRepository`, `AuditDao`,
-      `InMemoryAuditRepository`, `AuditObserver`
-- [ ] `platform/di` ← `AppContext`, `ClinicServletContext` — will not compile fully until step 8;
-      stub the accessors it cannot satisfy yet and keep a `TODO` list in the class
-- [ ] Move `JsonTest` to `test/…/platform/`
-- [ ] Write `HmacSignerTest`? **No** — there is no JWT. Skip
-- [ ] Delete the `.gitkeep` in every directory that now holds a class
-- [ ] Gate 1 + 2 pass
+- [x] `platform/audit` ← `AuditEvent`, `AuditRepository`, `AuditDao`, `InMemoryAuditRepository`
+- [x] `JsonTest` → `test/…/platform/`, with local fixtures replacing feature types
+- [x] `.gitkeep` removed from every directory that now holds a class
+- [x] Gate 1 + 2 pass
 - [ ] `refactor(platform): move shared machinery to modular`
 
-**On screen after this step:** `/help` renders, and nothing else. That is the point — it proves the
-layout, the `pom.xml`, JSP compilation and the JSTL fallback locale before anything valuable depends
-on them.
+### Three things the step boundary got wrong, and what was done
 
-**Watch for:** `AppContext` is the one class that cannot be finished in this step. Accept a
-partially-wired context and revisit it at the end of every later step.
+**`BaseServlet`, `PageServlet` and `HelpServlet` could not move.** They import `AppContext`,
+`ClinicPrincipal`, `AccessControl` and `AuthenticationFilter` — all `access`. `HelpServlet` looked
+independent to an import grep but extends `PageServlet`, so it inherits the coupling. **Deferred to
+step 2**, which is where `access` lands.
+
+**`AppContext` and `ClinicServletContext` could not move.** `AppContext` imports `mapper`,
+`pattern`, `security` and `service` — that is every module. It arrives in step 2 partially wired and
+is finished in step 8.
+
+**`AuditObserver` could not move.** It implements `AppointmentObserver` and reads
+`AppointmentEvent`, both `appointments`. **Deferred to step 4.** The other four audit classes moved
+cleanly once `AuditEvent` stopped referencing `Role` — see below.
+
+### Two design fixes this step owned
+
+**`AuditEvent.actorRole` is now `String`, not `Role`.** `platform` may depend on no feature module
+and `Role` belongs to `access`, so the type had to go. Denormalising is right on its own terms as
+well: an audit record is a snapshot of what happened, so it must survive the enum being renamed or a
+value retired. The database column stays an `ENUM`; the Java side stores its name. `AuditDao` reads
+and writes it as text.
+
+**`Json.write` no longer stringifies unknown objects.** The old fallthrough was
+`writeString(String.valueOf(value))`, which is why five endpoints answered `200` with
+`["Dentist{id=d-silva}"]`. A `writeBean` branch now reads `getX()` and `isX()` accessors. Proved
+against a class shaped exactly like `Dentist`:
+
+```
+before:  ["Dentist{id=d-silva}"]
+after:   [{"consultationFee":1500,"id":"d-silva","name":"Dr. Ranil Silva",
+           "specialization":"General Dentistry","active":true}]
+```
+
+Three tests cover it, and they fail against the old behaviour. A `requirePublic` guard was added
+too, because reflection cannot read a non-public type and the failure otherwise named a property
+rather than the cause.
+
+**Mapping to a response record is still the better habit** — a record states exactly which fields
+cross the wire and a bean does not. `writeBean` is the safety net for what was never mapped, not a
+licence to stop mapping. Steps 3 and 4 still add `PatientResponse`, `DentistResponse` and
+`TreatmentResponse`.
 
 ---
 
@@ -65,6 +95,11 @@ partially-wired context and revisit it at the end of every later step.
 Everything else needs a principal. This step also adds four stub landing pages, so that the moment
 sign-in works it goes somewhere rather than to a 404 — see [`README.md`](README.md) for why that
 matters.
+
+### Inherited from step 1 — could not move without `access`
+- [ ] `platform/web` ← `BaseServlet`, `PageServlet`, `HelpServlet`
+- [ ] `platform/di` ← `AppContext`, `ClinicServletContext` — partially wired; stub the accessors
+      later modules will supply, and keep the `TODO` list in the class
 
 ### Move
 - [ ] `access/domain` ← `UserAccount`, `Role`, `ClinicPrincipal`
