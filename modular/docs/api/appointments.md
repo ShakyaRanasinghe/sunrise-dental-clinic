@@ -281,6 +281,10 @@ curl -s -b jar.txt -X POST http://localhost:8080/api/appointments/APT-20260820-0
 `clinic.billing.service-charge`. Selected by strategy (**FR-BIL-06**), so a pricing change
 means a new strategy rather than an edit to the billing service.
 
+**The revenue policy** is two settings, described in [`../srs/srs.md`](../srs/srs.md#the-revenue-policy).
+On the default policy the clinic takes the whole difference between what the patient pays and
+what the dentist is paid, and the receptionist takes nothing.
+
 **What the response omits.** The three-way revenue split — `dentistEarning`,
 `clinicEarning`, `receptionistEarning` — is calculated and stored on the `bill` row
 (**FR-BIL-03**) but is **not** in `BillResponse`. A patient reading their own bill has no

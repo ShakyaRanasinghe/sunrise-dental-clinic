@@ -111,7 +111,8 @@ row concerned.
 | **FR-REC-50** | An appointment must be retrievable for billing by its number alone | Built |
 | **FR-REC-51** | The bill must itemise consultation fee, treatment cost, service charge, any discount, tax and total | Built |
 | **FR-REC-52** | The bill must be printable on one page without navigation chrome | Partial |
-| **FR-REC-53** | Issuing a bill must record the receptionist, who earns the service charge in the revenue split | Built |
+| **FR-REC-53** | Issuing a bill must record which receptionist issued it | Built |
+| **FR-REC-54** | Whether that receptionist earns a share of the service charge is a policy setting, `clinic.revenue.receptionist-service-share`, and defaults to **none** — the service charge is the clinic's | Built |
 | **FR-REC-54** | An appointment already billed must show its existing bill for reprinting, not offer to bill again | Built |
 | **FR-REC-55** | A bill must only be issuable once the dentist has marked the appointment complete | Partial |
 | **FR-REC-56** | A discount must be enterable and must be rejected if it exceeds the sum of fee and treatment cost | Specified |

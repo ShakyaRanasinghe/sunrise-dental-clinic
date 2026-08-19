@@ -54,7 +54,7 @@ class BillingServiceTest {
                         appointments.dentists, appointments.treatments),
                 appointments.clinicAccess,
                 new StandardBillingStrategy(),
-                new DefaultRevenueSplitStrategy(new BigDecimal("0.60")),
+                new DefaultRevenueSplitStrategy(new BigDecimal("0.60"), BigDecimal.ZERO),
                 new BigDecimal("200.00"),
                 new SerialTransactionRunner());
 
@@ -102,6 +102,20 @@ class BillingServiceTest {
         var split = billing.revenueFor(AppointmentTestFixture.admin(), appointmentNo);
 
         assertEquals(new BigDecimal("5200.00"), split.sum());
+    }
+
+    @Test
+    void theOwnersMarginIsWhatThePatientPaidLessTheDentist() {
+        // The clinic's default policy: the whole difference is the owner's, which is what
+        // a service charge on top of the dentist's own fees is for.
+        treat();
+        billing.issue(AppointmentTestFixture.reception(), appointmentNo);
+
+        var split = billing.revenueFor(AppointmentTestFixture.admin(), appointmentNo);
+
+        assertEquals(new BigDecimal("3600.00"), split.dentistEarning());
+        assertEquals(new BigDecimal("1600.00"), split.clinicEarning());
+        assertEquals(new BigDecimal("0.00"), split.receptionistEarning());
     }
 
     // --- the defect: billing twice ------------------------------------
@@ -281,7 +295,7 @@ class BillingServiceTest {
                 new com.sunrise.clinic.scheduling.service.ReferenceService(
                         fresh.dentists, fresh.treatments),
                 fresh.clinicAccess, new StandardBillingStrategy(),
-                new DefaultRevenueSplitStrategy(new BigDecimal("0.60")),
+                new DefaultRevenueSplitStrategy(new BigDecimal("0.60"), BigDecimal.ZERO),
                 new BigDecimal("200.00"), new SerialTransactionRunner());
 
         assertThrows(IllegalStateException.class,
