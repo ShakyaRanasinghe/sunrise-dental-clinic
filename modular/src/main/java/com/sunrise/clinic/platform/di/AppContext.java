@@ -10,6 +10,9 @@ import com.sunrise.clinic.platform.audit.AuditRepository;
 import com.sunrise.clinic.platform.config.AppConfig;
 import com.sunrise.clinic.platform.data.JdbcTransactionRunner;
 import com.sunrise.clinic.platform.data.TransactionRunner;
+import com.sunrise.clinic.patients.data.PatientDao;
+import com.sunrise.clinic.patients.data.PatientRepository;
+import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.platform.db.Database;
 
 /**
@@ -59,11 +62,13 @@ public class AppContext implements AutoCloseable {
     // Repositories are private on purpose - see the note above.
     private final UserRepository users;
     private final AuditRepository auditEvents;
+    private final PatientRepository patients;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
     private final AuthService authService;
     private final UserAccountFactory accountFactory;
+    private final PatientService patientService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -72,10 +77,12 @@ public class AppContext implements AutoCloseable {
 
         this.users = new UserDao(database);
         this.auditEvents = new AuditDao(database);
+        this.patients = new PatientDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
         this.accountFactory = new UserAccountFactory(users);
+        this.patientService = new PatientService(patients);
     }
 
     public AppConfig config() {
@@ -92,6 +99,11 @@ public class AppContext implements AutoCloseable {
 
     public LoginAttemptService loginAttemptService() {
         return loginAttempts;
+    }
+
+    /** The patient register. */
+    public PatientService patientService() {
+        return patientService;
     }
 
     public UserAccountFactory accountFactory() {

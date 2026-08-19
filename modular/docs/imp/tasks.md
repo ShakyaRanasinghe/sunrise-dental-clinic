@@ -200,19 +200,43 @@ Medical notes are **deferred to step 8** — they need nothing from here and the
 
 ### 3a — `patients`
 
-- [ ] `patients/domain` ← `Patient`; **new** `PatientResponse` — closes part of the `toString()` defect
-- [ ] `patients/data` ← `PatientRepository`, `PatientDao`, `InMemoryPatientRepository`
-- [ ] `patients/web` ← `PatientRecordsServlet`, `PatientApiServlet`
-- [ ] **New** `patients/service/PatientService` — the two servlets currently call the repository
+- [x] `patients/domain` ← `Patient`; **new** `PatientResponse` — closes part of the `toString()` defect
+- [x] `patients/data` ← `PatientRepository`, `PatientDao`, `InMemoryPatientRepository`
+- [x] `patients/web` ← `PatientRecordsServlet`, `PatientApiServlet`
+- [x] **New** `patients/service/PatientService` — the two servlets currently call the repository
       directly
-- [ ] `PatientServiceTest`
+- [x] `PatientServiceTest`
 
 ### Fix on the way
-- [ ] `POST /api/patients` requires `RECEPTIONIST` or `ADMIN`
-- [ ] It must **not** inherit the caller's uid as `user_uid` — that is what gave one patient two
+- [x] `POST /api/patients` requires `RECEPTIONIST` or `ADMIN`
+- [x] It must **not** inherit the caller's uid as `user_uid` — that is what gave one patient two
       profile rows
 
-- [ ] `refactor(patients): move the register and extract PatientService`
+- [x] `refactor(patients): move the register and extract PatientService`
+
+#### Beyond the list, and why
+- [x] **`READ_PATIENT_RECORD`, a new action.** The contract lets a dentist read one patient record
+      but not list the register, and `SEARCH_PATIENTS` could not express both. Searching the whole
+      register is a front-desk capability; reading the record of the patient in the chair is a
+      clinical one, so it is two actions rather than one with an exception
+- [x] **`REGISTER_PATIENT` granted to `ADMIN`.** It already held `SEARCH_PATIENTS`, `CANCEL_ANY` and
+      `ISSUE_BILL`, and the contract says reception *or* admin — lacking this one was an
+      inconsistency, and `PatientServiceTest` caught it
+- [x] **The duplicate warning, FR-REC-25.** Cheap here and part of what registering means; a warning
+      never a refusal, because a household shares a number
+- [x] **Navigation declared by the role.** `RolePolicy.navigation()`, so the header loops instead of
+      carrying a chain of role tests — a switch on role written in the least testable file in the
+      project, edited every time any module adds a screen
+- [ ] **Still outstanding: `PUT /api/patients/{id}` — FR-REC-24.** The register can add and search
+      but not correct a mistyped number. Not in this step's list; carried forward
+
+#### Found while running it
+- [x] **Jakarta EL 5.0 does not resolve a record's accessor as a property.** `${item.path}` on a
+      record raised `PropertyNotFoundException`, because EL looks for `getPath()`. Fixed by calling
+      the accessor as a method — `${item.path()}` — which the codebase already does for
+      `user.policy()`, rather than adding getter boilerplate to every response record. This will
+      apply to every `…Response` record in the steps that follow
+
 
 ### 3b — `scheduling` · biggest data layer
 
