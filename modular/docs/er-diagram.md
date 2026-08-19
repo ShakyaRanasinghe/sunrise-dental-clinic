@@ -1,10 +1,10 @@
 # Entity–Relationship Design
 
 Database design for the Sunrise Dental Clinic Appointment & Patient Management System.
-Eleven tables, MySQL 8, InnoDB throughout.
+Fourteen tables, MySQL 8, InnoDB throughout.
 
 This document is generated from the live schema in
-[`../src/main/resources/schema.sql`](../src/main/resources/schema.sql) — if the two ever
+[`../../layered/src/main/resources/schema.sql`](../../layered/src/main/resources/schema.sql) — if the two ever
 disagree, the schema is right and this file is stale.
 
 ---
@@ -96,6 +96,16 @@ erDiagram
         bool active
     }
 
+    PATIENT_NOTE {
+        varchar id PK
+        varchar patient_id FK
+        enum category "ALLERGY MEDICATION CONDITION OTHER"
+        varchar detail "written by the patient, not by staff"
+        bool critical "surfaces as a banner to the treating dentist"
+        timestamp created_at
+        timestamp updated_at
+    }
+
     DENTIST_SESSION {
         varchar id PK
         varchar dentist_id FK
@@ -162,6 +172,31 @@ erDiagram
         timestamp sent_at
     }
 
+    COMPLAINT {
+        varchar id PK
+        varchar patient_id FK "who raised it"
+        varchar dentist_id FK "who it names - never shown to them"
+        varchar appointment_no FK "optional, the visit it concerns"
+        enum category "CONDUCT CLINICAL_CONCERN WAIT_TIME BILLING OTHER"
+        text detail "the patient's own account, never edited by staff"
+        enum status "SUBMITTED UNDER_REVIEW RESOLVED DISMISSED"
+        timestamp submitted_at
+        varchar reviewed_by_uid "the administrator"
+        varchar resolution "required when closing"
+        timestamp resolved_at
+    }
+
+    DENTIST_REVIEW {
+        varchar id PK
+        varchar appointment_no FK "UNIQUE - one review per visit"
+        varchar dentist_id FK
+        varchar patient_id FK "the author, never shown to the dentist"
+        tinyint rating "1 to 5"
+        varchar comment "optional"
+        timestamp submitted_at
+        timestamp updated_at "editable for 30 days"
+    }
+
     AUDIT_EVENT {
         varchar id PK
         varchar actor_uid "who did it"
@@ -184,6 +219,13 @@ erDiagram
     DENTIST_SESSION ||--o{ SLOT         : "divides into"
     SLOT         |o--o| APPOINTMENT     : "booked as"
 
+    PATIENT      ||--o{ PATIENT_NOTE : "declares"
+    PATIENT      ||--o{ COMPLAINT : "raises"
+    DENTIST      ||--o{ COMPLAINT : "named in"
+    APPOINTMENT  |o--o{ COMPLAINT : "concerns"
+    APPOINTMENT  ||--o| DENTIST_REVIEW : "rated by"
+    DENTIST      ||--o{ DENTIST_REVIEW : "rated"
+    PATIENT      ||--o{ DENTIST_REVIEW : "writes"
     PATIENT      ||--o{ APPOINTMENT : "books"
     DENTIST      ||--o{ APPOINTMENT : "treats"
     TREATMENT    |o--o{ APPOINTMENT : "type of"
@@ -219,25 +261,42 @@ their own tables would create rows with nothing in them.
 
 | Role | Reads | Writes |
 |---|---|---|
-| **Patient** | own `appointment`, own `bill`, `slot` (open only), `dentist`, `treatment` | `appointment` (book, cancel), own `patient` row at registration |
-| **Receptionist** | all `patient`, `appointment`, `slot`, `dentist`, `treatment` | `patient` (walk-in), `dentist_session` + `slot` (publish availability), `appointment` (book on behalf), `bill` (issue) |
-| **Dentist** | own `slot`, own `appointment` incl. `diagnosis` | `appointment.diagnosis`, `appointment.status` → `COMPLETED` |
-| **Admin** | `bill` and `appointment` aggregates, `user_account`, `audit_event` | `user_account` (unlock, activate) |
+| **Patient** | own `appointment`, own `bill`, **own `patient_note`**, **own `complaint`**, **own `dentist_review`**, `slot` (open only), `dentist`, `treatment` | `appointment` (book, cancel), own `patient` row at registration, **own `patient_note`**, **insert `complaint`** |
+| **Receptionist** | all `patient`, `appointment`, `slot`, `dentist`, `treatment`. **Never `patient_note`, never `complaint`, never `dentist_review`** | `patient` (walk-in), `dentist_session` + `slot` (publish availability), `appointment` (book on behalf), `bill` (issue) |
+| **Dentist** | own `slot`, own `appointment` incl. `diagnosis`, **`patient_note` for patients on their own schedule**. **Never `complaint`, including complaints naming them**. **`dentist_review` as an aggregate only** — mean and count, never a row | `appointment.diagnosis`, `appointment.status` → `COMPLETED` |
+| **Admin** | `bill` and `appointment` aggregates, `user_account`, `audit_event`, **all `complaint`**, **all `dentist_review`** including comments. **Never `patient_note`** | `user_account` (unlock, deactivate), `complaint.status` and `complaint.resolution` |
 
-Two constraints on that table are enforced in code rather than in the schema, and both are
-worth stating in the report:
+Three constraints are enforced in code rather than in the schema, and all three are worth
+stating in the report:
 
 - **`appointment.diagnosis` is field-level confidential.** Only the treating dentist and the
   patient may see it. Enforced by serving a different DTO to everyone else, so the column
   cannot leak through a shared response object by accident.
+- **`patient_note` is confidential at the table level**, not the field level. It is readable
+  only by the patient who wrote it and by a dentist treating them. Reception books the
+  appointment without ever learning the patient is allergic to penicillin; the administrator
+  reads revenue without seeing any clinical fact. Enforced the same way — no response object
+  served to those roles carries a field for it.
+- **`complaint` is confidential in the opposite direction to `patient_note`.** The administrator
+  reads it; the dentist it names never does, and neither does reception. Two tables, two rules
+  pointing opposite ways, and neither follows from seniority — access follows purpose. The
+  dentist has clinical need of an allergy; independence requires that the subject of a complaint
+  cannot read it.
+- **`dentist_review` is the one table read at three different resolutions.** The administrator
+  reads rows with comments and authors; the dentist reads a mean and a count and nothing else
+  (**NFR-SEC-13**); reception reads nothing. Same table, three answers — which is why the
+  aggregate is a separate query rather than a filter over the row response, and why the dentist's
+  response object has no field that could carry a comment.
 - **Every mutation writes an `audit_event`** carrying the actor's uid and role, which is how
-  a paper-trail question ("who moved this appointment?") is answerable at all.
+  a paper-trail question ("who moved this appointment?") is answerable at all. Every *read* of a
+  complaint is audited too (**FR-CMP-11**) — unusual, and justified because the data is sensitive
+  enough that who looked at it matters.
 
 ---
 
 ## 4. Referential integrity — enforced and not
 
-Nine foreign keys are declared:
+Sixteen foreign keys are declared:
 
 | Constraint | From | To |
 |---|---|---|
@@ -245,6 +304,13 @@ Nine foreign keys are declared:
 | `fk_dentist_user` | `dentist.user_uid` | `user_account.uid` |
 | `fk_session_dentist` | `dentist_session.dentist_id` | `dentist.id` |
 | `fk_slot_session` | `slot.session_id` | `dentist_session.id` |
+| `fk_note_patient` | `patient_note.patient_id` | `patient.id` |
+| `fk_complaint_patient` | `complaint.patient_id` | `patient.id` |
+| `fk_complaint_dentist` | `complaint.dentist_id` | `dentist.id` |
+| `fk_complaint_appointment` | `complaint.appointment_no` | `appointment.appointment_no`, `ON DELETE SET NULL` |
+| `fk_review_appointment` | `dentist_review.appointment_no` | `appointment.appointment_no`, `UNIQUE` |
+| `fk_review_dentist` | `dentist_review.dentist_id` | `dentist.id` |
+| `fk_review_patient` | `dentist_review.patient_id` | `patient.id` |
 | `fk_appt_patient` | `appointment.patient_id` | `patient.id` |
 | `fk_appt_dentist` | `appointment.dentist_id` | `dentist.id` |
 | `fk_appt_treatment` | `appointment.treatment_id` | `treatment.id` |
@@ -292,6 +358,13 @@ example than a trigger invented for the sake of having one.
 | `DENTIST` — `DENTIST_SESSION` | 1 to many. A dentist works many published sessions. |
 | `DENTIST_SESSION` — `SLOT` | 1 to many. A session divides into fixed-length slots. |
 | `SLOT` — `APPOINTMENT` | 0..1 to 0..1. A slot is open or holds exactly one appointment. |
+| `PATIENT` — `PATIENT_NOTE` | 1 to 0..*. Declared by the patient after signing in, never at registration. Cascades on delete. |
+| `PATIENT` — `COMPLAINT` | 1 to 0..*. Raised by the patient, never edited by them afterwards. |
+| `DENTIST` — `COMPLAINT` | 1 to 0..*. The dentist named. **No query path exists from a dentist to this table.** |
+| `APPOINTMENT` — `COMPLAINT` | 0..1 to 0..*. Optional. `SET NULL` so a complaint outlives a tidied appointment (**FR-DAT-06**). |
+| `APPOINTMENT` — `DENTIST_REVIEW` | 1 to 0..1. `UNIQUE (appointment_no)` is what enforces one review per visit (**FR-DAT-07**), rather than a check that could be raced. |
+| `DENTIST` — `DENTIST_REVIEW` | 1 to 0..*. The dentist reads an aggregate of these rows and never a row. |
+| `PATIENT` — `DENTIST_REVIEW` | 1 to 0..*. The author. **No query path exists from a dentist to this column.** |
 | `PATIENT` — `APPOINTMENT` | 1 to many. |
 | `DENTIST` — `APPOINTMENT` | 1 to many. |
 | `TREATMENT` — `APPOINTMENT` | 0..1 to many. Treatment is decided at booking and may be null until then. |
@@ -309,6 +382,6 @@ in [`er-diagram.mmd`](er-diagram.mmd) for pasting into a report or any Mermaid r
 To check this document still matches reality:
 
 ```bash
-grep -c 'CREATE TABLE' layered/src/main/resources/schema.sql   # expect 11
-grep -c 'FOREIGN KEY'  layered/src/main/resources/schema.sql   # expect 9
+grep -c 'CREATE TABLE' modular/src/main/resources/schema.sql   # expect 14
+grep -c 'FOREIGN KEY'  modular/src/main/resources/schema.sql   # expect 16
 ```
