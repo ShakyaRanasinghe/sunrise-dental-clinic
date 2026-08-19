@@ -35,16 +35,22 @@ The order is not arbitrary. **Each module depends only on modules already migrat
 compiles and the tests run green at every step. Migrate out of order and the tree is broken until
 the last file lands.
 
-| # | Module | Depends on | Classes | Why here |
-|---|---|---|---|---|
-| 1 | `platform` | nothing | ~24 | Safest first move. Proves the new `pom.xml` and layout work before anything valuable depends on them |
-| 2 | `access` | 1 | ~20 | Everything else needs a principal. The role work lands here |
-| 3 | `patients` | 1, 2 | ~8 | Small and self-contained. Extract the missing `PatientService` |
-| 4 | `scheduling` | 1, 2 | ~20 | The biggest data layer. Nothing depends on it yet, so mistakes are cheap |
-| 5 | `appointments` | 1–4 | ~17 | The heart of the system. Slow down here |
-| 6 | `billing` | 1, 2, 5 | ~13 | Strategy classes rejoin the feature they price |
-| 7 | `notifications` | 1, 5 | ~12 | Natural moment to make email and SMS actually send |
-| 8 | `reporting` + `feedback` | 1, 2, 5, 6 | ~14 | Last, because they read from billing and appointments |
+| # | Module | Depends on | Classes | Deployable after | Why here |
+|---|---|---|---|---|---|
+| 1 | `platform` | nothing | ~24 | help page | Safest first move. Proves the `pom.xml` and layout before anything valuable depends on them |
+| 2 | `access` + stub landings | 1 | ~31 | **yes** | Everything needs a principal. Four stub landings so sign-in goes somewhere |
+| 3 | `patients` + `scheduling` | 1, 2 | ~31 | yes | Merged: neither owns a landing page, and they are the reference data `appointments` needs |
+| 4 | `appointments` | 1–3 | ~17 | **yes** | The heart of the system, and the step where it starts looking like the prototype |
+| 5 | `billing` | 1, 2, 4 | ~13 | **yes** | Strategies rejoin the feature they price. All six brief functions work after this |
+| 6 | `notifications` | 1, 4 | ~12 | yes | Natural moment to make email and SMS actually send |
+| 7 | `reporting` | 1, 2, 4, 5 | ~9 | yes | Reads from billing and appointments |
+| 8 | `feedback` + medical notes | 1–5 | ~25 new | yes | All new work. Last because it depends on appointments and billing |
+
+**Dependency order alone was not enough.** The first version of this plan put `patients` and
+`scheduling` as separate steps 3 and 4, which meant no role landing page resolved until step 5 — so
+for four steps a signed-in user hit a 404. Two changes fix it without breaking any dependency: four
+throwaway stub landings in step 2, and merging the two modules that own no landing page. Traced in
+[`imp/README.md`](imp/README.md).
 
 ---
 
