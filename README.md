@@ -102,8 +102,8 @@ so each is implemented here — which is the substance of the project.
 
 ```bash
 # 1. Create the schema and load the demo data
-mysql -u root -p < backend/src/main/resources/schema.sql
-mysql -u root -p sunrise_dental < backend/src/main/resources/demo-data.sql
+mysql -u root -p < layered/src/main/resources/schema.sql
+mysql -u root -p sunrise_dental < layered/src/main/resources/demo-data.sql
 
 # 2. Point the application at your database (or edit clinic.properties)
 export DB_URL="jdbc:mysql://localhost:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
@@ -111,7 +111,7 @@ export DB_USER=root
 export DB_PASSWORD=yourpassword
 
 # 3. Build the WAR
-cd backend && mvn package
+cd layered && mvn package
 
 # 4. Deploy it
 cp target/clinic.war "$CATALINA_HOME/webapps/"
@@ -139,7 +139,7 @@ All use the password `Password123`.
 ## ✅ Testing
 
 ```bash
-cd backend && mvn test
+cd layered && mvn test
 ```
 
 48 JUnit 5 tests covering the booking workflow (including a **concurrency test** that fires
