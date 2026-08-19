@@ -13,13 +13,13 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 
 | | |
 |---|---|
-| **Active step** | **6 — `notifications`**, or **8 — feedback**, or **9 — verify and report** |
-| Steps complete | **6 of 9** — through `billing`, plus `reporting`. **All six of the brief's functions work, and every role lands on a real screen** |
+| **Active step** | **9 — verify and report** (6 — `notifications` remains optional) |
+| Steps complete | **7 of 9** — everything but `notifications` and the final verification. **All six of the brief's functions work; every page resolves** |
 | First deployable | **done** — sign in as any of the four roles at http://localhost:8080 |
 | First real screen | **done** — the patient register and publish-availability |
 | Core journey working | **done** — publish, book, day view, schedule, diagnosis |
 | `layered/` | **out of scope** — source and history only, not run or shipped |
-| `modular/` | 135 Java files, 25 views, **207 tests green**, deploys and answers |
+| `modular/` | 168 Java files, 29 views, **266 tests green**, deploys and answers |
 
 ```
  0  decide what ships          ◻  ← START HERE, blocks everything
@@ -30,7 +30,7 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
  5  billing                    ✅  14 classes · receipt · 34 tests · 4 defects fixed
  6  notifications              ◻   email and SMS actually send
  7  reporting                  ✅  14 classes · 3 admin screens · 23 tests · no stubs left
- 8  feedback + medical notes   ◻   complaints, reviews, notes
+ 8  feedback + medical notes   ✅  33 classes · notes, complaints, reviews · 59 tests
  9  verify and report          ◻
 ```
 

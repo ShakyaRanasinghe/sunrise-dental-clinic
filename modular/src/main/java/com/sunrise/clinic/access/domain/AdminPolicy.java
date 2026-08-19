@@ -58,6 +58,7 @@ public final class AdminPolicy extends RolePolicy {
         return List.of(
                 new NavItem("Reports", "/admin/reports"),
                 new NavItem("Accounts", "/admin/accounts"),
+                new NavItem("Complaints", "/admin/complaints"),
                 new NavItem("Audit", "/admin/audit"));
     }
 }
