@@ -60,7 +60,7 @@ table (**FR-AUTH-04**). The four values are `/patient/home`, `/reception/home`,
 {
   "errorCode": "invalid_credentials",
   "message": "Incorrect email or password.",
-  "lockStatus": { "locked": false, "attemptsRemaining": 4, "retryAfterSeconds": 0 }
+  "lockStatus": { "locked": false, "attemptsRemaining": 4 }
 }
 ```
 
@@ -69,13 +69,16 @@ table (**FR-AUTH-04**). The four values are `/patient/home`, `/reception/home`,
 ```json
 {
   "errorCode": "account_locked",
-  "message": "This account is temporarily locked. Please try again later.",
-  "lockStatus": { "locked": true, "attemptsRemaining": 0, "retryAfterSeconds": 86400 }
+  "message": "This account is locked. Please contact the clinic to have it unlocked.",
+  "lockStatus": { "locked": true, "attemptsRemaining": 0 }
 }
 ```
 
-The lock lasts 24 hours or until an administrator clears it. `attemptsRemaining` counts down
-from 5 and resets on any successful sign-in.
+The lock does **not** expire. It stands until an administrator clears it with
+`POST /api/auth/unlock` — NFR-SEC-03. An earlier draft auto-unlocked after 24 hours and reported
+`retryAfterSeconds`; both were dropped, because an account that quietly unlocks itself is a weaker
+guarantee than one that does not, and a countdown told the caller to wait for something that never
+arrives. `attemptsRemaining` counts down from 5 and resets on any successful sign-in.
 
 **`400`** — a missing field:
 
@@ -173,7 +176,7 @@ curl -s -b admin-jar.txt -X POST http://localhost:8080/api/auth/unlock \
 **`200 OK`** — the resulting state, so a client need not re-query:
 
 ```json
-{ "locked": false, "attemptsRemaining": 5, "retryAfterSeconds": 0 }
+{ "locked": false, "attemptsRemaining": 5 }
 ```
 
 Unlocking an account that is not locked succeeds and returns the same shape — the operation
@@ -221,7 +224,7 @@ curl -s -b jar.txt 'http://localhost:8080/api/auth/lock-status?email=nimal@examp
 **`200 OK`**
 
 ```json
-{ "locked": true, "attemptsRemaining": 0, "retryAfterSeconds": 83422 }
+{ "locked": true, "attemptsRemaining": 0 }
 ```
 
 **Gap.** No role check. Any authenticated caller can probe any address and learn whether it
@@ -235,7 +238,7 @@ is a registered account under attack. It should require `ADMIN`.
 |---|---|
 | Passwords stored only as PBKDF2, 120,000 iterations, per-user salt | NFR-SEC-01 |
 | Hash comparison is constant-time | NFR-SEC-02 |
-| Lock after 5 consecutive failures, for 24 hours | NFR-SEC-03 |
+| Lock after 5 consecutive failures, until an administrator unlocks | NFR-SEC-03 |
 | Session cookie is `HttpOnly` | NFR-SEC-04 |
 | Session expires after 30 minutes idle | NFR-SEC-05 |
 | `password_hash` is never serialised by any endpoint | FR-ADM-25 |

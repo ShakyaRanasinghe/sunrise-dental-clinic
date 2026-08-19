@@ -1,0 +1,46 @@
+<%--
+    Shared page header: brand, role-appropriate navigation, signed-in user.
+    Included by every page, so the navigation is defined once.
+
+    Every value written out uses <c:out>, which escapes HTML. A patient whose
+    name contained a tag would otherwise have it interpreted as markup - the
+    classic stored cross-site scripting hole.
+--%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="user" value="${requestScope.currentUser}" />
+<%--
+    The doctype must be the very first thing the browser receives. Without it
+    every page renders in quirks mode, where the box model differs and the
+    stylesheet's widths and paddings are computed against the wrong rules.
+    trimDirectiveWhitespaces in web.xml is what keeps it on line 1 - directives
+    and comments each leave their trailing newline in the output otherwise, and
+    nine blank lines preceded this tag.
+--%>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><c:out value="${empty pageTitle ? 'Sunrise Dental Clinic' : pageTitle}" /> &mdash; Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="${ctx}/css/app.css">
+</head>
+<body>
+<c:if test="${not empty user}">
+    <header class="site-header">
+        <div class="bar">
+            <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
+            <nav class="site-nav">
+                <a href="${ctx}${user.policy().homePath()}" class="active">Home</a>
+                <a href="${ctx}/help">Help</a>
+            </nav>
+            <div class="who">
+                <c:out value="${user.displayName}" />
+                <span class="role-tag"><c:out value="${user.role}" /></span>
+                <form method="post" action="${ctx}/logout" style="display:inline">
+                    <button type="submit" class="btn small secondary">Sign out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+</c:if>
+<main>

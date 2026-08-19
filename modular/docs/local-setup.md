@@ -125,7 +125,7 @@ grep -rnE 'app\(\)\.[a-z]+(Repository|Dao)\(\)'    --include='*.java' \
 
 # 6. the tests
 mvn -f modular/pom.xml test
-#    -> 0 tests until step 1; then all green, and no database needed
+#    -> 64 tests, all green, and no database needed
 ```
 
 ---
@@ -171,6 +171,8 @@ Mermaid diagrams — the ER and class diagrams — render on GitHub with no tool
 |---|---|---|
 | Host `mysqld` occupies 3306 and rejects `root` | Socket authentication | Use 3308, as the script does |
 | `/help` is the only route that answers before step 1 | Nothing else is migrated | Expected. `dev-up.sh` says so and exits cleanly |
+| An unknown path redirects to `/login` when signed out, but 404s when signed in | The filter treats any unmatched path as protected, so it does not reveal which addresses exist to someone who is not signed in | Intended |
+| A role's page answers 403 rather than redirecting to your own home | A redirect would suggest the address was wrong, when it exists and is not yours | Intended |
 | Tomcat fails to start with `ClassNotFoundException` | `web.xml` names all 32 servlets, and they arrive module by module | Expected mid-migration. `docker logs sunrise-tomcat` names the missing class |
 | First `dev-up.sh` run is slow | Pulls `mysql:8.0` and `tomcat:10.1-jdk17-temurin` | One-off, a few hundred MB |
 | `mvn` warns about a missing `maven-war-plugin` webapp directory | `webapp/` had only `WEB-INF` until views arrive | Harmless |
@@ -187,6 +189,8 @@ Mermaid diagrams — the ER and class diagrams — render on GitHub with no tool
 - [x] `modular/pom.xml` packages a WAR
 - [x] `web.xml` written and verified against the servlet contract
 - [x] `dev-up.sh` reproduces the whole environment from nothing
-- [ ] First classes migrated — **step 1 of [`imp/tasks.md`](imp/tasks.md)**
+- [x] `platform` migrated — step 1, 18 classes, 15 tests
+- [x] `access` migrated and **deployed** — step 2, four portals, 64 tests total
+- [ ] `patients` + `scheduling` — **step 3 of [`imp/tasks.md`](imp/tasks.md)**
 
-Everything above the last line is done. The environment is not the blocker.
+The application answers on http://localhost:8080. Sign in at `/login` and pick a portal.

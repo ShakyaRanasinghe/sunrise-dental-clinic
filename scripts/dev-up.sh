@@ -124,7 +124,11 @@ if curl -sf -o /dev/null "http://localhost:$PORT/help"; then
 EOF
 else
   echo
-  echo "    /help did not answer. Most likely the listener failed on a class that"
-  echo "    has not been migrated yet. Check:  docker logs $APP" >&2
+  # The first version of this message blamed a missing class, which sent the
+  # first real failure down the wrong path: the container had started cleanly and
+  # every request was answering 500 from a JSP compile error. Point at both.
+  echo "    /help did not answer. Two things to check, in this order:" >&2
+  echo "      docker logs $APP              — a listener or missing class fails here" >&2
+  echo "      curl -s localhost:$PORT/help  — a 500 body carries the JSP or servlet error" >&2
   exit 1
 fi
