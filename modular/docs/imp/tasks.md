@@ -97,55 +97,84 @@ sign-in works it goes somewhere rather than to a 404 — see [`README.md`](READM
 matters.
 
 ### Inherited from step 1 — could not move without `access`
-- [ ] `platform/web` ← `BaseServlet`, `PageServlet`, `HelpServlet`
-- [ ] `platform/di` ← `AppContext`, `ClinicServletContext` — partially wired; stub the accessors
+- [x] `platform/web` ← `BaseServlet`, `PageServlet`, `HelpServlet`
+- [x] `platform/di` ← `AppContext`, `ClinicServletContext` — partially wired; stub the accessors
       later modules will supply, and keep the `TODO` list in the class
 
 ### Move
-- [ ] `access/domain` ← `UserAccount`, `Role`, `ClinicPrincipal`
-- [ ] `access/service` ← `AuthService`, `PasswordHasher`, `LoginAttemptService`, `AccessControl`
-- [ ] `access/data` ← `UserRepository`, `UserDao`, `InMemoryUserRepository`
-- [ ] `access/web` ← `AuthenticationFilter`, `HomeServlet`, `LogoutServlet`, `RegisterServlet`,
+- [x] `access/domain` ← `UserAccount`, `Role`, `ClinicPrincipal`
+- [x] `access/service` ← `AuthService`, `PasswordHasher`, `LoginAttemptService`, `AccessControl`
+- [x] `access/data` ← `UserRepository`, `UserDao`, `InMemoryUserRepository`
+- [x] `access/web` ← `AuthenticationFilter`, `HomeServlet`, `LogoutServlet`, `RegisterServlet`,
       `AuthApiServlet`
-- [ ] Move `AuthServiceTest`, `PasswordHasherTest`, `LoginAttemptServiceTest`
+- [x] Move `AuthServiceTest`, `PasswordHasherTest`, `LoginAttemptServiceTest`
 
 ### New
-- [ ] `access/domain/Action` — the enum of things a role may do
-- [ ] `access/domain/RolePolicy` abstract + `PatientPolicy`, `ReceptionPolicy`, `DentistPolicy`,
+- [x] `access/domain/Action` — the enum of things a role may do
+- [x] `access/domain/RolePolicy` abstract + `PatientPolicy`, `ReceptionPolicy`, `DentistPolicy`,
       `AdminPolicy` — FR-OOP-04
-- [ ] Replace the 28 `Role.X` checks with `AccessControl.require(user, Action)` — grep
+- [x] Replace the 28 `Role.X` checks with `AccessControl.require(user, Action)` — grep
       `Role\.\(PATIENT\|RECEPTIONIST\|DENTIST\|ADMIN\)` to find them all
-- [ ] `access/web/AbstractLoginServlet` — the whole authentication sequence, once
-- [ ] `PatientLoginServlet`, `ReceptionLoginServlet`, `DentistLoginServlet`, `AdminLoginServlet` —
+- [x] `access/web/AbstractLoginServlet` — the whole authentication sequence, once
+- [x] `PatientLoginServlet`, `ReceptionLoginServlet`, `DentistLoginServlet`, `AdminLoginServlet` —
       4–6 lines each
-- [ ] `access/web/PortalChooserServlet`
-- [ ] `access/service/UserAccountFactory` — FR-ADM-20…22
-- [ ] `access/web/AccountApiServlet` — `POST /api/accounts`
-- [ ] Views: `access/login-form.jspf` + four portal JSPs + `portal-chooser.jsp`, from
+- [x] `access/web/PortalChooserServlet`
+- [x] `access/service/UserAccountFactory` — FR-ADM-20…22
+- [x] `access/web/AccountApiServlet` — `POST /api/accounts`
+- [x] Views: `access/login-form.jspf` + four portal JSPs + `portal-chooser.jsp`, from
       [`../prototype/access/`](../prototype/access/)
-- [ ] `RolePolicyTest`, `AbstractLoginServletTest`
+- [x] `RolePolicyTest`, `AbstractLoginServletTest`
 
 ### Stub landings — four small JSPs so sign-in has somewhere to go
-- [ ] `shared/stub-home.jspf` — the real header and navigation from
+- [x] `shared/stub-home.jspf` — the real header and navigation from
       [`../prototype/`](../prototype/), plus "Signed in as … — this screen arrives in step N"
-- [ ] `appointments/patient-home.jsp`, `reception-day.jsp`, `dentist-schedule.jsp` — stubs including
+- [x] `appointments/patient-home.jsp`, `reception-day.jsp`, `dentist-schedule.jsp` — stubs including
       only the stub fragment. Step 4 fills them in
-- [ ] `reporting/reports.jsp` — stub. Step 7 fills it in
-- [ ] Four throwaway servlets to render them, or one `StubHomeServlet` mapped four times and deleted
+- [x] `reporting/reports.jsp` — stub. Step 7 fills it in
+- [x] Four throwaway servlets to render them, or one `StubHomeServlet` mapped four times and deleted
       at step 4. **Note in the class comment that it is temporary**
 
 ### Fix on the way
-- [ ] Persist lock-out state — `user_account.failed_attempts` and `locked` exist and nothing
+- [x] Persist lock-out state — `user_account.failed_attempts` and `locked` exist and nothing
       writes them, so any restart clears every lock
-- [ ] `GET /api/auth/lock-status` requires `ADMIN`
+- [x] `GET /api/auth/lock-status` requires `ADMIN`
 
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] **Deploy it.** `mvn package`, drop the WAR on Tomcat 10.1, load `schema.sql` +
+- [x] Gate 1 + 2 + 3 pass
+- [x] **Deploy it.** `mvn package`, drop the WAR on Tomcat 10.1, load `schema.sql` +
       `procedures.sql` + `demo-data.sql`
-- [ ] Sign in through all four portals with the seeded accounts and land on a page
-- [ ] Confirm a wrong-portal sign-in gives the same message as a wrong password — FR-AUTH-03
-- [ ] Confirm five failures lock the account, and an administrator can unlock it
-- [ ] `refactor(access): move identity and add the four role portals`
+- [x] Sign in through all four portals with the seeded accounts and land on a page
+- [x] Confirm a wrong-portal sign-in gives the same message as a wrong password — FR-AUTH-03
+- [x] Confirm five failures lock the account, and an administrator can unlock it
+- [x] `refactor(access): move identity and add the four role portals`
+
+### Found by running it, and fixed in this step
+Four defects that reading the code did not surface. Recorded because each is the kind that would
+have reached the report as a working feature.
+
+- [x] **A signed-in patient could open all four role landing pages** — 200, not 403.
+      `AuthenticationFilter` authenticated and deliberately left every role check to the servlets,
+      and `StubHomeServlet` checked nothing. Fixed by adding a *coarse* prefix check to the filter,
+      derived from `RolePolicy.ownedPrefix()` so it is not a second list of URL patterns; the
+      fine-grained `AccessControl.require` checks stay in the servlets. `RolePolicyTest` now asserts
+      the exclusivity the check depends on, so a fifth role cannot quietly break it
+- [x] **No page carried `<!doctype html>`** — every screen rendered in quirks mode, so the
+      stylesheet's box model was computed against the wrong rules. Nine directive newlines sat where
+      the doctype belonged; `trim-directive-whitespaces` in `web.xml` plus the doctype in
+      `header.jspf` fixes it for every view at once
+- [x] **The lock-out message said "temporarily locked … try again later"** while the same SRS row
+      said an administrator must clear it. The 24-hour expiry was removed earlier and the copy was
+      not. Corrected in `AuthService`, `help.jsp`, the prototype, `srs-patient.md` and `api/auth.md`,
+      along with the `retryAfterSeconds` field that no longer exists
+- [x] **An anonymous API call was refused 403 `forbidden` on `/api/auth/lock-status`** but 401
+      `unauthenticated` everywhere else — the same condition reported two ways, because
+      `/api/auth/` is in the filter's public list and `AccessControl` raised one exception for both
+      "not signed in" and "wrong role". Split into `NotAuthenticatedException`
+
+Also fixed while getting the first deploy to answer: every view used `<c:set>` before
+`header.jspf` declared the `c` prefix, which Jasper refuses outright — the taglib directives moved
+into `shared/taglibs.jspf`, included first by every view. Static includes are now absolute
+(`/WEB-INF/jsp/…`), because a relative `shared/taglibs.jspf` inside `shared/` resolves to
+`shared/shared/`.
 
 **On screen after this step — the first deployable increment.** The portal chooser, four distinct
 sign-in pages, role routing to four landing pages, session timeout, sign-out, lock-out. That

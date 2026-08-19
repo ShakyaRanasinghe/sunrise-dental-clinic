@@ -276,7 +276,7 @@ requires `ADMIN` — see [`srs-admin.md`](srs-admin.md) and [`../api/auth.md`](.
 |---|---|
 | Wrong credentials | Generic failure message; the failed-attempt counter increments |
 | Email already registered | "That email is already registered. Sign in instead?" — with a link to the sign-in page |
-| Account locked | "This account is temporarily locked. Please try again later." — no unlock path for a patient; an administrator must clear it |
+| Account locked | "This account is locked. Please contact the clinic to have it unlocked." — no unlock path for a patient; an administrator must clear it |
 | Session expired mid-booking | Redirect to `/login/patient`; nothing is booked |
 | Slot taken concurrently | Booking rejected, refreshed slot list shown, no partial appointment written |
 | Another patient's appointment number entered | Not found — never "exists but forbidden", which would confirm it exists |

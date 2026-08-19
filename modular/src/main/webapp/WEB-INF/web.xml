@@ -12,10 +12,14 @@
     That document is the contract; if the two disagree, it is right and this is
     stale.
 
-    NOTE: this descriptor is complete for the target design, and the classes it
-    names arrive module by module in the order set out in docs/migration-plan.md.
-    Until the last module lands, `modular` is verified by `mvn test` rather than
-    by deploying it — which is what the plan's gates say.
+    NOTE: this declares what EXISTS, not the whole target. docs/servlets.md is the
+    contract and lists all 32 servlets; each migration step adds its own here as
+    its classes land. Declaring a servlet whose class is missing would let Tomcat
+    start and then answer 500 with a ClassNotFoundException on first request,
+    which is a worse failure than a clean 404.
+
+    After step 2: access is migrated, and four temporary stub mappings stand in
+    for the role landing pages.
 -->
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -49,6 +53,11 @@
             <url-pattern>*.jspf</url-pattern>
             <page-encoding>UTF-8</page-encoding>
             <default-content-type>text/html</default-content-type>
+            <!-- Directives and JSP comments each leave their trailing newline in
+                 the response. Nine of them preceded <!doctype html>, which has to
+                 be the first thing the browser sees or the page renders in quirks
+                 mode. This strips them for every page at once. -->
+            <trim-directive-whitespaces>true</trim-directive-whitespaces>
         </jsp-property-group>
     </jsp-config>
 
@@ -171,160 +180,25 @@
     <!--  patients                                                    -->
     <!-- ============================================================ -->
 
-    <servlet>
-        <servlet-name>PatientRecords</servlet-name>
-        <servlet-class>com.sunrise.clinic.patients.web.PatientRecordsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PatientRecords</servlet-name>
-        <url-pattern>/reception/patients</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>PatientProfile</servlet-name>
-        <servlet-class>com.sunrise.clinic.patients.web.PatientProfileServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PatientProfile</servlet-name>
-        <url-pattern>/patient/profile</url-pattern>
-    </servlet-mapping>
-
     <!-- ============================================================ -->
     <!--  scheduling                                                  -->
     <!-- ============================================================ -->
-
-    <servlet>
-        <servlet-name>AvailabilityPage</servlet-name>
-        <servlet-class>com.sunrise.clinic.scheduling.web.AvailabilityPageServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AvailabilityPage</servlet-name>
-        <url-pattern>/reception/availability</url-pattern>
-    </servlet-mapping>
 
     <!-- ============================================================ -->
     <!--  appointments                                                -->
     <!-- ============================================================ -->
 
-    <servlet>
-        <servlet-name>PatientHome</servlet-name>
-        <servlet-class>com.sunrise.clinic.appointments.web.PatientHomeServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PatientHome</servlet-name>
-        <url-pattern>/patient/home</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BookAppointment</servlet-name>
-        <servlet-class>com.sunrise.clinic.appointments.web.BookAppointmentServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BookAppointment</servlet-name>
-        <url-pattern>/patient/book</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ReceptionDay</servlet-name>
-        <servlet-class>com.sunrise.clinic.appointments.web.ReceptionDayServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ReceptionDay</servlet-name>
-        <url-pattern>/reception/home</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>DentistSchedule</servlet-name>
-        <servlet-class>com.sunrise.clinic.appointments.web.DentistScheduleServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DentistSchedule</servlet-name>
-        <url-pattern>/dentist/schedule</url-pattern>
-    </servlet-mapping>
-
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->
-
-    <servlet>
-        <servlet-name>BillingPage</servlet-name>
-        <servlet-class>com.sunrise.clinic.billing.web.BillingPageServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BillingPage</servlet-name>
-        <url-pattern>/reception/billing</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>Receipt</servlet-name>
-        <servlet-class>com.sunrise.clinic.billing.web.ReceiptServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Receipt</servlet-name>
-        <url-pattern>/reception/receipt</url-pattern>
-    </servlet-mapping>
 
     <!-- ============================================================ -->
     <!--  reporting                                                   -->
     <!-- ============================================================ -->
 
-    <servlet>
-        <servlet-name>AdminReports</servlet-name>
-        <servlet-class>com.sunrise.clinic.reporting.web.AdminReportsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AdminReports</servlet-name>
-        <url-pattern>/admin/reports</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>CsvExport</servlet-name>
-        <servlet-class>com.sunrise.clinic.reporting.web.CsvExportServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CsvExport</servlet-name>
-        <url-pattern>/admin/export</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>Accounts</servlet-name>
-        <servlet-class>com.sunrise.clinic.reporting.web.AccountsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Accounts</servlet-name>
-        <url-pattern>/admin/accounts</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>AuditTrail</servlet-name>
-        <servlet-class>com.sunrise.clinic.reporting.web.AuditTrailServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AuditTrail</servlet-name>
-        <url-pattern>/admin/audit</url-pattern>
-    </servlet-mapping>
-
     <!-- ============================================================ -->
     <!--  feedback — complaints and reviews                           -->
     <!-- ============================================================ -->
-
-    <servlet>
-        <servlet-name>PatientComplaints</servlet-name>
-        <servlet-class>com.sunrise.clinic.feedback.web.PatientComplaintsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PatientComplaints</servlet-name>
-        <url-pattern>/patient/complaints</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>AdminComplaints</servlet-name>
-        <servlet-class>com.sunrise.clinic.feedback.web.AdminComplaintsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AdminComplaints</servlet-name>
-        <url-pattern>/admin/complaints</url-pattern>
-    </servlet-mapping>
 
     <!-- ============================================================ -->
     <!--  JSON API                                                    -->
@@ -353,70 +227,33 @@
         <url-pattern>/api/accounts</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>PatientApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.patients.web.PatientApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PatientApi</servlet-name>
-        <url-pattern>/api/patients/*</url-pattern>
-    </servlet-mapping>
+    <!--
+        TEMPORARY - delete at step 4 (three of these) and step 7 (the fourth).
 
+        The four role home paths, so sign-in has somewhere to go before the
+        modules that own these screens are migrated. Without them HomeServlet
+        would redirect a signed-in receptionist to /reception/home and Tomcat
+        would answer 404.
+    -->
     <servlet>
-        <servlet-name>ReferenceApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.scheduling.web.ReferenceApiServlet</servlet-class>
+        <servlet-name>StubHome</servlet-name>
+        <servlet-class>com.sunrise.clinic.access.web.StubHomeServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ReferenceApi</servlet-name>
-        <url-pattern>/api/dentists</url-pattern>
+        <servlet-name>StubHome</servlet-name>
+        <url-pattern>/patient/home</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ReferenceApi</servlet-name>
-        <url-pattern>/api/treatments</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>AvailabilityApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.scheduling.web.AvailabilityApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AvailabilityApi</servlet-name>
-        <url-pattern>/api/availability/*</url-pattern>
+        <servlet-name>StubHome</servlet-name>
+        <url-pattern>/reception/home</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>AvailabilityApi</servlet-name>
-        <url-pattern>/api/sessions</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>AppointmentApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.appointments.web.AppointmentApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AppointmentApi</servlet-name>
-        <url-pattern>/api/appointments/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ComplaintApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.feedback.web.ComplaintApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ComplaintApi</servlet-name>
-        <url-pattern>/api/complaints/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ReviewApi</servlet-name>
-        <servlet-class>com.sunrise.clinic.feedback.web.ReviewApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ReviewApi</servlet-name>
-        <url-pattern>/api/reviews/*</url-pattern>
+        <servlet-name>StubHome</servlet-name>
+        <url-pattern>/dentist/schedule</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ReviewApi</servlet-name>
-        <url-pattern>/api/ratings/*</url-pattern>
+        <servlet-name>StubHome</servlet-name>
+        <url-pattern>/admin/reports</url-pattern>
     </servlet-mapping>
 
     <!-- ============================================================ -->
@@ -436,6 +273,12 @@
     <error-page>
         <error-code>404</error-code>
         <location>/WEB-INF/jsp/shared/not-found.jsp</location>
+    </error-page>
+    <!-- Signed in, but the page belongs to another role. The filter forwards
+         here directly; this mapping catches a servlet that sets 403 itself. -->
+    <error-page>
+        <error-code>403</error-code>
+        <location>/WEB-INF/jsp/shared/forbidden.jsp</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>

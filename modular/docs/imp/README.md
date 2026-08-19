@@ -13,18 +13,18 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 
 | | |
 |---|---|
-| **Active step** | **2 — `access` + stub landings** |
-| Steps complete | **1 of 9** — `platform` |
-| First deployable | **end of step 2** |
+| **Active step** | **3 — `patients` + `scheduling`** |
+| Steps complete | **2 of 9** — `platform`, `access` |
+| First deployable | **done** — sign in as any of the four roles at http://localhost:8080 |
 | First real screen | **end of step 3** |
 | Core journey working | **end of step 4** |
 | `layered/` | **out of scope** — source and history only, not run or shipped |
-| `modular/` | 19 Java files, compiles, **15 tests green** |
+| `modular/` | 53 Java files, compiles, **64 tests green**, deploys and answers |
 
 ```
  0  decide what ships          ◻  ← START HERE, blocks everything
  1  platform                   ✅  18 classes · Json fix · 15 tests
- 2  access + stub landings     ◻   ✱ sign in as all four roles — FIRST DEPLOY
+ 2  access + stub landings     ✅  30 classes · 4 portals · 15 views · 49 tests · 4 defects found
  3  patients + scheduling      ◻   ✱ patient register, dentist and treatment lists
  4  appointments               ◻   ✱✱ three dashboards live, booking works
  5  billing                    ◻   ✱✱ all six of the brief's functions work
@@ -35,6 +35,25 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 ```
 
 ✱ = deployable and demonstrable · ✱✱ = a good stopping point if time runs out
+
+### What step 2 proved against the running application
+
+Verified by driving the deployed WAR, not by reading it:
+
+| Check | Result |
+|---|---|
+| Four portals, four seeded accounts | each signs in and lands on its own page |
+| Wrong password / wrong portal / unknown address | one message, byte-identical bodies — FR-AUTH-03 |
+| Five failures | account locked; the correct password is then refused |
+| Lock survives a restart | yes — the counters are in `user_account`, not a map |
+| Administrator unlock | `POST /api/auth/unlock` clears it; a receptionist gets 403 |
+| Role isolation | a clean diagonal — each role reaches only its own prefix, 403 otherwise |
+| Anonymous protected path | redirected to `/login?next=…`; API paths get 401 JSON |
+| Sign-out | session invalidated, protected paths redirect again |
+
+Running it also found four defects that reading it had not — see the end of step 2 in
+[`tasks.md`](tasks.md). The most serious was that a signed-in patient could open every role's
+landing page.
 
 ---
 

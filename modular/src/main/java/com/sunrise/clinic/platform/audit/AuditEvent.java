@@ -1,5 +1,7 @@
 package com.sunrise.clinic.platform.audit;
 
+import com.sunrise.clinic.access.domain.Role;
+
 import java.time.Instant;
 import java.util.Objects;
 

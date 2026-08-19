@@ -1,0 +1,33 @@
+<%--
+    The sign-in form, defined once and included by all four portal views.
+
+    This fragment is why the four portals stay identical by construction rather
+    than by discipline - the same argument as AbstractLoginServlet, one layer up.
+    JSP has no inheritance, so composition is the equivalent.
+
+    Expects: error, email, portalLabel, allowsSelfRegistration
+--%>
+<span class="portal-label"><c:out value="${portalLabel}" /></span>
+
+<c:if test="${not empty error}">
+    <div class="notice error"><c:out value="${error}" /></div>
+</c:if>
+
+<form method="post" action="${ctx}${pageContext.request.servletPath}">
+    <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="username" autofocus
+               value="<c:out value='${email}' />">
+    </div>
+    <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn" style="width:100%">Sign in</button>
+    </div>
+</form>
+
+<c:if test="${allowsSelfRegistration}">
+    <div class="alt">New patient? <a href="${ctx}/register">Create an account</a></div>
+</c:if>
