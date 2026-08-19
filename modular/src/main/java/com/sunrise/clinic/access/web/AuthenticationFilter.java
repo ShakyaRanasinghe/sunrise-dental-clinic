@@ -37,11 +37,11 @@ import java.util.Map;
  *       redirect to HTML is useless to a caller expecting JSON.</li>
  * </ol>
  *
- * <p>It also enforces one <em>coarse</em> role rule: a path a role owns may only be
- * entered by that role, so a signed-in patient cannot open {@code /admin/reports}.
- * The prefixes come from {@link RolePolicy#ownedPrefix()}, derived from each role's
- * own home path, so this is not a second list of URL patterns to drift out of step
- * with the code.</p>
+ * <p>It also enforces one <em>coarse</em> role rule: a path belonging to a role area may
+ * only be entered by a role permitted there, so a signed-in patient cannot open
+ * {@code /admin/reports}. The prefixes come from {@link RolePolicy#enterablePrefixes()},
+ * derived from each role's own home path, so this is not a second list of URL patterns to
+ * drift out of step with the code.</p>
  *
  * <p><b>Fine-grained</b> checks stay in the servlets, through {@link AccessControl},
  * next to the operation they protect - whether this receptionist may cancel <em>this</em>
@@ -81,8 +81,7 @@ public class AuthenticationFilter implements Filter {
         String path = pathWithinApplication(request);
 
         if (principal != null) {
-            String owner = roleOwning(path);
-            if (owner != null && !owner.equals(principal.role().name())) {
+            if (isForbiddenPrefix(path, principal)) {
                 refuse(request, response, path, principal);
                 return;
             }
@@ -156,16 +155,17 @@ public class AuthenticationFilter implements Filter {
     }
 
     /**
-     * @return the name of the role that owns {@code path}, or null when no role
-     *         does - the JSON API, shared pages, static assets.
+     * @return true if {@code path} belongs to a role area this caller may not enter
+     *
+     * <p>A path no role owns - the JSON API, the shared pages, static assets - is not
+     * this check's business and passes through.</p>
      */
-    private static String roleOwning(String path) {
-        for (Role role : Role.values()) {
-            if (path.startsWith(RolePolicy.of(role).ownedPrefix())) {
-                return role.name();
-            }
+    private static boolean isForbiddenPrefix(String path, ClinicPrincipal principal) {
+        boolean ownedBySomeone = RolePolicy.allOwnedPrefixes().stream().anyMatch(path::startsWith);
+        if (!ownedBySomeone) {
+            return false;
         }
-        return null;
+        return principal.policy().enterablePrefixes().stream().noneMatch(path::startsWith);
     }
 
     /**

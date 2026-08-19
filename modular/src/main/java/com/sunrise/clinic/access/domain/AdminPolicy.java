@@ -40,4 +40,14 @@ public final class AdminPolicy extends RolePolicy {
     protected Set<Action> permitted() {
         return PERMITTED;
     }
+
+    /**
+     * The administrator covers the front desk as well as its own screens, because it
+     * holds every action those screens perform. It does not reach {@code /patient/} or
+     * {@code /dentist/} - see {@link RolePolicy#enterablePrefixes()}.
+     */
+    @Override
+    public Set<String> enterablePrefixes() {
+        return Set.of(ownedPrefix(), RolePolicy.of(Role.RECEPTIONIST).ownedPrefix());
+    }
 }
