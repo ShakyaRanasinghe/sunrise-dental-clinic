@@ -10,10 +10,11 @@ mapping conflicts in §5 went unnoticed.
 
 | | |
 |---|---|
-| Servlets | 33 across 8 modules, plus 3 abstract bases in `platform/web` |
+| Servlets | **32** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Declared in | `modular/src/main/webapp/WEB-INF/web.xml` |
+| Mappings | **35** declared, plus `/css/*` served by Tomcat's default servlet = 36 routes |
+| Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
 
@@ -90,7 +91,7 @@ middle. That constraint is what produces both conflicts in §5.
 | feedback | `PatientComplaintsServlet` | `GET`·`POST` `/patient/complaints` | `feedback/patient-complaints.jsp` | `PATIENT` | FR-PAT-50…57 |
 | feedback | `AdminComplaintsServlet` | `GET`·`POST` `/admin/complaints` | `feedback/admin-complaints.jsp` | `ADMIN` | FR-ADM-50…58 |
 
-**23 page servlets.** `AbstractLoginServlet` is abstract and declares no mapping — the four
+**23 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
 concrete portals each declare their own, which is the whole point of the hierarchy.
 
 ---
@@ -217,10 +218,11 @@ are `/api/dentists` and `/api/treatments`, both exact, both owned by the same se
 
 | Artefact | Generated from | Status |
 |---|---|---|
-| `web.xml` | §2, §3, §4 — 33 servlet declarations, 36 mappings, 1 filter, session config, 2 error pages | Not written |
-| Servlet classes | §3 and §4, one file each in its module's `web/` | Not written |
+| `web.xml` | §2, §3, §4 — 32 servlet declarations, 35 mappings, 1 filter, session config, 2 error pages | **Written**. Parses, no duplicate patterns, no unmapped servlet, and every route matches §6 |
+| Servlet classes | §3 and §4, one file each in its module's `web/` | Not written — the 32 classes `web.xml` names |
 | `AppContext` accessors | one per service the servlets need | Not written |
 | JSP views | §3's View column, under `/WEB-INF/jsp/` grouped by module | Prototype exists in [`prototype/`](prototype/) |
 
 The route index in §6 is the checklist: 36 rows, each needing a servlet, a mapping and — for the 23
-page routes — a view.
+page routes — a view. `web.xml` is written and verified; the classes it names arrive module by
+module in the order set out in [`migration-plan.md`](migration-plan.md).

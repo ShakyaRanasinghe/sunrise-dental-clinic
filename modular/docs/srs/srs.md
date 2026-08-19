@@ -715,8 +715,9 @@ required fields to their columns are in [`er-diagram.md`](../er-diagram.md). In 
 - Fourteen tables. `user_account` holds identity for all four roles, distinguished by `role`
 - `PATIENT` and `DENTIST` have profile tables because they carry attributes an account does
   not. `RECEPTIONIST` and `ADMIN` do not, because they carry none
-- Sixteen foreign keys are enforced. Ten further references are plain columns; two of those
-  are deliberately unconstrained and seven are a recorded gap
+- Twenty-four foreign keys are enforced. Three references remain plain columns, all three
+  deliberately: the circular `appointment.slot_id` / `slot.appointment_no` pair, and the
+  denormalised `slot.dentist_id`
 
 | ID | Requirement | Status |
 |---|---|---|
