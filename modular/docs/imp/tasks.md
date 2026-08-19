@@ -373,25 +373,52 @@ details*), so with step 2 that is three of the six. **A defensible stopping poin
 
 ## Step 5 — `billing` · ~13 classes
 
-- [ ] `billing/domain` ← `Bill`, `BillBreakdown`, `RevenueSplit`, `BillResponse`
-- [ ] `billing/service` ← `BillingService`, `BillingStrategy`, `StandardBillingStrategy`,
+- [x] `billing/domain` ← `Bill`, `BillBreakdown`, `RevenueSplit`, `BillResponse`
+- [x] `billing/service` ← `BillingService`, `BillingStrategy`, `StandardBillingStrategy`,
       `RevenueSplitStrategy`, `DefaultRevenueSplitStrategy`
-- [ ] `billing/data` ← `BillRepository`, `BillDao`, in-memory
-- [ ] `billing/web` ← `BillingPageServlet`; **new** `ReceiptServlet` + a print layout — FR-REC-52
-- [ ] Views: `billing/billing.jsp`, `billing/receipt.jsp`
-- [ ] Move `BillingServiceTest`, `StandardBillingStrategyTest`, `DefaultRevenueSplitStrategyTest`
+- [x] `billing/data` ← `BillRepository`, `BillDao`, in-memory
+- [x] `billing/web` ← `BillingPageServlet`; **new** `ReceiptServlet` + a print layout — FR-REC-52
+- [x] Views: `billing/billing.jsp`, `billing/receipt.jsp`
+- [x] Move `BillingServiceTest`, `StandardBillingStrategyTest`, `DefaultRevenueSplitStrategyTest`
 
 ### Fix on the way
-- [ ] **Check for an existing bill before building a new one.** Today the second call answers `201`
+- [x] **Check for an existing bill before building a new one.** Today the second call answers `201`
       with an id that was never persisted, because `BillDao` upserts
-- [ ] Stop `BillDao` masking a duplicate — a second insert should conflict, not update
-- [ ] `GET /api/appointments/{no}/bill` needs an ownership check
-- [ ] Refuse to bill an appointment that is not `COMPLETED` — the trigger already does; the service
+- [x] Stop `BillDao` masking a duplicate — a second insert should conflict, not update
+- [x] `GET /api/appointments/{no}/bill` needs an ownership check
+- [x] Refuse to bill an appointment that is not `COMPLETED` — the trigger already does; the service
       should say so in plain language first
-- [ ] Add a test that billing twice fails
+- [x] Add a test that billing twice fails
 
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] `refactor(billing): move bills, pricing and the revenue split`
+- [x] Gate 1 + 2 + 3 pass
+- [x] `refactor(billing): move bills, pricing and the revenue split`
+
+#### Beyond the list, and why
+- [x] **Money is `BigDecimal` here too, and this is where it mattered most.** Fourteen fields on
+      `Bill`, six on `BillBreakdown`, three on `RevenueSplit`. `Math.round(v * 100.0) / 100.0` became
+      `setScale(2, HALF_UP)`. `AppConfig.getDecimal` parses the setting from text rather than through
+      a `double`, because `new BigDecimal(0.60d)` is 0.5999999999999999777955395074968691915
+- [x] **The clinic's share is a subtraction, not a second percentage.** The dentist's share is
+      rounded and the clinic takes the exact remainder, so the two sum to the treatment cost by
+      construction. Rounding both independently is the classic rounding leak — a ledger permanently a
+      cent short with nobody able to say where. `DefaultRevenueSplitStrategyTest` asserts the sum
+      across six awkward amounts and six different shares
+- [x] **A share outside 0..1 is refused at construction.** A misconfigured share would otherwise
+      attribute more than the bill, silently, on every bill until someone reconciled
+- [x] **`AppointmentService.markBilled`.** Billing needed the appointment moved to BILLED, and the
+      first attempt had billing load the entity and save it. The status is the appointment's own —
+      putting its transitions in two modules is how the status machine came to be unenforced in the
+      first place. It also publishes the BILLED event, which nothing did
+- [x] **`BillResponse` carries the names the receipt prints.** It carried the number and the amounts
+      alone, so a receipt could not say who was treated or by whom without a lookup per line
+
+#### One deliberate exception to record
+- [x] **The receipt's Print button is the only client-side JavaScript in the application.** One
+      inline `window.print()`. The page works without it — Ctrl+P prints the same receipt — so it
+      degrades to nothing, which is the only reason it is acceptable. Noted because "no client-side
+      JavaScript" is claimed elsewhere in these documents and the claim should be exactly true
+- [x] **The receipt is a page with a print stylesheet, not a generated PDF.** A PDF library would be
+      a dependency bought to produce what the browser already produces
 
 **On screen after this step — all six of the brief's functions work.** Authentication, register an
 appointment, display it by number, calculate and print the bill, help, exit. **The strongest
