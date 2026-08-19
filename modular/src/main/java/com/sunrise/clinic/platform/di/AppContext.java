@@ -14,6 +14,16 @@ import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.platform.db.Database;
+import com.sunrise.clinic.scheduling.data.DentistDao;
+import com.sunrise.clinic.scheduling.data.DentistRepository;
+import com.sunrise.clinic.scheduling.data.SessionDao;
+import com.sunrise.clinic.scheduling.data.SessionRepository;
+import com.sunrise.clinic.scheduling.data.SlotDao;
+import com.sunrise.clinic.scheduling.data.SlotRepository;
+import com.sunrise.clinic.scheduling.data.TreatmentDao;
+import com.sunrise.clinic.scheduling.data.TreatmentRepository;
+import com.sunrise.clinic.scheduling.service.ReferenceService;
+import com.sunrise.clinic.scheduling.service.SlotService;
 
 /**
  * The composition root: builds the object graph once, at start-up.
@@ -63,12 +73,18 @@ public class AppContext implements AutoCloseable {
     private final UserRepository users;
     private final AuditRepository auditEvents;
     private final PatientRepository patients;
+    private final DentistRepository dentists;
+    private final TreatmentRepository treatments;
+    private final SessionRepository sessions;
+    private final SlotRepository slots;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
     private final AuthService authService;
     private final UserAccountFactory accountFactory;
     private final PatientService patientService;
+    private final ReferenceService referenceService;
+    private final SlotService slotService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -78,11 +94,17 @@ public class AppContext implements AutoCloseable {
         this.users = new UserDao(database);
         this.auditEvents = new AuditDao(database);
         this.patients = new PatientDao(database);
+        this.dentists = new DentistDao(database);
+        this.treatments = new TreatmentDao(database);
+        this.sessions = new SessionDao(database);
+        this.slots = new SlotDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
         this.accountFactory = new UserAccountFactory(users);
         this.patientService = new PatientService(patients);
+        this.referenceService = new ReferenceService(dentists, treatments);
+        this.slotService = new SlotService(sessions, slots, referenceService);
     }
 
     public AppConfig config() {
@@ -104,6 +126,16 @@ public class AppContext implements AutoCloseable {
     /** The patient register. */
     public PatientService patientService() {
         return patientService;
+    }
+
+    /** Dentists and the treatment catalogue. */
+    public ReferenceService referenceService() {
+        return referenceService;
+    }
+
+    /** Published availability and the slots it produces. */
+    public SlotService slotService() {
+        return slotService;
     }
 
     public UserAccountFactory accountFactory() {

@@ -18,7 +18,7 @@
     start and then answer 500 with a ClassNotFoundException on first request,
     which is a worse failure than a clean 404.
 
-    After step 3a: access and the patient register are migrated. Four temporary stub
+    After step 3b: access, the patient register and scheduling are migrated. Four temporary stub
     mappings still stand in for the role landing pages.
 -->
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -193,6 +193,15 @@
     <!--  scheduling                                                  -->
     <!-- ============================================================ -->
 
+    <servlet>
+        <servlet-name>AvailabilityPage</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.AvailabilityPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AvailabilityPage</servlet-name>
+        <url-pattern>/reception/availability</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  appointments                                                -->
     <!-- ============================================================ -->
@@ -234,6 +243,34 @@
     <servlet-mapping>
         <servlet-name>PatientApi</servlet-name>
         <url-pattern>/api/patients/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.AvailabilityApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <url-pattern>/api/availability/*</url-pattern>
+    </servlet-mapping>
+    <!-- Publishing a window and reading its slots are one feature, so one servlet. -->
+    <servlet-mapping>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <url-pattern>/api/sessions</url-pattern>
+    </servlet-mapping>
+
+    <!-- One servlet, two exact mappings: the same kind of small readable list. -->
+    <servlet>
+        <servlet-name>ReferenceApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.ReferenceApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReferenceApi</servlet-name>
+        <url-pattern>/api/dentists</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReferenceApi</servlet-name>
+        <url-pattern>/api/treatments</url-pattern>
     </servlet-mapping>
 
     <servlet>
