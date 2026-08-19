@@ -53,9 +53,15 @@
         <servlet-name>Home</servlet-name>
         <servlet-class>com.sunrise.clinic.web.HomeServlet</servlet-class>
     </servlet>
+    <!--
+        The empty pattern maps the context root exactly. Mapping this servlet to
+        "/" instead would replace Tomcat's default servlet, and every request for
+        a stylesheet or image would be answered with a redirect to the sign-in
+        page rather than the file.
+    -->
     <servlet-mapping>
         <servlet-name>Home</servlet-name>
-        <url-pattern>/</url-pattern>
+        <url-pattern></url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -230,6 +236,20 @@
     <!-- ============================================================ -->
     <!--  Sessions and error pages                                    -->
     <!-- ============================================================ -->
+
+    <!--
+        JSP sources are UTF-8. Without this the container falls back to
+        ISO-8859-1 and any non-ASCII character in a page - the em dash in the
+        shared footer, a patient name with an accent - renders as mojibake.
+    -->
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <url-pattern>*.jspf</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+            <default-content-type>text/html</default-content-type>
+        </jsp-property-group>
+    </jsp-config>
 
     <session-config>
         <session-timeout>30</session-timeout>
