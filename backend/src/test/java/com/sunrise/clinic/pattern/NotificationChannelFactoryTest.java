@@ -6,23 +6,19 @@ import com.sunrise.clinic.pattern.factory.NotificationChannel;
 import com.sunrise.clinic.pattern.factory.NotificationChannelFactory;
 import com.sunrise.clinic.pattern.factory.SmsChannel;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 /**
  * TC-CLI-A07 — Factory Method: returns the correct channel per type.
  */
 class NotificationChannelFactoryTest {
 
-    @SuppressWarnings("unchecked")
     private NotificationChannelFactory factory() {
-        EmailChannel email = new EmailChannel(mock(ObjectProvider.class), false, "no-reply@sunrisedental.lk");
+        EmailChannel email = new EmailChannel("no-reply@sunrisedental.lk");
         SmsChannel sms = new SmsChannel();
         return new NotificationChannelFactory(List.of(email, sms));
     }
@@ -40,7 +36,7 @@ class NotificationChannelFactoryTest {
     }
 
     @Test
-    void emailChannelLogsWhenSmtpDisabled() {
+    void emailChannelRecordsTheMessage() {
         NotificationChannel c = factory().create(ChannelType.EMAIL);
         var result = c.send("patient@x.lk", "subject", "body");
         assertEquals("logged", result.reason());

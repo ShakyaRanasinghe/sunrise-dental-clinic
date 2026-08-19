@@ -1,6 +1,5 @@
 package com.sunrise.clinic.security;
 
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -13,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * account is locked for {@link #LOCK_DURATION}. A successful login or an admin reset clears
  * it. Thread-safe and testable with no external services.
  */
-@Service
 public class LoginAttemptService {
 
     public static final int MAX_ATTEMPTS = 5;

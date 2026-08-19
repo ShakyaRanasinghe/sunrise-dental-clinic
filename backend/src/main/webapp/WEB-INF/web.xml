@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Deployment descriptor for the Sunrise Dental Clinic web application.
+
+    Every servlet, filter and listener is declared here rather than discovered
+    from annotations. For a project whose point is to show the structure of the
+    application, one file listing every URL the system answers is easier to read
+    and to review than the same information scattered across thirty classes.
+-->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Sunrise Dental Clinic</display-name>
+
+    <!--
+        Formatting locale.
+
+        JSTL picks the locale for <fmt:formatNumber> from the browser's
+        Accept-Language header, and when it cannot match one it silently falls
+        back to Double.toString() — so a bill total renders as "5200.0" instead
+        of "5,200.00" for any client that omits the header. Declaring a fallback
+        makes the money on every page and receipt format identically no matter
+        what the client asks for.
+    -->
+    <context-param>
+        <param-name>jakarta.servlet.jsp.jstl.fmt.fallbackLocale</param-name>
+        <param-value>en_GB</param-value>
+    </context-param>
+
+    <!-- Builds the object graph at start-up and closes the connection pool at shutdown. -->
+    <listener>
+        <listener-class>com.sunrise.clinic.app.ClinicServletContext</listener-class>
+    </listener>
+
+    <!-- Identifies the caller and turns anonymous requests away from protected paths. -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>com.sunrise.clinic.security.AuthenticationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ============================================================ -->
+    <!--  Pages                                                       -->
+    <!-- ============================================================ -->
+
+    <servlet>
+        <servlet-name>Home</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.HomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Home</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Login</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Login</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Logout</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Logout</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Register</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Register</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Help</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.HelpServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Help</servlet-name>
+        <url-pattern>/help</url-pattern>
+    </servlet-mapping>
+
+    <!-- Patient -->
+    <servlet>
+        <servlet-name>PatientHome</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.PatientHomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientHome</servlet-name>
+        <url-pattern>/patient/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BookAppointment</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.BookAppointmentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookAppointment</servlet-name>
+        <url-pattern>/patient/book</url-pattern>
+    </servlet-mapping>
+
+    <!-- Reception -->
+    <servlet>
+        <servlet-name>ReceptionHome</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.ReceptionHomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceptionHome</servlet-name>
+        <url-pattern>/reception/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Availability</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.AvailabilityPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Availability</servlet-name>
+        <url-pattern>/reception/availability</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PatientRecords</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.PatientRecordsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientRecords</servlet-name>
+        <url-pattern>/reception/patients</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Billing</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.BillingPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Billing</servlet-name>
+        <url-pattern>/reception/billing</url-pattern>
+    </servlet-mapping>
+
+    <!-- Dentist -->
+    <servlet>
+        <servlet-name>DentistSchedule</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.DentistScheduleServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistSchedule</servlet-name>
+        <url-pattern>/dentist/schedule</url-pattern>
+    </servlet-mapping>
+
+    <!-- Administrator -->
+    <servlet>
+        <servlet-name>AdminReports</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.AdminReportsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminReports</servlet-name>
+        <url-pattern>/admin/reports</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!--  JSON API                                                    -->
+    <!-- ============================================================ -->
+
+    <servlet>
+        <servlet-name>AuthApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.AuthApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthApi</servlet-name>
+        <url-pattern>/api/auth/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AppointmentApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.AppointmentApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AppointmentApi</servlet-name>
+        <url-pattern>/api/appointments/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.AvailabilityApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <url-pattern>/api/availability/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AvailabilityApi</servlet-name>
+        <url-pattern>/api/sessions</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PatientApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.PatientApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientApi</servlet-name>
+        <url-pattern>/api/patients/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ReferenceApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.web.ReferenceApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReferenceApi</servlet-name>
+        <url-pattern>/api/dentists</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReferenceApi</servlet-name>
+        <url-pattern>/api/treatments</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
+    <!--  Sessions and error pages                                    -->
+    <!-- ============================================================ -->
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <!-- The session cookie is not readable from JavaScript, which limits
+                 what a cross-site scripting flaw could do with it. -->
+            <http-only>true</http-only>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/jsp/not-found.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/jsp/error.jsp</location>
+    </error-page>
+</web-app>

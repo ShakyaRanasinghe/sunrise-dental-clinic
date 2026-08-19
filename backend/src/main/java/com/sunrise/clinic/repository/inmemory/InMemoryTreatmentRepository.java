@@ -3,14 +3,10 @@ package com.sunrise.clinic.repository.inmemory;
 import com.sunrise.clinic.domain.Treatment;
 import com.sunrise.clinic.repository.InMemoryRepository;
 import com.sunrise.clinic.repository.TreatmentRepository;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /** In-memory {@link TreatmentRepository}. */
-@Repository
-@Profile("!firestore")
 public class InMemoryTreatmentRepository
         extends InMemoryRepository<Treatment, String>
         implements TreatmentRepository {

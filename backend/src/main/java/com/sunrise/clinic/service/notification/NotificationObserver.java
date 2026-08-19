@@ -7,7 +7,6 @@ import com.sunrise.clinic.pattern.factory.DispatchResult;
 import com.sunrise.clinic.pattern.factory.NotificationChannel;
 import com.sunrise.clinic.pattern.factory.NotificationChannelFactory;
 import com.sunrise.clinic.repository.NotificationRepository;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,7 +15,6 @@ import java.util.UUID;
  * Observer that sends the patient a confirmation (via the Factory-created email
  * channel) and records the delivery when an appointment is created.
  */
-@Component
 public class NotificationObserver implements AppointmentObserver {
 
     private final NotificationChannelFactory channelFactory;

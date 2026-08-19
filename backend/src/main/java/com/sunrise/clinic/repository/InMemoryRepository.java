@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Base in-memory implementation of {@link Repository}, backed by a thread-safe
  * map. Concrete repositories extend this and implement {@link #idOf(Object)}
- * (and any custom query methods). Used for unit/integration tests and the
- * zero-cloud local demo; the Firestore adapters mirror the same interface.
+ * (and any custom query methods). Used by the unit tests, which need no database;
+ * the JDBC DAOs in {@code com.sunrise.clinic.dao} implement the same interfaces.
  *
  * @param <T>  entity type
  * @param <ID> identifier type

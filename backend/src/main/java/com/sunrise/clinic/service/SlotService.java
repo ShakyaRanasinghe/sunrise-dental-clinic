@@ -5,7 +5,6 @@ import com.sunrise.clinic.domain.Slot;
 import com.sunrise.clinic.domain.SlotStatus;
 import com.sunrise.clinic.repository.SessionRepository;
 import com.sunrise.clinic.repository.SlotRepository;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,7 +17,6 @@ import java.util.UUID;
  * (a window like "Dr. Silva, 16:00–18:00"), which this service explodes into
  * fixed-length bookable {@link Slot}s. Patients then browse open slots.
  */
-@Service
 public class SlotService {
 
     private final SessionRepository sessions;
@@ -31,8 +29,8 @@ public class SlotService {
 
     /**
      * Publish an availability window and generate its bookable slots.
-     * Each slot's id is deterministic ({@code dentistId_date_startTime}) — in
-     * Firestore that doubles as the uniqueness guard against double booking.
+     * Each slot's id is deterministic ({@code dentistId_date_startTime}), so
+     * republishing the same window cannot create duplicate slots.
      */
     public DentistSession publishSession(String dentistId, LocalDate date,
                                          LocalTime start, LocalTime end,
