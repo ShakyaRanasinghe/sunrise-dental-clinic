@@ -36,7 +36,7 @@ feature/*   →   develop   →   qa   →   main
 ```
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`.
-Scopes: `backend`, `frontend`, `functions`, `uml`, `docs`, `ci`.
+Scopes: `layered`, `modular`, `web`, `uml`, `docs`, `ci`.
 
 ## Versioning
 
@@ -46,5 +46,5 @@ each release is tagged (`vMAJOR.MINOR.PATCH`) with a matching `CHANGELOG.md` ent
 ## Running tests
 
 ```bash
-cd backend && mvn test    # 15 tests, no cloud account required (in-memory adapter)
+cd layered && mvn test    # 15 tests, no cloud account required (in-memory adapter)
 ```
