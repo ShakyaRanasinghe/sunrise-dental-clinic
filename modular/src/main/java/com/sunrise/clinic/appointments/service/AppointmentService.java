@@ -275,6 +275,26 @@ public class AppointmentService {
         return describe(cancelled);
     }
 
+    /**
+     * Mark an appointment billed.
+     *
+     * <p>Called by billing once the bill is written, and inside billing's transaction so
+     * the two commit together. It lives here rather than in billing because the status is
+     * the appointment's own: letting another module load the entity, set a field and save
+     * it would put appointment state transitions in two places, which is how the status
+     * machine came to be unenforced in the first place.</p>
+     *
+     * <p>Publishing the BILLED event here also means it is published at all - nothing
+     * did.</p>
+     */
+    public void markBilled(ClinicPrincipal caller, String appointmentNo) {
+        AccessControl.require(caller, Action.ISSUE_BILL);
+        Appointment appointment = require(appointmentNo);
+        appointment.markBilled();
+        appointments.save(appointment);
+        announce(AppointmentEvent.Type.BILLED, appointment, caller);
+    }
+
     /** The appointment behind a number, for billing. Package-visible to the module. */
     public Appointment require(String appointmentNo) {
         return appointments.findById(appointmentNo).orElseThrow(() ->

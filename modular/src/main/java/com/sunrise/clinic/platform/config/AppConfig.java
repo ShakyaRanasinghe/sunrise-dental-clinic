@@ -71,6 +71,27 @@ public final class AppConfig {
         }
     }
 
+    /**
+     * A money or rate setting, as {@code BigDecimal}.
+     *
+     * <p>Parsed from the text rather than through {@code getDouble}, so
+     * {@code clinic.billing.service-charge=200} becomes exactly 200 and
+     * {@code 0.60} becomes exactly 0.60. Routing a decimal setting through a
+     * {@code double} on its way to a {@code BigDecimal} reintroduces the
+     * representation error that using {@code BigDecimal} was meant to avoid, and
+     * {@code new BigDecimal(0.60d)} is 0.59999999999999997779553950749686919152736663818359375.</p>
+     */
+    public java.math.BigDecimal getDecimal(String key, String defaultValue) {
+        String raw = get(key, defaultValue);
+        try {
+            return new java.math.BigDecimal(raw.trim());
+        } catch (NumberFormatException e) {
+            log.warning("config_bad_decimal key=" + key + " value=" + raw
+                    + " using=" + defaultValue);
+            return new java.math.BigDecimal(defaultValue);
+        }
+    }
+
     public boolean getBoolean(String key, boolean defaultValue) {
         String raw = get(key, null);
         return raw == null || raw.isBlank() ? defaultValue : Boolean.parseBoolean(raw.trim());

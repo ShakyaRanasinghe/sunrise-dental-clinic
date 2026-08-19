@@ -22,6 +22,11 @@ import com.sunrise.clinic.appointments.service.AppointmentNumberGenerator;
 import com.sunrise.clinic.appointments.service.AppointmentService;
 import com.sunrise.clinic.appointments.service.AuditObserver;
 import com.sunrise.clinic.appointments.service.ClinicAccess;
+import com.sunrise.clinic.billing.data.BillDao;
+import com.sunrise.clinic.billing.data.BillRepository;
+import com.sunrise.clinic.billing.service.BillingService;
+import com.sunrise.clinic.billing.service.DefaultRevenueSplitStrategy;
+import com.sunrise.clinic.billing.service.StandardBillingStrategy;
 import com.sunrise.clinic.platform.db.Database;
 import com.sunrise.clinic.scheduling.data.DentistDao;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
@@ -88,6 +93,7 @@ public class AppContext implements AutoCloseable {
     private final SlotRepository slots;
     private final AppointmentRepository appointments;
     private final CounterRepository counters;
+    private final BillRepository bills;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
@@ -99,6 +105,7 @@ public class AppContext implements AutoCloseable {
     private final ClinicAccess clinicAccess;
     private final AppointmentEventPublisher appointmentEvents;
     private final AppointmentService appointmentService;
+    private final BillingService billingService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -114,6 +121,7 @@ public class AppContext implements AutoCloseable {
         this.slots = new SlotDao(database);
         this.appointments = new AppointmentDao(database);
         this.counters = new CounterDao(database);
+        this.bills = new BillDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
@@ -132,6 +140,15 @@ public class AppContext implements AutoCloseable {
         this.appointmentService = new AppointmentService(slots, appointments, referenceService,
                 clinicAccess, new AppointmentNumberGenerator(counters),
                 appointmentEvents, transactionRunner);
+
+        // The two strategies are chosen here, once. Swapping in a promotional pricing rule
+        // or a different commission policy is an edit to this line and nothing else.
+        this.billingService = new BillingService(bills, appointmentService, referenceService,
+                clinicAccess, new StandardBillingStrategy(),
+                new DefaultRevenueSplitStrategy(
+                        config.getDecimal("clinic.revenue.dentist-treatment-share", "0.60")),
+                config.getDecimal("clinic.billing.service-charge", "200"),
+                transactionRunner);
     }
 
     public AppConfig config() {
@@ -168,6 +185,11 @@ public class AppContext implements AutoCloseable {
     /** Booking, cancelling and completing. */
     public AppointmentService appointmentService() {
         return appointmentService;
+    }
+
+    /** Bills, pricing and the revenue split. */
+    public BillingService billingService() {
+        return billingService;
     }
 
     /** Who may see an appointment's clinical detail. */

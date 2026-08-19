@@ -21,12 +21,13 @@ import java.util.Map;
  *   <tr><td>{@code GET  /api/appointments/{no}}</td><td>one, with the diagnosis if permitted</td></tr>
  *   <tr><td>{@code POST /api/appointments/{no}/cancel}</td><td>cancel</td></tr>
  *   <tr><td>{@code POST /api/appointments/{no}/complete}</td><td>record the diagnosis</td></tr>
+ *   <tr><td>{@code POST /api/appointments/{no}/bill}</td><td>issue the bill</td></tr>
+ *   <tr><td>{@code GET  /api/appointments/{no}/bill}</td><td>fetch it</td></tr>
  * </table>
  *
- * <p>The billing sub-paths - {@code /{no}/bill} - are part of this prefix in the route
- * contract, because a prefix mapping can only be served by one servlet. They arrive with
- * the billing module; until then they are refused rather than silently treated as
- * something else.</p>
+ * <p>The billing routes live under this prefix because a prefix mapping can only be served
+ * by one servlet. They delegate to {@code BillingService}, which owns the rules about who
+ * may read a bill and whether one may be issued at all.</p>
  *
  * <p>Every route delegates. This class no longer resolves a patient from an account, and
  * no longer reaches a repository to do it - the previous version did both, twice.</p>
@@ -51,8 +52,8 @@ public class AppointmentApiServlet extends BaseServlet {
                 case "complete" -> writeJson(response, app().appointmentService().complete(
                         currentUser(request), appointmentNo,
                         Json.string(readBody(request), "diagnosis")));
-                case "bill" -> throw new IllegalArgumentException(
-                        "Billing is not available yet.");
+                case "bill" -> writeJson(response, HttpServletResponse.SC_CREATED,
+                        app().billingService().issue(currentUser(request), appointmentNo));
                 default -> throw new IllegalArgumentException("Unknown endpoint");
             }
         });
@@ -69,7 +70,8 @@ public class AppointmentApiServlet extends BaseServlet {
                 writeJson(response,
                         app().appointmentService().findDetail(currentUser(request), path.get(0)));
             } else if (path.size() == 2 && "bill".equals(path.get(1))) {
-                throw new IllegalArgumentException("Billing is not available yet.");
+                writeJson(response, app().billingService()
+                        .forAppointment(currentUser(request), path.get(0)));
             } else {
                 throw new IllegalArgumentException("Unknown endpoint");
             }

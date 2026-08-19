@@ -517,3 +517,28 @@ a { color: var(--sunrise-dark); }
 .note-item.critical { border-left: 3px solid var(--bad); background: var(--bad-light); }
 .note-item .meta { font-size: 12px; color: var(--ink-faint); margin-top: 5px; }
 .note-item .actions { margin-top: 8px; display: flex; gap: 8px; }
+
+/* ---------------------------------------------------------------------
+   Receipt, and printing it — FR-REC-52.
+
+   The receipt is a page with a print stylesheet rather than a generated
+   PDF: the browser already produces a document, and a PDF library would
+   be a dependency bought for nothing.
+   --------------------------------------------------------------------- */
+.receipt { max-width: 40rem; }
+.receipt-head { text-align: center; margin-bottom: 1.5rem; }
+.receipt-head h2 { margin-bottom: 0.25rem; }
+.receipt .right { text-align: right; font-variant-numeric: tabular-nums; }
+.receipt tr.total th,
+.receipt tr.total td { border-top: 2px solid #d8d2cb; font-size: 1.05rem; }
+.receipt-foot { margin-top: 1.5rem; text-align: center; }
+
+@media print {
+    /* Everything that is chrome rather than document. */
+    .site-header, .site-footer, .no-print { display: none !important; }
+    body { background: #fff; }
+    .card { border: none; box-shadow: none; padding: 0; }
+    .receipt { max-width: none; }
+    /* A receipt that breaks across two pages is a receipt nobody trusts. */
+    .receipt, .receipt table { page-break-inside: avoid; }
+}

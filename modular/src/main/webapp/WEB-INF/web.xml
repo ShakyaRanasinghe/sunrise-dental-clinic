@@ -18,7 +18,7 @@
     start and then answer 500 with a ClassNotFoundException on first request,
     which is a worse failure than a clean 404.
 
-    After step 4: access, patients, scheduling and appointments are migrated. One
+    After step 5: access, patients, scheduling, appointments and billing are migrated. One
     temporary stub remains, for the administrator's landing page. Four temporary stub
     mappings still stand in for the role landing pages.
 -->
@@ -246,6 +246,33 @@
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->
+
+    <servlet>
+        <servlet-name>Billing</servlet-name>
+        <servlet-class>com.sunrise.clinic.billing.web.BillingPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Billing</servlet-name>
+        <url-pattern>/reception/billing</url-pattern>
+    </servlet-mapping>
+
+    <!--
+        The printable receipt. Reached by the front desk and by the patient, so it is
+        mapped under both role prefixes - the same servlet, and BillingService decides
+        who may read the bill behind it.
+    -->
+    <servlet>
+        <servlet-name>Receipt</servlet-name>
+        <servlet-class>com.sunrise.clinic.billing.web.ReceiptServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Receipt</servlet-name>
+        <url-pattern>/reception/receipt</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Receipt</servlet-name>
+        <url-pattern>/patient/receipt</url-pattern>
+    </servlet-mapping>
 
     <!-- ============================================================ -->
     <!--  reporting                                                   -->
