@@ -40,6 +40,7 @@ public final class PatientPolicy extends RolePolicy {
     protected List<NavItem> ownNavigation() {
         return List.of(
                 new NavItem("Book", "/patient/book"),
-                new NavItem("My details", "/patient/profile"));
+                new NavItem("My details", "/patient/profile"),
+                new NavItem("Raise a concern", "/patient/complaints"));
     }
 }

@@ -557,21 +557,51 @@ made room for, and it is last because it depends on appointments and billing.
       form and reading them back
 
 ### 8b — complaints and reviews, in `feedback`
-- [ ] **New** `Complaint`, `ComplaintCategory`, `ComplaintStatus`, `ComplaintResponse`
-- [ ] **New** `DentistReview`, `RatingSummary`, `ReviewResponse`
-- [ ] **New** `ComplaintService`, `ReviewService`
-- [ ] **New** `ComplaintRepository`, `ReviewRepository` + Dao and in-memory
-- [ ] **New** `PatientComplaintsServlet`, `AdminComplaintsServlet`, `ComplaintApiServlet`,
+- [x] **New** `Complaint`, `ComplaintCategory`, `ComplaintStatus`, `ComplaintResponse`
+- [x] **New** `DentistReview`, `RatingSummary`, `ReviewResponse`
+- [x] **New** `ComplaintService`, `ReviewService`
+- [x] **New** `ComplaintRepository`, `ReviewRepository` + Dao and in-memory
+- [x] **New** `PatientComplaintsServlet`, `AdminComplaintsServlet`, `ComplaintApiServlet`,
       `ReviewApiServlet`
-- [ ] Views: `feedback/patient-complaints.jsp`, `admin-complaints.jsp`
-- [ ] Confirm the dentist can reach **no** complaint route — FR-CMP-08
-- [ ] Confirm a dentist receives `RatingSummary` and never a `ReviewResponse` — NFR-SEC-13
-- [ ] `ComplaintServiceTest`, `ReviewServiceTest` including the 30-day window and the five-review floor
+- [x] Views: `feedback/patient-complaints.jsp`, `admin-complaints.jsp`
+- [x] Confirm the dentist can reach **no** complaint route — FR-CMP-08
+- [x] Confirm a dentist receives `RatingSummary` and never a `ReviewResponse` — NFR-SEC-13
+- [x] `ComplaintServiceTest`, `ReviewServiceTest` including the 30-day window and the five-review floor
 
-- [ ] **Finish `AppContext`** — every accessor now has a real implementation, no stubs left
-- [ ] Delete every remaining `.gitkeep`
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] `feat(feedback): complaints and dentist reviews`
+- [x] **Finish `AppContext`** — every accessor now has a real implementation, no stubs left
+- [x] Delete every remaining `.gitkeep`
+- [x] Gate 1 + 2 + 3 pass
+- [x] `feat(feedback): complaints and dentist reviews`
+
+#### Beyond the list, and why
+- [x] **`ComplaintDao`'s UPDATE cannot reach `detail`.** FR-ADM-55 says the administrator must not be
+      able to edit the patient's account of what happened, and the strongest way to guarantee that is
+      for no statement in the application to be capable of writing the column after the insert. The
+      resolution is a separate column, beside the account rather than over it
+- [x] **The status machine lives on `ComplaintStatus`.** A complaint cannot go straight from
+      SUBMITTED to RESOLVED — somebody has to have looked at it, and recording that they did is the
+      difference between a process and a filing cabinet
+- [x] **The review window is measured from the visit, not from when the review was written.** A
+      patient who reviews on day 29 gets one day to change it, which is the point. Measuring from the
+      submission would let a review be rewritten indefinitely by editing it every 29 days
+- [x] **`ReviewResponse.editable` is computed by the service**, so a screen offers the form only when
+      the service would accept it
+- [x] **The five-review floor is applied in both adapters**, not only in the service, so no caller can
+      obtain a mean below it whichever implementation is wired in. `fn_dentist_rating` holds the same
+      rule in SQL
+- [x] **`GET /api/reviews` returns different *types* to different callers** — a list of reviews to the
+      patient who wrote them, a `RatingSummary` to a dentist. The confidentiality rule as a type
+      rather than a filter: there is no code path that can hand a dentist a comment, because the
+      object it returns has no field for one
+- [x] **Neither `Complaint.toString()` nor `DentistReview.toString()` includes the words.** Both end
+      up in logs and exception messages, and both hold something a person wrote in confidence
+- [x] **38 obsolete `.gitkeep` files deleted.** The six that remain mark `notifications/`, which is
+      genuinely still empty
+
+#### Found by running it
+- [x] **A refusal message that did not fit its operation.** A receptionist reading `GET /api/reviews`
+      was told "Only the patient who was treated can rate a visit" — the guard covers reading as well
+      as writing, and the wording only described one of them
 
 **On screen after this step:** every one of the 24 pages resolves. The prototype and the running
 application match.

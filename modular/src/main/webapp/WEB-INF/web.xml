@@ -322,6 +322,46 @@
     <!--  feedback — complaints and reviews                           -->
     <!-- ============================================================ -->
 
+    <servlet>
+        <servlet-name>PatientComplaints</servlet-name>
+        <servlet-class>com.sunrise.clinic.feedback.web.PatientComplaintsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientComplaints</servlet-name>
+        <url-pattern>/patient/complaints</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminComplaints</servlet-name>
+        <servlet-class>com.sunrise.clinic.feedback.web.AdminComplaintsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminComplaints</servlet-name>
+        <url-pattern>/admin/complaints</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ComplaintApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.feedback.web.ComplaintApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ComplaintApi</servlet-name>
+        <url-pattern>/api/complaints/*</url-pattern>
+    </servlet-mapping>
+
+    <!--
+        /api/reviews/* rather than /api/appointments/{no}/review: servlet mapping has no
+        middle wildcard, and /api/appointments/* is already claimed. See docs/servlets.md §5.
+    -->
+    <servlet>
+        <servlet-name>ReviewApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.feedback.web.ReviewApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReviewApi</servlet-name>
+        <url-pattern>/api/reviews/*</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  JSON API                                                    -->
     <!--                                                              -->

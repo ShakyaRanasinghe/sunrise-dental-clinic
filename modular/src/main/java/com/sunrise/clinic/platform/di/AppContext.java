@@ -31,6 +31,12 @@ import com.sunrise.clinic.billing.data.BillRepository;
 import com.sunrise.clinic.billing.service.BillingService;
 import com.sunrise.clinic.billing.service.DefaultRevenueSplitStrategy;
 import com.sunrise.clinic.billing.service.StandardBillingStrategy;
+import com.sunrise.clinic.feedback.data.ComplaintDao;
+import com.sunrise.clinic.feedback.data.ComplaintRepository;
+import com.sunrise.clinic.feedback.data.ReviewDao;
+import com.sunrise.clinic.feedback.data.ReviewRepository;
+import com.sunrise.clinic.feedback.service.ComplaintService;
+import com.sunrise.clinic.feedback.service.ReviewService;
 import com.sunrise.clinic.platform.db.Database;
 import com.sunrise.clinic.reporting.data.JdbcReportDao;
 import com.sunrise.clinic.reporting.data.ReportRepository;
@@ -107,6 +113,8 @@ public class AppContext implements AutoCloseable {
     private final CounterRepository counters;
     private final BillRepository bills;
     private final ReportRepository reports;
+    private final ComplaintRepository complaints;
+    private final ReviewRepository reviews;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
@@ -121,6 +129,8 @@ public class AppContext implements AutoCloseable {
     private final AppointmentService appointmentService;
     private final BillingService billingService;
     private final ReportService reportService;
+    private final ComplaintService complaintService;
+    private final ReviewService reviewService;
     private final AccountAdminService accountAdminService;
 
     public AppContext() {
@@ -140,6 +150,8 @@ public class AppContext implements AutoCloseable {
         this.counters = new CounterDao(database);
         this.bills = new BillDao(database);
         this.reports = new JdbcReportDao(database, clinicZone());
+        this.complaints = new ComplaintDao(database);
+        this.reviews = new ReviewDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
@@ -180,6 +192,11 @@ public class AppContext implements AutoCloseable {
         this.reportService = new ReportService(reports, java.time.Clock.system(clinicZone()));
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
                 dentists, auditEvents);
+        this.complaintService = new ComplaintService(complaints, appointmentService, clinicAccess,
+                referenceService, auditEvents);
+        // The clinic's zone again: the review window is measured in the clinic's days.
+        this.reviewService = new ReviewService(reviews, appointmentService, clinicAccess,
+                referenceService, java.time.Clock.system(clinicZone()));
     }
 
     /**
@@ -251,6 +268,16 @@ public class AppContext implements AutoCloseable {
     /** Bills, pricing and the revenue split. */
     public BillingService billingService() {
         return billingService;
+    }
+
+    /** Complaints about a dentist. */
+    public ComplaintService complaintService() {
+        return complaintService;
+    }
+
+    /** Dentist reviews, and the aggregates built from them. */
+    public ReviewService reviewService() {
+        return reviewService;
     }
 
     /** The administrator's reports, and their CSV export. */
