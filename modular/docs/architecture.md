@@ -3,7 +3,8 @@
 Structure for the **modular** implementation. Deliberately plain: core Java, servlets, JDBC,
 MySQL. Nothing else.
 
-Aligns with [`class-diagram.md`](class-diagram.md), [`srs/srs.md`](srs/srs.md) and
+Aligns with [`class-diagram.md`](class-diagram.md), [`use-case-diagram.md`](use-case-diagram.md),
+[`sequence-diagrams.md`](sequence-diagrams.md), [`srs/srs.md`](srs/srs.md) and
 [`er-diagram.md`](er-diagram.md).
 
 ---
@@ -226,3 +227,145 @@ servlet that has already loaded its data. Nothing can render half-populated.
 | How do I add a role? | One `RolePolicy` subclass, one login servlet subclass, one JSP |
 | How do I test without a database? | Wire the `InMemory*` repositories — every module has them |
 | What differs between environments? | Environment variables. The WAR is identical |
+
+---
+
+## 7. Why this architecture
+
+Four properties were the goal. Each one is a consequence of a specific structural decision, not of
+a framework.
+
+### The shape: a grid, three tiers by eight modules
+
+```
+                access  patients  scheduling  appointments  billing  notif.  reporting  feedback
+  web/            ·        ·          ·            ·           ·        ·        ·         ·     <- Presentation
+  service/        ·        ·          ·            ·           ·        ·        ·         ·     <- Business
+  data/           ·        ·          ·            ·           ·        ·        ·         ·     <- Data
+  domain/         ·        ·          ·            ·           ·        ·        ·         ·
+```
+
+**Every class has exactly one cell.** Two coordinates locate it: which capability, which tier. The
+tiers run horizontally and are the three-tier architecture; the modules run vertically and are what
+makes a feature readable in one place. Neither is a substitute for the other, which is why the
+design has both rather than choosing.
+
+The three tiers have one rule each, and they are absolute:
+
+| Tier | Knows | Never touches |
+|---|---|---|
+| **Presentation** — `web/` | HTTP, sessions, HTML, JSON | SQL, business rules |
+| **Business** — `service/`, `domain/` | The clinic's rules | HTTP, `HttpServletRequest`, SQL |
+| **Data** — `data/` | SQL, JDBC, row mapping | HTTP, business rules |
+
+### Clear to read
+
+Asking *"where is a bill's total calculated?"* takes no map: it is business logic about billing, so
+`billing/service/`. The answer is `StandardBillingStrategy`.
+
+Compare `layered/`, where the same question means opening `web/BillingPageServlet`,
+`service/BillingService`, `pattern/billing/StandardBillingStrategy`, `dao/BillDao`,
+`repository/BillRepository` and `domain/Bill` — six packages for one feature, and you must know
+the whole system before you can find one part of it.
+
+The concrete target: **a competent Java developer with no knowledge of this project should trace
+one request end to end in under ten minutes, with nothing but an editor.** No annotations to
+decode, no configuration to find, no reflection to reason about. `AppContext` is 250 lines of
+constructor calls you can read top to bottom.
+
+### Clear to identify bugs
+
+Each tier fails in its own way, so a symptom names a tier before you open anything:
+
+| Symptom | Tier | Real example from this project |
+|---|---|---|
+| Wrong page, wrong status, wrong markup, missing stylesheet | Presentation | `HomeServlet` mapped to `/` shadowed Tomcat's default servlet, so every stylesheet request answered a redirect |
+| Wrong number, wrong decision, wrong permission | Business | Nothing checks that the dentist completing an appointment is the one treating it |
+| Wrong, missing or duplicated row | Data | `BillDao` upserts, so billing twice returns an id that was never persisted |
+
+Three defects, three tiers, each findable without reading the other two. That is the property, and
+it is worth more than any amount of layering vocabulary.
+
+**The bisect tool is free.** Every repository interface has an in-memory implementation. Swap the
+data tier for it and re-run: if the bug survives, it is business logic; if it vanishes, it is SQL
+or mapping. That is why 48 tests run with no database — the same seam serves testing and
+diagnosis.
+
+**One grep enforces the boundary**, so the property does not decay:
+
+```bash
+grep -rl 'import com.sunrise.clinic.[a-z]*.data' --include='*.java' \
+  modular/src/main/java/com/sunrise/clinic/*/web/     # must return nothing
+```
+
+### Clear to plug in
+
+There are exactly **five** extension points, all plain Java interfaces, none needing a framework:
+
+| To add | Implement | Register in | Touches nothing else |
+|---|---|---|---|
+| A storage backend, or a test double | `Repository<T, ID>` | `AppContext` | ✔ |
+| A pricing or revenue rule | `BillingStrategy`, `RevenueSplitStrategy` | `AppContext` | ✔ |
+| A notification channel — WhatsApp, push | `NotificationChannel` | `NotificationChannelFactory` | ✔ |
+| A reaction to a booking — analytics, audit | `AppointmentObserver` | `AppointmentEventPublisher` | ✔ |
+| A user role — a fifth portal | `RolePolicy` + `AbstractLoginServlet` | `web.xml` | ✔ |
+
+**A whole module is the sixth plug point.** Adding one means a new directory, its four
+sub-packages, and one accessor on `AppContext`. Because the module dependency graph is acyclic,
+nothing existing changes — which is the test of whether a boundary is real.
+
+### Clear to scale
+
+Two different questions, worth separating because they have different answers:
+
+**Scaling the code.** Add a module. Eight exist; a ninth costs one directory and one accessor. The
+DAG guarantees the blast radius is zero.
+
+**Scaling the load.** The WAR holds almost no state:
+
+| State | Where it lives | Consequence |
+|---|---|---|
+| Business data | MySQL, a separate process | Add Tomcats freely |
+| Connections | 8 per instance, one env var | Tune per environment without a rebuild |
+| Sessions | in Tomcat's memory | **Needs sticky sessions to run more than one instance** |
+| Lock-out counters | `LoginAttemptService`, in memory | **Does not survive restart, and does not work across instances** |
+
+The first two scale horizontally today. The last two are the honest blockers, and the second is a
+defect rather than a limit: `user_account` already has `failed_attempts` and `locked` columns that
+nothing writes, so the lock state that NFR-SEC-03 depends on is cleared by any restart. Fixing it
+is persisting what the schema already models.
+
+### Why it is not more complicated
+
+What was considered and deliberately refused, with what each would have bought and cost:
+
+| Refused | Would have given | Costs more than it gives because |
+|---|---|---|
+| DI container | Less wiring code | `AppContext` is 250 readable lines. A container replaces them with annotations and reflection you cannot step through |
+| ORM | No hand-written SQL | The SQL is the interesting part. You can paste a DAO's query into a client and run it |
+| JWT | A stateless API | Nothing calls the API without a cookie jar. It would need a revocation table to honour sign-out — a session with extra steps |
+| Microservices | Independent deployment | One clinic, one database, one deployable. Module boundaries give the same isolation with none of the network |
+| CQRS, event sourcing | An audit trail, read scaling | `audit_event` is one table. The read load is one practice |
+| A cache layer | Faster reads | No measurement says reads are slow |
+| Hexagonal everywhere | Testability throughout | Applied at the data tier only, where it pays for itself. Ports around HTTP would add indirection for no test we want to write |
+
+The pattern is the same each time: **the boundary was added where a test or a change already
+wanted it, and nowhere else.** Ports exist at the data tier because tests need to run without
+MySQL. Strategies exist for pricing because pricing changes. There is no port around HTTP, because
+nothing has ever needed to call the business tier from anything but a servlet.
+
+### The honest costs
+
+Stating them, because an architecture section that lists only benefits is advocacy:
+
+- **`AppContext` is a single long file** every new module edits. Explicit wiring means one place to
+  change and a merge conflict when two people add a module the same week.
+- **Hand-written JSON has already bitten.** `Json.write` handles records and falls through to
+  `toString()` for anything else, which is why five endpoints return `"Dentist{id=d-silva}"`. A
+  library would not have had that hole.
+- **No ORM means N+1 queries are the developer's problem.** Nothing warns you.
+- **Cross-module reads need their own model.** Reports span bills and appointments, so `reporting`
+  gets a read-only repository of its own rather than reaching into two other modules' data tiers.
+- **32 packages for ~125 classes is more directories than a small application strictly needs.**
+  The bet is that the project grows and the navigation pays back. If it stays this size, a flatter
+  tree would have been enough.

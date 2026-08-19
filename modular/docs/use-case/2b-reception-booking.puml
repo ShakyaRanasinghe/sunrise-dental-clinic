@@ -1,0 +1,57 @@
+@startuml use_case_reception_booking
+' Sunrise Dental Clinic - Use Case Diagram: Receptionist - booking and billing
+' Source of truth: modular/docs/use-case-diagram.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 18
+skinparam ranksep 70
+skinparam usecase {
+  BackgroundColor #FDF3EC
+  BorderColor #C2571A
+  ArrowColor #52606D
+}
+
+left to right direction
+' invisible title: reserves top margin so an actor at the
+' upper edge is not clipped by the render bounds
+title <color:#FFFFFF>.\n.</color>
+
+actor "Receptionist" as RC
+actor "SMTP Server" as SMTP <<system>>
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "View Day Schedule" as UC_DAY
+  usecase "Book On Behalf\nOf Patient" as UC_BOOK
+  usecase "Validate Booking" as UC_VBOOK
+  usecase "Reserve Slot" as UC_SLOT
+  usecase "Send Confirmation" as UC_CONF
+  usecase "Cancel Appointment" as UC_CANCEL
+  usecase "Issue Bill" as UC_BILL
+  usecase "Calculate Total" as UC_CALC
+  usecase "Divide Revenue" as UC_SPLIT
+  usecase "Apply Discount" as UC_DISC
+  usecase "Print Receipt" as UC_PRINT
+  usecase "Reprint Receipt" as UC_REPRINT
+}
+
+RC --> UC_DAY
+RC --> UC_BOOK
+RC --> UC_CANCEL
+RC --> UC_BILL
+RC --> UC_REPRINT
+
+UC_CONF --> SMTP
+
+UC_BOOK ..> UC_VBOOK : <<include>>
+UC_BOOK ..> UC_SLOT  : <<include>>
+UC_BOOK ..> UC_CONF  : <<include>>
+UC_BILL ..> UC_CALC  : <<include>>
+UC_BILL ..> UC_SPLIT : <<include>>
+
+UC_DISC  ..> UC_BILL : <<extend>>
+UC_PRINT ..> UC_BILL : <<extend>>
+@enduml
