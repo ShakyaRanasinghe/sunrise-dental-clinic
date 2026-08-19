@@ -48,14 +48,20 @@ Safest first move. Proves the new layout and `pom.xml` before anything valuable 
 - [ ] Gate 1 + 2 pass
 - [ ] `refactor(platform): move shared machinery to modular`
 
+**On screen after this step:** `/help` renders, and nothing else. That is the point — it proves the
+layout, the `pom.xml`, JSP compilation and the JSTL fallback locale before anything valuable depends
+on them.
+
 **Watch for:** `AppContext` is the one class that cannot be finished in this step. Accept a
 partially-wired context and revisit it at the end of every later step.
 
 ---
 
-## Step 2 — `access` · ~20 classes · the four portals land here
+## Step 2 — `access` + stub landings · ~20 classes · **first deploy**
 
-Everything else needs a principal.
+Everything else needs a principal. This step also adds four stub landing pages, so that the moment
+sign-in works it goes somewhere rather than to a 404 — see [`README.md`](README.md) for why that
+matters.
 
 ### Move
 - [ ] `access/domain` ← `UserAccount`, `Role`, `ClinicPrincipal`
@@ -81,45 +87,60 @@ Everything else needs a principal.
       [`../prototype/access/`](../prototype/access/)
 - [ ] `RolePolicyTest`, `AbstractLoginServletTest`
 
+### Stub landings — four small JSPs so sign-in has somewhere to go
+- [ ] `shared/stub-home.jspf` — the real header and navigation from
+      [`../prototype/`](../prototype/), plus "Signed in as … — this screen arrives in step N"
+- [ ] `appointments/patient-home.jsp`, `reception-day.jsp`, `dentist-schedule.jsp` — stubs including
+      only the stub fragment. Step 4 fills them in
+- [ ] `reporting/reports.jsp` — stub. Step 7 fills it in
+- [ ] Four throwaway servlets to render them, or one `StubHomeServlet` mapped four times and deleted
+      at step 4. **Note in the class comment that it is temporary**
+
 ### Fix on the way
 - [ ] Persist lock-out state — `user_account.failed_attempts` and `locked` exist and nothing
       writes them, so any restart clears every lock
 - [ ] `GET /api/auth/lock-status` requires `ADMIN`
 
 - [ ] Gate 1 + 2 + 3 pass
+- [ ] **Deploy it.** `mvn package`, drop the WAR on Tomcat 10.1, load `schema.sql` +
+      `procedures.sql` + `demo-data.sql`
+- [ ] Sign in through all four portals with the seeded accounts and land on a page
+- [ ] Confirm a wrong-portal sign-in gives the same message as a wrong password — FR-AUTH-03
+- [ ] Confirm five failures lock the account, and an administrator can unlock it
 - [ ] `refactor(access): move identity and add the four role portals`
+
+**On screen after this step — the first deployable increment.** The portal chooser, four distinct
+sign-in pages, role routing to four landing pages, session timeout, sign-out, lock-out. That
+demonstrates the brief's requirement 1 (*user authentication*) and requirement 6 (*exit system*) on
+its own.
 
 ---
 
-## Step 3 — `patients` · ~8 classes + notes
+## Step 3 — `patients` + `scheduling` · ~28 classes · two commits
 
-Small and self-contained.
+Merged, because neither owns a role landing page: as separate steps they were two stretches with no
+visible change. They are independent of each other, so commit them separately inside one step.
+
+Medical notes are **deferred to step 8** — they need nothing from here and the register is the part
+`appointments` depends on.
+
+### 3a — `patients`
 
 - [ ] `patients/domain` ← `Patient`; **new** `PatientResponse` — closes part of the `toString()` defect
 - [ ] `patients/data` ← `PatientRepository`, `PatientDao`, `InMemoryPatientRepository`
 - [ ] `patients/web` ← `PatientRecordsServlet`, `PatientApiServlet`
 - [ ] **New** `patients/service/PatientService` — the two servlets currently call the repository
       directly
-- [ ] **New** `PatientNote`, `NoteCategory`, `PatientNoteResponse`
-- [ ] **New** `PatientNoteRepository`, `PatientNoteDao`, in-memory
-- [ ] **New** `PatientProfileServlet` + `patients/profile.jsp`, from
-      [`../prototype/patient/profile.html`](../prototype/patient/profile.html)
-- [ ] Note endpoints on `PatientApiServlet` — `/api/patients/{id}/notes`, all four methods
-- [ ] `PatientServiceTest`, `PatientNoteServiceTest`
+- [ ] `PatientServiceTest`
 
 ### Fix on the way
 - [ ] `POST /api/patients` requires `RECEPTIONIST` or `ADMIN`
 - [ ] It must **not** inherit the caller's uid as `user_uid` — that is what gave one patient two
       profile rows
 
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] `refactor(patients): move register and add medical notes`
+- [ ] `refactor(patients): move the register and extract PatientService`
 
----
-
-## Step 4 — `scheduling` · ~20 classes · biggest data layer
-
-Nothing depends on it yet, so mistakes are cheap.
+### 3b — `scheduling` · biggest data layer
 
 - [ ] `scheduling/domain` ← `Dentist`, `DentistSession`, `Slot`, `SlotStatus`, `Treatment`,
       `SlotResponse`
@@ -139,9 +160,13 @@ Nothing depends on it yet, so mistakes are cheap.
 - [ ] Gate 1 + 2 + 3 pass
 - [ ] `refactor(scheduling): move dentists, sessions, slots and treatments`
 
+**On screen after this step:** the patient register with search and walk-in registration, and
+publish-availability. `GET /api/dentists` and `/api/treatments` return real JSON for the first time,
+which is the `toString()` defect closed and visible.
+
 ---
 
-## Step 5 — `appointments` · ~17 classes · **slow down here**
+## Step 4 — `appointments` · ~17 classes · **the demo moment, and slow down here**
 
 The heart of the system. The `SELECT … FOR UPDATE` guard and its concurrency test move together.
 
@@ -167,12 +192,20 @@ The heart of the system. The `SELECT … FOR UPDATE` guard and its concurrency t
 - [ ] `complete` must verify the appointment belongs to the calling dentist, not just the role
 - [ ] Enforce the status machine centrally — cancelling a `BILLED` appointment is currently possible
 
+- [ ] **Delete the stub landing servlet and the stub fragment** from step 2
 - [ ] Gate 1 + 2 + 3 pass, and `BookingConcurrencyTest` specifically
+- [ ] **Deploy and walk the whole journey**: reception publishes availability, a patient books,
+      reception sees it on the day view, the dentist sees it on their schedule
 - [ ] `refactor(appointments): move booking and the role dashboards`
+
+**On screen after this step — the application starts looking like the prototype.** Three real
+dashboards on real data, and booking working end to end including the concurrency guard. This
+demonstrates the brief's requirements 2 (*register new appointment*) and 3 (*display appointment
+details*), so with step 2 that is three of the six. **A defensible stopping point.**
 
 ---
 
-## Step 6 — `billing` · ~13 classes
+## Step 5 — `billing` · ~13 classes
 
 - [ ] `billing/domain` ← `Bill`, `BillBreakdown`, `RevenueSplit`, `BillResponse`
 - [ ] `billing/service` ← `BillingService`, `BillingStrategy`, `StandardBillingStrategy`,
@@ -194,9 +227,13 @@ The heart of the system. The `SELECT … FOR UPDATE` guard and its concurrency t
 - [ ] Gate 1 + 2 + 3 pass
 - [ ] `refactor(billing): move bills, pricing and the revenue split`
 
+**On screen after this step — all six of the brief's functions work.** Authentication, register an
+appointment, display it by number, calculate and print the bill, help, exit. **The strongest
+stopping point if time runs short**: what remains after this is beyond the brief.
+
 ---
 
-## Step 7 — `notifications` · ~12 classes
+## Step 6 — `notifications` · ~12 classes
 
 Natural moment to make delivery real.
 
@@ -214,13 +251,15 @@ Natural moment to make delivery real.
 - [ ] Gate 1 + 2 + 3 pass
 - [ ] `feat(notifications): send confirmation email and reminder SMS`
 
+**On screen after this step:** nothing new, but a real email arrives after a booking. Verify with a
+local SMTP catcher rather than a real mailbox.
+
 ---
 
-## Step 8 — `reporting` and `feedback` · ~14 classes
+## Step 7 — `reporting` · ~9 classes
 
-Last, because they read from billing and appointments.
+Reads from billing and appointments, so it comes after both.
 
-### reporting
 - [ ] `reporting/service` ← `ReportService`
 - [ ] **New** `reporting/data/ReportRepository`, `JdbcReportDao`, in-memory — closes the one
       service that imports a concrete `BillDao`
@@ -229,8 +268,34 @@ Last, because they read from billing and appointments.
 - [ ] Views: `reporting/reports.jsp`, `accounts.jsp`, `audit.jsp`
 - [ ] Add the "Supports:" line under every report — FR-ADM-16
 - [ ] `ReportServiceTest`
+- [ ] Gate 1 + 2 + 3 pass
+- [ ] `refactor(reporting): move reports and add accounts and audit screens`
 
-### feedback
+**On screen after this step:** the admin's three screens. Create a staff account, unlock a locked
+patient, read the audit trail, export a report as CSV.
+
+---
+
+## Step 8 — `feedback` + medical notes · ~25 new classes · all new work
+
+Nothing to move — every class here is new. This is the feature work the earlier steps' migration
+made room for, and it is last because it depends on appointments and billing.
+
+### 8a — medical notes, in `patients`
+- [ ] **New** `PatientNote`, `NoteCategory`, `PatientNoteResponse`
+- [ ] **New** `PatientNoteRepository`, `PatientNoteDao`, in-memory
+- [ ] **New** `patients/service/PatientNoteService`
+- [ ] **New** `PatientProfileServlet` + `patients/profile.jsp`, from
+      [`../prototype/patient/profile.html`](../prototype/patient/profile.html)
+- [ ] Note endpoints on `PatientApiServlet` — `/api/patients/{id}/notes`, all four methods
+- [ ] Add `patientNotes` and `hasCriticalNotes` to the dentist's appointment view, and the critical
+      banner on the schedule — FR-NOTE-07, FR-NOTE-08, FR-DEN-42
+- [ ] Confirm reception and the administrator receive a response object with **no field** for them
+- [ ] Confirm a patient with no notes renders "None declared", never a blank — FR-NOTE-12
+- [ ] `PatientNoteServiceTest`
+- [ ] `feat(patients): medical notes declared by the patient`
+
+### 8b — complaints and reviews, in `feedback`
 - [ ] **New** `Complaint`, `ComplaintCategory`, `ComplaintStatus`, `ComplaintResponse`
 - [ ] **New** `DentistReview`, `RatingSummary`, `ReviewResponse`
 - [ ] **New** `ComplaintService`, `ReviewService`
@@ -242,10 +307,13 @@ Last, because they read from billing and appointments.
 - [ ] Confirm a dentist receives `RatingSummary` and never a `ReviewResponse` — NFR-SEC-13
 - [ ] `ComplaintServiceTest`, `ReviewServiceTest` including the 30-day window and the five-review floor
 
-- [ ] **Finish `AppContext`** — every accessor now has a real implementation
+- [ ] **Finish `AppContext`** — every accessor now has a real implementation, no stubs left
 - [ ] Delete every remaining `.gitkeep`
 - [ ] Gate 1 + 2 + 3 pass
-- [ ] `refactor(reporting): move reports` and `feat(feedback): complaints and reviews`
+- [ ] `feat(feedback): complaints and dentist reviews`
+
+**On screen after this step:** every one of the 24 pages resolves. The prototype and the running
+application match.
 
 ---
 
@@ -270,19 +338,37 @@ Last, because they read from billing and appointments.
 
 ## Running count
 
-| Step | Classes | Of which new | Fixes closed |
-|---|---|---|---|
-| 0 | — | — | 1 |
-| 1 platform | 24 | 0 | 1 |
-| 2 access | 20 + 11 new | 11 | 2 |
-| 3 patients | 8 + 7 new | 7 | 2 |
-| 4 scheduling | 20 + 2 new | 2 | 4 |
-| 5 appointments | 17 | 0 | 3 |
-| 6 billing | 13 | 0 | 4 |
-| 7 notifications | 12 | 0 | 2 |
-| 8 reporting + feedback | 5 + 18 new | 18 | 1 |
-| **total** | **~157** | **~38** | **20** |
+| Step | Classes | Of which new | Fixes closed | Deployable after |
+|---|---|---|---|---|
+| 0 | — | — | 1 | `layered/` only |
+| 1 platform | 24 | 0 | 1 | help page |
+| 2 access + stubs | 20 + 11 new | 11 | 2 | **yes — sign in as four roles** |
+| 3 patients + scheduling | 28 + 3 new | 3 | 6 | yes — register, availability, real reference JSON |
+| 4 appointments | 17 | 0 | 3 | **yes — three dashboards, booking end to end** |
+| 5 billing | 13 | 0 | 4 | **yes — all six brief functions** |
+| 6 notifications | 12 | 0 | 2 | yes |
+| 7 reporting | 5 + 4 new | 4 | 1 | yes — admin screens |
+| 8 feedback + notes | 0 + 25 new | 25 | 0 | yes — all 24 pages |
+| 9 verify | — | — | — | — |
+| **total** | **~162** | **~44** | **20** | |
 
-The class count grows from 125 to about 157 — the new work is the four portals, the role policies,
-the account factory, medical notes, complaints and reviews. Twenty documented defects close along
-the way, which is the argument for fixing them during the move rather than after it.
+The class count grows from 125 to about 162. Roughly a quarter of the work is not migration at all —
+it is the four portals, the role policies, the account factory, medical notes, complaints and
+reviews. Worth knowing before setting the 7–9 hour estimate against a calendar, because the new
+features are the part that can be cut if the deadline demands it, and the migration is the part that
+cannot be half-done.
+
+---
+
+## If you only have time for some of it
+
+| Stop after | You can demonstrate | Brief requirements covered |
+|---|---|---|
+| step 2 | Four portals, role routing, lock-out, sign-out | 1, 6 |
+| step 4 | The above, plus three dashboards and booking | 1, 2, 3, 6 |
+| **step 5** | **The above, plus billing** | **all six** |
+| step 8 | Everything, including the features beyond the brief | all six, plus extensions |
+
+Below step 2, `layered/` is the better submission. Between steps 2 and 4, it is a judgement call.
+From step 5 onward, `modular/` is strictly better — same behaviour, better structure, twenty fewer
+defects.
