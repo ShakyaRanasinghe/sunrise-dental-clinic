@@ -1,0 +1,56 @@
+@startuml use_case_dentist
+' Sunrise Dental Clinic - Use Case Diagram: Dentist
+' Source of truth: modular/docs/use-case-diagram.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 18
+skinparam ranksep 70
+skinparam usecase {
+  BackgroundColor #FDF3EC
+  BorderColor #C2571A
+  ArrowColor #52606D
+}
+
+left to right direction
+' invisible title: reserves top margin so an actor at the
+' upper edge is not clipped by the render bounds
+title <color:#FFFFFF>.\n.</color>
+
+actor "Dentist" as DN
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Sign In" as UC_LOGIN
+  usecase "Authenticate\nCredentials" as UC_AUTH
+  usecase "View My Schedule" as UC_SCHED
+  usecase "Warn Of Critical\nMedical Notes" as UC_WARN
+  usecase "Open Appointment" as UC_OPEN
+  usecase "Read Patient\nMedical Notes" as UC_NOTES
+  usecase "Complete Treatment" as UC_DONE
+  usecase "Record Diagnosis" as UC_DIAG
+  usecase "Write Audit Event" as UC_AUDIT
+  usecase "View My Rating" as UC_RATE
+}
+
+DN --> UC_LOGIN
+DN --> UC_SCHED
+DN --> UC_OPEN
+DN --> UC_DONE
+DN --> UC_RATE
+
+UC_LOGIN ..> UC_AUTH  : <<include>>
+UC_OPEN  ..> UC_NOTES : <<include>>
+UC_DONE  ..> UC_AUDIT : <<include>>
+
+UC_WARN ..> UC_SCHED : <<extend>>
+UC_DIAG ..> UC_DONE  : <<extend>>
+
+note bottom of UC_RATE
+  Aggregate only: mean and count.
+  Never an individual review, its
+  comment, or who wrote it.
+end note
+@enduml
