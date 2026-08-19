@@ -12,6 +12,7 @@ import com.sunrise.clinic.pattern.AppointmentNumberGenerator;
 import com.sunrise.clinic.repository.inmemory.InMemoryAppointmentRepository;
 import com.sunrise.clinic.repository.inmemory.InMemoryPatientRepository;
 import com.sunrise.clinic.repository.inmemory.InMemorySlotRepository;
+import com.sunrise.clinic.repository.inmemory.SerialTransactionRunner;
 import com.sunrise.clinic.service.notification.AppointmentEvent;
 import com.sunrise.clinic.service.notification.AppointmentEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,8 @@ class AppointmentServiceTest {
                 .status(SlotStatus.OPEN).build());
         patients.save(Patient.builder().id("p1").name("Nimal").email("nimal@example.lk").build());
 
-        service = new AppointmentService(slots, appointments, patients, publisher);
+        service = new AppointmentService(
+                slots, appointments, patients, publisher, new SerialTransactionRunner());
     }
 
     @Test

@@ -1,8 +1,5 @@
 package com.sunrise.clinic.pattern.billing;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 /**
  * Default revenue-attribution rule:
  * <ul>
@@ -11,16 +8,15 @@ import org.springframework.stereotype.Component;
  *   <li>Clinic keeps the remaining treatment cost (default 40% — materials/facility).</li>
  *   <li>Receptionist earns the <b>service charge</b> (their handling fee).</li>
  * </ul>
- * The dentist's treatment share is externalised to {@code clinic.revenue.dentist-treatment-share}
- * so the policy is configurable without a code change.
+ * The dentist's treatment share is read from {@code clinic.revenue.dentist-treatment-share}
+ * (see {@code AppConfig}) and passed in by {@code AppContext}, so the policy is
+ * configurable without a code change.
  */
-@Component
 public class DefaultRevenueSplitStrategy implements RevenueSplitStrategy {
 
     private final double dentistTreatmentShare;
 
-    public DefaultRevenueSplitStrategy(
-            @Value("${clinic.revenue.dentist-treatment-share:0.60}") double dentistTreatmentShare) {
+    public DefaultRevenueSplitStrategy(double dentistTreatmentShare) {
         this.dentistTreatmentShare = dentistTreatmentShare;
     }
 

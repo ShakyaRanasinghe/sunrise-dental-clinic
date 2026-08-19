@@ -14,8 +14,6 @@ import com.sunrise.clinic.repository.AppointmentRepository;
 import com.sunrise.clinic.repository.BillRepository;
 import com.sunrise.clinic.repository.DentistRepository;
 import com.sunrise.clinic.repository.TreatmentRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -26,7 +24,6 @@ import java.util.UUID;
  * {@link RevenueSplitStrategy}), so pricing and commission policy can change
  * without touching this service.
  */
-@Service
 public class BillingService {
 
     private final AppointmentRepository appointments;
@@ -43,7 +40,7 @@ public class BillingService {
                           TreatmentRepository treatments,
                           BillingStrategy billingStrategy,
                           RevenueSplitStrategy revenueSplitStrategy,
-                          @Value("${clinic.billing.service-charge:200}") double serviceCharge) {
+                          double serviceCharge) {
         this.appointments = appointments;
         this.bills = bills;
         this.dentists = dentists;
