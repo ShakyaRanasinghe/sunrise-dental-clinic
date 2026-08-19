@@ -1,6 +1,6 @@
 # ===== Build artifacts =====
-# Java / Maven
-backend/target/
+# Java / Maven — path-agnostic so it covers layered/ and modular/ alike
+target/
 *.class
 *.jar
 !**/gradle/wrapper/gradle-wrapper.jar
