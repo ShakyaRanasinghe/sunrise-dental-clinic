@@ -9,20 +9,22 @@ Tick a box when it is **committed**, not when it compiles.
 
 ## Step 0 — Decide what ships ← **start here**
 
-Blocks every step below. Two of these tasks are worth doing whatever the answer is.
+**Decided: `modular/` is the only code path.** `layered/` stays in the repository as the source the
+migration copies from and as the git history, but it is not run, maintained or shipped. Nothing in
+these tasks edits it.
+
+That removes the fallback, which makes the stopping points at the end of this file the thing to
+watch rather than a contingency.
 
 - [ ] **Get the deadline** from the Moodle submission point. Write it here: `____________`
-- [ ] Choose the branch from [`README.md`](README.md) and write the choice here: `____________`
-- [ ] **Open a PR from `develop` to `main`.** `main` is 6 commits behind and still contains Spring
+- [ ] Pick the target stopping point from the table at the end of this file: `____________`
+- [ ] **Open a PR from `develop` to `main`.** `main` is 8 commits behind and still contains Spring
       Boot, React and Firebase. Whatever ships goes through `main`, so this is due regardless
-- [ ] **Fix `Json.write` in `layered/`** — add a branch for non-record objects, or map the five
-      endpoints to response records. This is the one defect worth breaking the freeze for: without
-      it `GET /api/dentists` answers `["Dentist{id=d-silva}"]` and the Task B web-service tier does
-      not work. ~30 lines. `layered/src/main/java/com/sunrise/clinic/json/Json.java`
-- [ ] Re-run `layered/` and confirm `/api/dentists` and `/api/treatments` return usable JSON
-- [ ] Decide whether the four login portals are built in `layered/` too, or only in `modular/`
+- [ ] Run `./scripts/dev-up.sh` and confirm it reports *14 tables, 24 foreign keys, 3 routines,
+      5 triggers* — see [`../local-setup.md`](../local-setup.md)
 
-**Gate:** the deadline is written down and the choice is recorded. Nothing below starts until then.
+**Gate:** the deadline and the target step are written down, and `dev-up.sh` reports a clean
+environment. Nothing below starts until then.
 
 ---
 
@@ -32,7 +34,8 @@ Safest first move. Proves the new layout and `pom.xml` before anything valuable 
 
 - [ ] `platform/config` ← `AppConfig`
 - [ ] `platform/db` ← `Database`, `PooledConnection`
-- [ ] `platform/json` ← `Json` — **and fix the non-record branch here** (the defect from step 0)
+- [ ] `platform/json` ← `Json` — **and add the non-record branch**, the cause of the five
+      endpoints that answer `["Dentist{id=d-silva}"]` instead of JSON
 - [ ] `platform/error` ← `DataAccessException`, `ResourceNotFoundException`,
       `SlotUnavailableException`, `ErrorResponse`
 - [ ] `platform/data` ← `Repository<T,ID>`, `InMemoryRepository`, `TransactionRunner`, `JdbcDao`,
@@ -369,6 +372,7 @@ cannot be half-done.
 | **step 5** | **The above, plus billing** | **all six** |
 | step 8 | Everything, including the features beyond the brief | all six, plus extensions |
 
-Below step 2, `layered/` is the better submission. Between steps 2 and 4, it is a judgement call.
-From step 5 onward, `modular/` is strictly better — same behaviour, better structure, twenty fewer
-defects.
+There is no fallback: `layered/` is not a submission candidate. So the target step chosen in step 0
+is a commitment, and **step 5 is the one to aim at** — it is the first point at which all six of the
+brief's functions work. Steps 6 to 8 are beyond the brief and can be dropped without losing a
+requirement.

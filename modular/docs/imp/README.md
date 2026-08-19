@@ -4,7 +4,8 @@
 > documentation. Everything durable belongs in [`../migration-plan.md`](../migration-plan.md),
 > [`../servlets.md`](../servlets.md) and [`../architecture/`](../architecture/).
 
-The checklist is in [`tasks.md`](tasks.md). This page is the status board.
+The checklist is in [`tasks.md`](tasks.md). This page is the status board. The environment is
+[`../local-setup.md`](../local-setup.md) — one command, `./scripts/dev-up.sh`.
 
 ---
 
@@ -17,7 +18,7 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board.
 | First deployable | **end of step 2** |
 | First real screen | **end of step 3** |
 | Core journey working | **end of step 4** |
-| `layered/` | frozen, 48 tests passing, deployable |
+| `layered/` | **out of scope** — source and history only, not run or shipped |
 | `modular/` | scaffolding complete, 0 Java classes |
 
 ```
@@ -79,11 +80,17 @@ six work.
 **One question decides the whole sequence, and it has not been answered: when is the Moodle
 deadline?**
 
-| If the deadline is | Then | Because |
+`modular/` is the only code path, so the deadline sets **how far through the steps to go**, not
+which implementation to ship:
+
+| If the deadline is | Aim for | Because |
 |---|---|---|
-| **more than ~2 weeks** | Do steps 1–8. `modular/` ships | 7–9 hours of migration fits, and the modular structure is what the report describes |
-| **1–2 weeks** | Do steps 1–4, stop, then decide | Step 4 is the first point where `modular/` demonstrates the brief's requirements 1, 2 and 3. Below that, `layered/` remains the better submission |
-| **under a week** | Skip the migration entirely. Fix `layered/`'s defects and write the report | A half-migrated tree is the one outcome that costs marks rather than earning them |
+| **more than ~2 weeks** | all 9 steps | 7–9 hours fits, and the features beyond the brief are worth the marks |
+| **1–2 weeks** | **step 5**, then step 9 | Step 5 is the first point at which all six of the brief's functions work. Steps 6–8 are extensions |
+| **under a week** | **step 4**, then step 9 | Requirements 1, 2, 3 and 6 working, with billing as the first thing to cut |
+
+Skip step 9 under no circumstances — it is where the SRS statuses are corrected and the report gets
+its evidence.
 
 Step 0 also has one task that is worth doing **under every branch above**, which is why it is a step
 and not just a question. See [`tasks.md`](tasks.md).
