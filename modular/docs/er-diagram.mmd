@@ -1,6 +1,5 @@
 %% Sunrise Dental Clinic - entity relationship diagram
-%% Generated from layered/src/main/resources/schema.sql
-%% Solid line = FOREIGN KEY enforced.  Dotted line = uid reference, no constraint.
+%% Solid = FOREIGN KEY enforced.  Dotted = uid reference, no constraint.
 
 erDiagram
     USER_ACCOUNT {
@@ -40,6 +39,16 @@ erDiagram
         varchar description
         decimal base_cost
         bool active
+    }
+
+    PATIENT_NOTE {
+        varchar id PK
+        varchar patient_id FK
+        enum category "ALLERGY MEDICATION CONDITION OTHER"
+        varchar detail "written by the patient, not by staff"
+        bool critical "surfaces as a banner to the treating dentist"
+        timestamp created_at
+        timestamp updated_at
     }
 
     DENTIST_SESSION {
@@ -108,6 +117,31 @@ erDiagram
         timestamp sent_at
     }
 
+    COMPLAINT {
+        varchar id PK
+        varchar patient_id FK "who raised it"
+        varchar dentist_id FK "who it names - never shown to them"
+        varchar appointment_no FK "optional, the visit it concerns"
+        enum category "CONDUCT CLINICAL_CONCERN WAIT_TIME BILLING OTHER"
+        text detail "the patient's own account, never edited by staff"
+        enum status "SUBMITTED UNDER_REVIEW RESOLVED DISMISSED"
+        timestamp submitted_at
+        varchar reviewed_by_uid "the administrator"
+        varchar resolution "required when closing"
+        timestamp resolved_at
+    }
+
+    DENTIST_REVIEW {
+        varchar id PK
+        varchar appointment_no FK "UNIQUE - one review per visit"
+        varchar dentist_id FK
+        varchar patient_id FK "the author, never shown to the dentist"
+        tinyint rating "1 to 5"
+        varchar comment "optional"
+        timestamp submitted_at
+        timestamp updated_at "editable for 30 days"
+    }
+
     AUDIT_EVENT {
         varchar id PK
         varchar actor_uid "who did it"
@@ -130,6 +164,13 @@ erDiagram
     DENTIST_SESSION ||--o{ SLOT         : "divides into"
     SLOT         |o--o| APPOINTMENT     : "booked as"
 
+    PATIENT      ||--o{ PATIENT_NOTE : "declares"
+    PATIENT      ||--o{ COMPLAINT : "raises"
+    DENTIST      ||--o{ COMPLAINT : "named in"
+    APPOINTMENT  |o--o{ COMPLAINT : "concerns"
+    APPOINTMENT  ||--o| DENTIST_REVIEW : "rated by"
+    DENTIST      ||--o{ DENTIST_REVIEW : "rated"
+    PATIENT      ||--o{ DENTIST_REVIEW : "writes"
     PATIENT      ||--o{ APPOINTMENT : "books"
     DENTIST      ||--o{ APPOINTMENT : "treats"
     TREATMENT    |o--o{ APPOINTMENT : "type of"
