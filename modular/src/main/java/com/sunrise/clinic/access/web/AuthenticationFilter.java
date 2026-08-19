@@ -51,7 +51,7 @@ import java.util.Map;
  *
  * <p>This was found by testing rather than reading: at step 2 a signed-in patient
  * could load all four role landing pages with a 200, because the temporary
- * {@code StubHomeServlet} checked nothing. Relying on every one of thirty-two
+ * the temporary stub landing page checked nothing. Relying on every one of thirty-two
  * servlets to remember is the discipline-not-construction problem this codebase
  * avoids elsewhere.</p>
  */

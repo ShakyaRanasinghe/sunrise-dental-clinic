@@ -542,3 +542,17 @@ a { color: var(--sunrise-dark); }
     /* A receipt that breaks across two pages is a receipt nobody trusts. */
     .receipt, .receipt table { page-break-inside: avoid; }
 }
+
+/* ---------------------------------------------------------------------
+   Report bars.
+
+   Divs sized as a percentage of the period's peak. The server knows the
+   peak, so the width is arithmetic in EL — no chart library, and no
+   client-side script.
+   --------------------------------------------------------------------- */
+.bar-col { width: 40%; }
+.bar-track { background: #efeae4; border-radius: 3px; height: 0.75rem; overflow: hidden; }
+.bar-fill { background: #a8552a; height: 100%; min-width: 2px; }
+.right { text-align: right; font-variant-numeric: tabular-nums; }
+tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
+.otp { font-size: 1.25rem; letter-spacing: 0.08em; }
