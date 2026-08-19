@@ -4,6 +4,8 @@
     The dentist comes from the signed-in account, never from a parameter, so this page
     cannot be pointed at a colleague's day. The service checks it again on the POST: any
     dentist holds COMPLETE_TREATMENT, but only one of them is treating this patient.
+
+    Each row carries a critical-notes flag rather than the notes themselves — see below.
 --%>
 <%@ include file="/WEB-INF/jsp/shared/taglibs.jspf" %>
 <c:set var="pageTitle" value="My schedule" />
@@ -33,17 +35,38 @@
         </div>
     </c:when>
     <c:otherwise>
-        <c:forEach var="a" items="${appointments}">
+        <c:forEach var="row" items="${appointments}">
+            <c:set var="a" value="${row.appointment()}" />
             <div class="card">
                 <h2>
                     ${a.time()} &mdash; <c:out value="${a.patientName()}" />
                     <span class="count">${a.status()}</span>
                 </h2>
+
+                <%--
+                    FR-NOTE-08: the warning comes before the appointment is opened. A flag
+                    rather than the notes themselves — reading every patient's notes to
+                    render a day would be a great deal of medical information fetched to
+                    print one line.
+                --%>
+                <c:if test="${row.hasCriticalNotes()}">
+                    <div class="notice error">
+                        <strong>This patient has declared something important.</strong>
+                        Open the appointment below to read it before treating.
+                    </div>
+                </c:if>
                 <div class="table-wrap">
                     <table>
                         <tbody>
                             <tr><th>Treatment</th><td><c:out value="${a.treatmentName()}" /></td></tr>
                             <tr><th>Appointment</th><td><code>${a.appointmentNo()}</code></td></tr>
+                            <tr>
+                                <th>Declared by the patient</th>
+                                <td>
+                                    <a href="${ctx}/dentist/appointment?appointmentNo=${a.appointmentNo()}">
+                                        See what they declared</a>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

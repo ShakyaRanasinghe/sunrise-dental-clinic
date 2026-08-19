@@ -9,8 +9,10 @@ import com.sunrise.clinic.appointments.service.AppointmentNumberGenerator;
 import com.sunrise.clinic.appointments.service.AppointmentObserver;
 import com.sunrise.clinic.appointments.service.AppointmentService;
 import com.sunrise.clinic.appointments.service.ClinicAccess;
+import com.sunrise.clinic.patients.data.InMemoryPatientNoteRepository;
 import com.sunrise.clinic.patients.data.InMemoryPatientRepository;
 import com.sunrise.clinic.patients.domain.Patient;
+import com.sunrise.clinic.patients.service.PatientNoteService;
 import com.sunrise.clinic.platform.data.SerialTransactionRunner;
 import com.sunrise.clinic.scheduling.data.InMemoryDentistRepository;
 import com.sunrise.clinic.scheduling.data.InMemorySlotRepository;
@@ -50,8 +52,10 @@ public class AppointmentTestFixture {
     public final InMemoryDentistRepository dentists = new InMemoryDentistRepository();
     public final InMemoryTreatmentRepository treatments = new InMemoryTreatmentRepository();
     public final InMemoryCounterRepository counters = new InMemoryCounterRepository();
+    public final InMemoryPatientNoteRepository patientNotes = new InMemoryPatientNoteRepository();
 
     public final ClinicAccess clinicAccess;
+    public final PatientNoteService noteService;
     public final AppointmentService service;
 
     public AppointmentTestFixture() {
@@ -70,8 +74,13 @@ public class AppointmentTestFixture {
 
         ReferenceService reference = new ReferenceService(dentists, treatments);
         clinicAccess = new ClinicAccess(patients, dentists);
+        // The real adapter, so a dentist in these tests can read the notes of a patient
+        // they actually have an appointment with and nobody else's.
+        noteService = new PatientNoteService(patientNotes, patients,
+                new com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship(
+                        appointments, dentists));
         service = new AppointmentService(slots, appointments, reference, clinicAccess,
-                new AppointmentNumberGenerator(counters),
+                new AppointmentNumberGenerator(counters), noteService,
                 new AppointmentEventPublisher(observers),
                 new SerialTransactionRunner());
     }

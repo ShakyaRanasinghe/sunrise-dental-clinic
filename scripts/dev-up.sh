@@ -53,8 +53,13 @@ say "loading $DB"
 docker exec "$MYSQL" mysql -uroot -p"$MYSQL_PW" \
   -e "DROP DATABASE IF EXISTS \`$DB\`;" 2>/dev/null
 
+# --default-character-set=utf8mb4 is not optional. The client defaults to latin1, so
+# MySQL was told the file's UTF-8 bytes were latin1 and converted them again - storing
+# a double-encoded em dash that read back as "â€”" in the application. Every non-ASCII
+# character in the seed data was corrupt, and it round-tripped through the CLI cleanly
+# because the same wrong charset undid it on the way out.
 load() {
-  docker exec -i "$MYSQL" mysql -uroot -p"$MYSQL_PW" < "$1" 2>&1 \
+  docker exec -i "$MYSQL" mysql --default-character-set=utf8mb4 -uroot -p"$MYSQL_PW" < "$1" 2>&1 \
     | grep -v '^mysql: \[Warning\]' || true
 }
 load "$RES/schema.sql"
