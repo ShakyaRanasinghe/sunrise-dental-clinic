@@ -145,7 +145,7 @@ These are binding, not preferences.
 | ID | Constraint |
 |---|---|
 | **CON-01** | **No application framework may be used.** Dependency wiring, request routing, transactions, JSON serialisation, password hashing and access control are implemented in this project |
-| **CON-02** | Web interaction must be by **Jakarta Servlet**. Pages are rendered by JSP with JSTL; no client-side rendering framework |
+| **CON-02** | Web interaction must be by **Jakarta Servlet**. Pages are rendered by JSP with JSTL; no client-side rendering framework. The complete servlet and route contract is [`servlets.md`](../servlets.md) |
 | **CON-03** | Database access must be **plain JDBC**. No ORM, no persistence framework |
 | **CON-04** | Maven for build and JUnit 5 for tests are permitted — a build tool and a test library are not application frameworks |
 | **CON-05** | Source must be packaged **by feature**, each module holding its own presentation, business and data tiers |

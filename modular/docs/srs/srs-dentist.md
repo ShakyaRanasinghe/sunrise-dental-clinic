@@ -199,7 +199,7 @@ compromised account exposes.
 | `POST` | `/api/appointments/{no}/complete` | Records diagnosis and marks complete |
 | `GET` | `/api/availability?dentistId&date` | Own availability |
 | `GET` | `/api/treatments` | |
-| `GET` | `/api/dentists/me/rating` | Own mean and count only |
+| `GET` | `/api/ratings/me` | Own mean and count only |
 
 Notably absent: `/api/patients` — a dentist reaches patient details through their own
 appointments, never by searching the register. The same rule governs notes: the endpoint takes a

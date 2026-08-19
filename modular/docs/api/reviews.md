@@ -6,17 +6,17 @@ Conventions, the error envelope and the role matrix are in [`README.md`](README.
 | | |
 |---|---|
 | Servlet | `ReviewApiServlet` |
-| Mappings | `/api/appointments/{no}/review` and `/api/dentists/{id}/rating` |
+| Mappings | `/api/reviews/*` and `/api/ratings/*` — see [`../servlets.md`](../servlets.md) §5 for why not nested under appointments |
 | Module | `feedback` — alongside complaints |
 | Requirements | FR-RVW-01…12, FR-PAT-60…67, FR-DEN-60…63, FR-ADM-59…61, NFR-SEC-13 |
 | Status | **Specified, not implemented** |
 
 | Method | Path | Roles | Purpose |
 |---|---|---|---|
-| `POST` | `/api/appointments/{no}/review` | `PATIENT` (own) | Rate the visit |
-| `GET` | `/api/appointments/{no}/review` | `PATIENT` (own) · `ADMIN` | The review left |
-| `PUT` | `/api/appointments/{no}/review` | `PATIENT` (own, ≤30 days) | Change it |
-| `GET` | `/api/dentists/{id}/rating` | `DENTIST` (own) · `ADMIN` | Mean and count |
+| `POST` | `/api/reviews` | `PATIENT` (own) | Rate the visit — `appointmentNo` in the body |
+| `GET` | `/api/reviews/{appointmentNo}` | `PATIENT` (own) · `ADMIN` | The review left |
+| `PUT` | `/api/reviews/{appointmentNo}` | `PATIENT` (own, ≤30 days) | Change it |
+| `GET` | `/api/ratings/{dentistId}` | `DENTIST` (own) · `ADMIN` | Mean and count |
 | `GET` | `/api/reviews?dentistId=` | `ADMIN` | Individual reviews with comments |
 
 ---
@@ -81,18 +81,19 @@ define a dentist.
 
 ---
 
-## POST /api/appointments/{no}/review
+## POST /api/reviews
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
+| `appointmentNo` | string | yes | Must be the caller's own, `COMPLETED` or `BILLED` |
 | `rating` | integer | yes | 1–5 |
 | `comment` | string | no | Up to 1000 characters |
 
 ```bash
 curl -s -b patient-jar.txt -X POST \
-  http://localhost:8080/api/appointments/APT-20260901-0001/review \
+  http://localhost:8080/api/reviews \
   -H 'Content-Type: application/json' \
-  -d '{"rating":4,"comment":"Explained everything clearly. Slight wait."}'
+  -d '{"appointmentNo":"APT-20260901-0001","rating":4,"comment":"Explained everything clearly. Slight wait."}'
 ```
 
 **`201 Created`** — the `ReviewResponse`.
@@ -118,7 +119,7 @@ ratings, and a star with no comment is still a signal. `{"rating":4}` is a compl
 
 ---
 
-## GET /api/appointments/{no}/review
+## GET /api/reviews/{appointmentNo}
 
 **`200 OK`** — the `ReviewResponse`. The patient who wrote it, or an administrator.
 
@@ -127,7 +128,7 @@ purpose.
 
 ---
 
-## PUT /api/appointments/{no}/review
+## PUT /api/reviews/{appointmentNo}
 
 Same body as `POST`. Replaces the rating and comment; `updatedAt` moves, `submittedAt` does not.
 
@@ -147,13 +148,13 @@ mean could be edited after the fact by anyone who changed their mind about being
 
 ---
 
-## GET /api/dentists/{id}/rating
+## GET /api/ratings/{dentistId}
 
 The aggregate. A dentist may read **only their own**; an administrator may read any.
 
 ```bash
-curl -s -b dentist-jar.txt http://localhost:8080/api/dentists/d-silva/rating
-curl -s -b dentist-jar.txt http://localhost:8080/api/dentists/me/rating     # equivalent
+curl -s -b dentist-jar.txt http://localhost:8080/api/ratings/d-silva
+curl -s -b dentist-jar.txt http://localhost:8080/api/ratings/me     # equivalent
 ```
 
 **`200 OK`** — a `RatingSummary`.
