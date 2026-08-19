@@ -18,8 +18,8 @@
     start and then answer 500 with a ClassNotFoundException on first request,
     which is a worse failure than a clean 404.
 
-    After step 2: access is migrated, and four temporary stub mappings stand in
-    for the role landing pages.
+    After step 3a: access and the patient register are migrated. Four temporary stub
+    mappings still stand in for the role landing pages.
 -->
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -180,6 +180,15 @@
     <!--  patients                                                    -->
     <!-- ============================================================ -->
 
+    <servlet>
+        <servlet-name>PatientRecords</servlet-name>
+        <servlet-class>com.sunrise.clinic.patients.web.PatientRecordsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientRecords</servlet-name>
+        <url-pattern>/reception/patients</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  scheduling                                                  -->
     <!-- ============================================================ -->
@@ -216,6 +225,15 @@
     <servlet-mapping>
         <servlet-name>AuthApi</servlet-name>
         <url-pattern>/api/auth/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PatientApi</servlet-name>
+        <servlet-class>com.sunrise.clinic.patients.web.PatientApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PatientApi</servlet-name>
+        <url-pattern>/api/patients/*</url-pattern>
     </servlet-mapping>
 
     <servlet>

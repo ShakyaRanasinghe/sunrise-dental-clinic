@@ -1,5 +1,6 @@
 package com.sunrise.clinic.access.domain;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,6 +45,43 @@ public abstract class RolePolicy {
         String home = homePath();
         int second = home.indexOf('/', 1);
         return second < 0 ? home + "/" : home.substring(0, second + 1);
+    }
+
+    /**
+     * One entry in the site navigation.
+     *
+     * @param label what the link says
+     * @param path  where it goes, relative to the context path
+     */
+    public record NavItem(String label, String path) {
+    }
+
+    /**
+     * The navigation this role sees, in order.
+     *
+     * <p>Declared by the role rather than assembled in the header, for the same
+     * reason {@link #homePath()} is: the alternative is a chain of
+     * {@code <c:if test="${user.role == 'RECEPTIONIST'}">} in a JSP, which is a
+     * switch on role written in the least testable place in the codebase, and it has
+     * to be edited every time any module adds a screen.</p>
+     *
+     * <p>The base list is what every role has. Each policy prepends its own, and a
+     * module landing in a later step adds one line to one class.</p>
+     */
+    public List<NavItem> navigation() {
+        List<NavItem> items = new java.util.ArrayList<>();
+        items.add(new NavItem("Home", homePath()));
+        items.addAll(ownNavigation());
+        items.add(new NavItem("Help", "/help"));
+        return List.copyOf(items);
+    }
+
+    /**
+     * What this role has beyond Home and Help. Empty until a module gives the role a
+     * screen of its own.
+     */
+    protected List<NavItem> ownNavigation() {
+        return List.of();
     }
 
     /** Every role-owned prefix, for the filter's structural check. */

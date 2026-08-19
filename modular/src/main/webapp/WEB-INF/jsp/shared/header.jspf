@@ -29,9 +29,25 @@
     <header class="site-header">
         <div class="bar">
             <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
+            <%--
+                The role declares its own navigation - see RolePolicy.navigation().
+                The alternative is a chain of role tests here, which is a switch on
+                role written in the least testable file in the project, edited every
+                time any module adds a screen.
+            --%>
+            <%--
+                NavItem is a record, and Jakarta EL 5.0 resolves a property by looking
+                for getPath(); it does not understand a record's path(). Calling the
+                accessor as a method works and needs no getter boilerplate on every
+                response record - the same syntax user.policy() already uses.
+            --%>
+            <c:set var="here" value="${pageContext.request.requestURI}" />
             <nav class="site-nav">
-                <a href="${ctx}${user.policy().homePath()}" class="active">Home</a>
-                <a href="${ctx}/help">Help</a>
+                <c:forEach var="item" items="${user.policy().navigation()}">
+                    <a href="${ctx}${item.path()}"
+                       <c:if test="${here eq ctx.concat(item.path())}">class="active"</c:if>><c:out
+                       value="${item.label()}" /></a>
+                </c:forEach>
             </nav>
             <div class="who">
                 <c:out value="${user.displayName}" />

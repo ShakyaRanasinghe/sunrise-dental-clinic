@@ -30,8 +30,17 @@ public enum Action {
     COMPLETE_TREATMENT,
 
     // --- the register -------------------------------------------------
-    /** Search the patient register. */
+    /**
+     * Search or list the patient register.
+     *
+     * <p>Deliberately separate from {@link #READ_PATIENT_RECORD}. Listing everyone
+     * the clinic has ever treated is a front-desk capability; reading the record of
+     * the patient in your chair is a clinical one. A dentist has the second and not
+     * the first, so this is two actions rather than one with an exception.</p>
+     */
     SEARCH_PATIENTS,
+    /** Read one patient's record - name, contact details, date of birth. */
+    READ_PATIENT_RECORD,
     /** Register a walk-in patient. */
     REGISTER_PATIENT,
     /** Declare one's own medical notes. */

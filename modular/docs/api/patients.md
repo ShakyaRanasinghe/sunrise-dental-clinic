@@ -13,7 +13,7 @@ error envelope and the role matrix are in [`README.md`](README.md).
 |---|---|---|---|
 | `GET` | `/api/patients?q=` | `RECEPTIONIST` `ADMIN` | Search or list the register |
 | `GET` | `/api/patients/{id}` | self, `RECEPTIONIST` `ADMIN` `DENTIST` | One patient record |
-| `POST` | `/api/patients` | **any signed in** *(defect — see below)* | Add a patient |
+| `POST` | `/api/patients` | `RECEPTIONIST` `ADMIN` | Add a patient |
 | `GET` | `/api/patients/{id}/notes` | the patient themselves; a dentist treating them | Medical notes |
 | `POST` | `/api/patients/{id}/notes` | the patient themselves only | Add a note |
 | `PUT` | `/api/patients/{id}/notes/{noteId}` | the patient themselves only | Edit a note |
@@ -49,10 +49,9 @@ error envelope and the role matrix are in [`README.md`](README.md).
 
 ---
 
-## The intended response shape
+## The response shape
 
-Not yet implemented. This is what a `PatientResponse` record should carry, from the columns
-that exist:
+**Implemented** in step 3a as `patients/domain/PatientResponse`:
 
 ```json
 {
@@ -252,7 +251,7 @@ curl -s -b jar.txt -X POST http://localhost:8080/api/patients \
 { "errorCode": "bad_request", "message": "contactNumber is required" }
 ```
 
-### Two verified defects
+### Two verified defects — both fixed in step 3a
 
 **1. No authorisation check at all.** `doPost` calls `register` without
 `AccessControl.require`. Any authenticated caller can create a patient record. Verified by
@@ -286,18 +285,45 @@ portal account they have never had, and `hasPortalAccount` (**FR-REC-22**) repor
 thing. The uid should come from the request for a self-registration and be null for a walk-in,
 never be inherited from whoever happens to be signed in.
 
-**The fix** is three changes: require `RECEPTIONIST` or `ADMIN`; never inherit the caller's uid;
-and leave patient self-registration to `POST /api/auth/register`, which owns account creation
-and correctly fixes the role to `PATIENT`.
+**The fix**, applied in step 3a, was three changes: require `REGISTER_PATIENT` — which reception
+and the administrator hold and nobody else does; never inherit the caller's uid, so a walk-in's
+`user_uid` is always null; and leave patient self-registration to `POST /api/auth/register`, which
+owns account creation and correctly fixes the role to `PATIENT`.
 
-### Also missing
+Both are now covered by `PatientServiceTest`, and both were re-checked against the running
+application:
 
-**Nothing prevents a duplicate patient.** **FR-REC-25** requires a warning when a contact number
-already exists; there is no such check, so registering the same walk-in twice creates two
-records with the same number and nothing to reconcile them.
+```text
+POST /api/patients as patient    403 forbidden
+POST /api/patients as dentist    403 forbidden
+POST /api/patients as reception   201  user_uid = NULL
+POST /api/patients as admin       201  user_uid = NULL
+```
+
+The logic moved out of the servlet into `PatientService`, which is the deeper reason the defects
+existed: the same registration was written twice, once here and once in `PatientRecordsServlet`,
+and only one copy had the bug.
+
+### The duplicate warning — implemented in step 3a
+
+**FR-REC-25.** Registering someone on a contact number that already exists succeeds and returns
+the possible duplicates alongside the new record, so the desk is told and decides:
+
+```json
+{
+  "patient": { "id": "…", "name": "Nimal Perera Jr", "contactNumber": "0771234567", … },
+  "possibleDuplicates": [ { "id": "p-nimal", "name": "Nimal Perera", … } ]
+}
+```
+
+A warning and never a refusal: a household shares a number, and a parent books for a child.
+Refusing the second would block a legitimate registration.
+
+### Still missing
 
 **No update endpoint.** **FR-REC-24** requires a patient's details to be correctable — a
 mistyped phone number is the commonest error at a busy desk — and there is no `PUT` or `PATCH`.
+Still outstanding after step 3a; the register can add and search but not correct.
 A wrong number can only be fixed in the database.
 
 **Registration does not create the profile row.** **FR-PAT-04** requires

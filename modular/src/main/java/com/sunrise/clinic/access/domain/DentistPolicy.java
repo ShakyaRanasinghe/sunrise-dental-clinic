@@ -6,6 +6,8 @@ import java.util.Set;
 public final class DentistPolicy extends RolePolicy {
 
     private static final Set<Action> PERMITTED = Set.of(
+            // One patient record, for the person being treated - not the register.
+            Action.READ_PATIENT_RECORD,
             Action.READ_CLINICAL,
             Action.COMPLETE_TREATMENT,
             Action.READ_OWN_RATING
