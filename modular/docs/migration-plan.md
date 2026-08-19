@@ -260,3 +260,7 @@ Scaffolding, so step 1 can start on code rather than on setup.
 | Views | Prototype exists for all 19 screens, using the real stylesheet |
 
 What step 1 starts with, therefore, is moving 24 classes into `platform/` — not deciding anything.
+
+A tickable checklist for all of it, including the step-0 decision that gates everything, is in
+[`imp/tasks.md`](imp/tasks.md). That directory is a temporary working board and is deleted when the
+implementation is finished.
