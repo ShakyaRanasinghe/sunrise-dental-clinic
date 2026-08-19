@@ -259,9 +259,9 @@ bypassed, so they are never the only check.
 | `GET` | `/api/complaints` | Own complaints only |
 | `POST` | `/api/complaints` | Raise one |
 | `GET` | `/api/complaints/{id}` | Own complaint only |
-| `POST` | `/api/appointments/{no}/review` | Rate the visit — own appointment only |
-| `GET` | `/api/appointments/{no}/review` | The rating they left |
-| `PUT` | `/api/appointments/{no}/review` | Change it, within 30 days |
+| `POST` | `/api/reviews` | Rate the visit — own appointment only |
+| `GET` | `/api/reviews` | The rating they left |
+| `PUT` | `/api/reviews` | Change it, within 30 days |
 | `GET` | `/api/dentists` | |
 | `GET` | `/api/treatments` | |
 

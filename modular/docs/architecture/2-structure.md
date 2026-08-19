@@ -7,6 +7,9 @@ The shape in one picture is in [`README.md`](README.md); why this shape rather t
 
 ---
 
+The servlet-by-servlet contract — every mapping, view and role — is
+[`../servlets.md`](../servlets.md).
+
 ## The three tiers
 
 Each has one rule, and the rules are absolute.

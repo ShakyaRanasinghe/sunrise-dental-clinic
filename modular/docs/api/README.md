@@ -10,6 +10,7 @@ Satisfies **FR-WS-01** to **FR-WS-04** in [`../srs.md`](../srs/srs.md).
 |---|---|
 | Style | Resource-oriented JSON over HTTP |
 | Base path | `/api` |
+| Servlet ownership | [`../servlets.md`](../servlets.md) §4 |
 | Content type | `application/json;charset=UTF-8` |
 | Authentication | Session cookie, established by `POST /api/auth/login` |
 | Implementation | 5 Jakarta servlets, hand-written JSON — no framework (CON-01) |
@@ -154,10 +155,10 @@ one time zone (**ASM-01**). A malformed date is rejected before any query runs:
 | `POST /api/complaints` | own | | | |
 | `GET /api/complaints/{id}` | own | | | ● |
 | `PATCH /api/complaints/{id}` | | | | ● |
-| `POST /api/appointments/{no}/review` | own | | | |
-| `GET /api/appointments/{no}/review` | own | | | ● |
-| `PUT /api/appointments/{no}/review` | own | | | |
-| `GET /api/dentists/{id}/rating` | | | own | ● |
+| `POST /api/reviews` | own | | | |
+| `GET /api/reviews` | own | | | ● |
+| `PUT /api/reviews` | own | | | |
+| `GET /api/ratings/{dentistId}` | | | own | ● |
 | `GET /api/reviews?dentistId=` | | | | ● |
 | `GET /api/dentists` | ● | ● | ● | ● |
 | `GET /api/treatments` | ● | ● | ● | ● |
