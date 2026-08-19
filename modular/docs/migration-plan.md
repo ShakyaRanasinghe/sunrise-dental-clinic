@@ -12,6 +12,7 @@ lost if the conversation that produced it was.
 | Target | `modular/` — scaffolding complete, no code yet |
 | Order | Dependency order, so every step compiles |
 | Estimate | 7–9 hours of focused work |
+| Environment | `./scripts/dev-up.sh` — see [`local-setup.md`](local-setup.md) |
 
 ---
 
