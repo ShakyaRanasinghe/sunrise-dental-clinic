@@ -240,23 +240,45 @@ Medical notes are **deferred to step 8** — they need nothing from here and the
 
 ### 3b — `scheduling` · biggest data layer
 
-- [ ] `scheduling/domain` ← `Dentist`, `DentistSession`, `Slot`, `SlotStatus`, `Treatment`,
+- [x] `scheduling/domain` ← `Dentist`, `DentistSession`, `Slot`, `SlotStatus`, `Treatment`,
       `SlotResponse`
-- [ ] **New** `DentistResponse`, `TreatmentResponse` — **finishes the `toString()` defect**
-- [ ] `scheduling/service` ← `SlotService`; **new** `ReferenceService`
-- [ ] `scheduling/data` ← 4 repositories × (interface + Dao + in-memory) = 12 classes
-- [ ] `scheduling/web` ← `AvailabilityPageServlet`, `AvailabilityApiServlet`, `ReferenceApiServlet`
-- [ ] Views: `scheduling/availability.jsp`
-- [ ] `SlotServiceTest`
+- [x] **New** `DentistResponse`, `TreatmentResponse` — **finishes the `toString()` defect**
+- [x] `scheduling/service` ← `SlotService`; **new** `ReferenceService`
+- [x] `scheduling/data` ← 4 repositories × (interface + Dao + in-memory) = 12 classes
+- [x] `scheduling/web` ← `AvailabilityPageServlet`, `AvailabilityApiServlet`, `ReferenceApiServlet`
+- [x] Views: `scheduling/availability.jsp`
+- [x] `SlotServiceTest`
 
 ### Fix on the way
-- [ ] Unknown `dentistId` on `POST /api/sessions` → `404`, not `500`
-- [ ] Reject a session overlapping one already published for that dentist
-- [ ] Reject a past `date`
-- [ ] Warn when the span does not divide evenly into slots
+- [x] Unknown `dentistId` on `POST /api/sessions` → `404`, not `500`
+- [x] Reject a session overlapping one already published for that dentist
+- [x] Reject a past `date`
+- [x] Warn when the span does not divide evenly into slots
 
-- [ ] Gate 1 + 2 + 3 pass
-- [ ] `refactor(scheduling): move dentists, sessions, slots and treatments`
+- [x] Gate 1 + 2 + 3 pass
+- [x] `refactor(scheduling): move dentists, sessions, slots and treatments`
+
+#### Beyond the list, and why
+- [x] **Money is `BigDecimal`, not `double`.** Every money field in `layered/` was a `double`, while
+      the columns are `DECIMAL(10,2)` and `fn_calculate_bill` computes in DECIMAL. A type that cannot
+      represent 0.01 exactly will drift from the total the database computes for the same inputs.
+      Changed for `Dentist.consultationFee` and `Treatment.baseCost` because this step defines their
+      outward contract; **`Bill`'s fourteen money fields follow in step 5**, and will be written
+      against `BigDecimal` from the start
+- [x] **A fifth validation gap.** A `slotMinutes` longer than the window published a session and
+      generated no slots at all — an availability window with nothing bookable in it. Now a 400
+- [x] **`findActive` promoted onto `DentistRepository`.** It existed on `DentistDao` alone, so the
+      servlet had to hold the concrete class — the same leak that put `search` on `PatientDao`
+- [x] **`SlotResponse` carries the dentist's name.** It carried only `dentistId`, so a screen
+      listing a week across every dentist could not say whose slot each row was. Resolved in one
+      pass per query rather than one lookup per row
+- [x] **`SlotService.allSlots`, distinct from `openSlots`.** A patient browsing should see only what
+      they can book; the receptionist publishing needs to see what is already taken, because the
+      window they are about to replace may have bookings in it
+
+#### Found by running it
+- [x] **"Dr. Dr. Ranil Silva".** The overlap message prepended a title to a name that already
+      carried one as stored. Nothing else in the codebase prepends one
 
 **On screen after this step:** the patient register with search and walk-in registration, and
 publish-availability. `GET /api/dentists` and `/api/treatments` return real JSON for the first time,

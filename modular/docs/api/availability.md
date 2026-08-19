@@ -197,28 +197,35 @@ Four slots plus four slots gives six, not eight, because the composed ids make t
 slots now carry the **second** session's `session_id`, so a slot from the first session has
 been silently reparented. The dentist is recorded as working two contradictory sessions.
 
-**A ragged span is accepted** (**FR-REC-42**, *Partial*). 09:00–10:20 in 30-minute slots
-produces slots at 09:00 and 09:30 and silently discards the trailing 20 minutes — the loop
-condition is `!cursor.plusMinutes(slotMinutes).isAfter(end)`. Nothing warns that the span does
-not divide evenly.
+## Four validation gaps — all closed in step 3b
 
-**Past dates are accepted.** `{"date":"2020-01-15"}` returned `201` with a slot created for a
-day six years gone. **FR-REC-40**'s validation table requires today or later; nothing enforces
-it.
+Each produced a wrong outcome rather than an error message. All four now live in `SlotService`,
+not in the servlet: a rule enforced in a servlet is a rule the next caller bypasses.
 
-**An unknown dentist produces a `500`, not a `4xx`.** The database catches it — the
-`fk_session_dentist` foreign key rejects the insert — but the resulting `DataAccessException`
-maps to a generic server error:
+| Was | Now | Verified |
+|---|---|---|
+| An unknown `dentistId` reached the insert, violated `fk_session_dentist` and surfaced as a `500` with a generic message | `404`, naming the dentist | `{"errorCode":"not_found","message":"Dentist not found: d-nobody"}` |
+| A **past date** was accepted — `{"date":"2020-01-15"}` returned `201`, publishing availability nobody can book (**FR-REC-40**) | `400` | `{"errorCode":"bad_request","message":"date cannot be in the past"}` |
+| An **overlapping window** was accepted, producing two sessions over the same hour | `400`, naming the clash | `Dr. Ranil Silva already has 09:00-12:00 published on 2026-08-20. Withdraw that window before publishing one that overlaps it.` |
+| A **ragged span** silently discarded the remainder — 16:00–17:20 in 30-minute slots produced two slots and dropped twenty minutes (**FR-REC-42**) | `201` **with a warning** | `The window is 80 minutes, which does not divide evenly into 30-minute slots. The last 20 minutes are not bookable.` |
 
-```json
-{ "errorCode": "internal_error", "message": "Something went wrong. Please try again." }
-```
+### Why the overlap check matters more than it looks
 
-So integrity holds and no orphan session is written, but the caller is told nothing useful and
-the fault reads as a server bug rather than a bad request. A `dentists.findById` check before
-building the session would return `404` with the dentist named. This is the clearest example
-in the API of a validation belonging in the service tier rather than being left to the
-schema.
+A slot id is `dentistId_date_startTime` — deterministic, which is what makes republishing the
+identical window idempotent instead of duplicating slots. But that same property turns an overlap
+into a **silent overwrite**: the second window's 11:00 slot has the same id as the first's, so
+saving it replaces the row — and a slot already `BOOKED` was reset to `OPEN`, quietly detaching a
+patient's appointment from its slot. `SlotServiceTest` asserts exactly that scenario.
+
+**Adjacent windows are still allowed.** The comparison uses half-open intervals, so 09:00–12:00
+followed by 12:00–15:00 is adjacent, not overlapping — which is how a full day gets published.
+Overlaps for a *different* dentist or a *different* date are allowed too: two dentists work the
+same hours in different chairs.
+
+### A fifth gap, found while fixing these
+
+A `slotMinutes` longer than the window published a session and generated **no slots at all** — an
+availability window with nothing bookable in it. Now a `400`.
 
 ---
 

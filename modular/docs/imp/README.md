@@ -13,19 +13,19 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 
 | | |
 |---|---|
-| **Active step** | **3 — `patients` + `scheduling`** |
-| Steps complete | **2 of 9** — `platform`, `access` |
+| **Active step** | **4 — `appointments`** |
+| Steps complete | **3 of 9** — `platform`, `access`, `patients` + `scheduling` |
 | First deployable | **done** — sign in as any of the four roles at http://localhost:8080 |
-| First real screen | **end of step 3** |
+| First real screen | **done** — the patient register and publish-availability |
 | Core journey working | **end of step 4** |
 | `layered/` | **out of scope** — source and history only, not run or shipped |
-| `modular/` | 53 Java files, compiles, **64 tests green**, deploys and answers |
+| `modular/` | 86 Java files, 17 views, **113 tests green**, deploys and answers |
 
 ```
  0  decide what ships          ◻  ← START HERE, blocks everything
  1  platform                   ✅  18 classes · Json fix · 15 tests
  2  access + stub landings     ✅  30 classes · 4 portals · 15 views · 50 tests · 5 defects found
- 3  patients + scheduling      ◻   ✱ patient register, dentist and treatment lists
+ 3  patients + scheduling      ✅  55 classes · 2 real screens · 48 tests · 7 defects fixed
  4  appointments               ◻   ✱✱ three dashboards live, booking works
  5  billing                    ◻   ✱✱ all six of the brief's functions work
  6  notifications              ◻   email and SMS actually send

@@ -26,36 +26,43 @@ it to book or to price.
 
 ---
 
-> ## ⚠ Both endpoints have the same serialisation defect as [`patients.md`](patients.md)
+> ## ✅ The serialisation defect is fixed — step 3b
 >
-> They return `Dentist` and `Treatment` **domain objects**, not response records, so the
-> hand-written serialiser falls through to `toString()`. Verified against a running instance:
+> Both endpoints returned `Dentist` and `Treatment` **domain objects**, so the serialiser fell
+> through to `toString()`:
 >
 > ```text
 > GET /api/dentists    200  ["Dentist{id=d-jayasuriya}","Dentist{id=d-silva}"]
-> GET /api/treatments  200  ["Treatment{id=t-filling}","Treatment{id=t-extraction}",
->                            "Treatment{id=t-rootcanal}","Treatment{id=t-checkup}",
->                            "Treatment{id=t-scaling}","Treatment{id=t-whitening}"]
+> GET /api/treatments  200  ["Treatment{id=t-filling}", … ]
 > ```
 >
-> Ids and nothing else. No dentist name, no specialization, no consultation fee, no treatment
-> name, no cost.
+> Ids and nothing else — no name, no specialisation, no fee, no cost. That made the API
+> unusable for its main purpose: a booking client is meant to show the patient a dentist to
+> choose and a priced treatment to pick (**FR-PAT-10**, **FR-PAT-12**), and there was no call it
+> could make to turn `"Dentist{id=d-silva}"` into "Dr. Ranil Silva, General Dentistry, Rs 1,500".
 >
-> **This is what makes the API unusable for its main purpose.** A booking client is supposed
-> to show the patient a dentist to choose and a priced treatment to pick (**FR-PAT-10**,
-> **FR-PAT-12**). It receives `"Dentist{id=d-silva}"`. There is no call it can make to turn
-> that into "Dr Ranil Silva, General Dentistry, Rs 1,500" — the data exists in the database
-> and no endpoint exposes it.
+> It went unnoticed because the JSP screens read the repositories directly rather than calling
+> the API — nothing in the application consumed its own web service (see README §2).
 >
-> The JSP screens are unaffected because they read the repositories directly rather than
-> calling the API. That is why the defect has gone unnoticed: nothing in the application
-> consumes its own web service (see README §2).
+> **Two changes closed it.** `Json` learned to write beans and records rather than falling back
+> to `toString()`, in step 1; and these endpoints now return `DentistResponse` and
+> `TreatmentResponse` through `ReferenceService`, in step 3b. Verified against a running
+> instance:
+>
+> ```text
+> GET /api/dentists  200  [{"id":"d-jayasuriya","name":"Dr. Malini Jayasuriya",
+>                           "specialization":"Orthodontics","consultationFee":2500.00,"active":true}, … ]
+> ```
+>
+> Note `2500.00`, not `2500.0`. Money is `BigDecimal`, matching the `DECIMAL(10,2)` column —
+> `double` cannot represent 0.01 exactly, and a total assembled from such values drifts from
+> the one the database computes for the same inputs.
 
 ---
 
-## The intended shapes
+## The shapes
 
-Not yet implemented. These are the records the endpoints should return, from columns that
+**Implemented** in step 3b. These are the records the endpoints return, from columns that
 already exist.
 
 ### DentistResponse
@@ -66,13 +73,13 @@ already exist.
     "id": "d-silva",
     "name": "Dr. Ranil Silva",
     "specialization": "General Dentistry",
-    "consultationFee": 1500
+    "consultationFee": 1500.00
   },
   {
     "id": "d-jayasuriya",
     "name": "Dr. Malini Jayasuriya",
     "specialization": "Orthodontics",
-    "consultationFee": 2500
+    "consultationFee": 2500.00
   }
 ]
 ```
@@ -86,12 +93,12 @@ client, and exposing it invites its use as a parameter.
 
 ```json
 [
-  { "id": "t-checkup",    "name": "Routine check-up",    "description": "Examination and advice",              "baseCost": 1000 },
-  { "id": "t-scaling",    "name": "Scaling & polishing", "description": "Removal of plaque and stains",        "baseCost": 3500 },
-  { "id": "t-filling",    "name": "Composite filling",   "description": "Tooth-coloured restoration",          "baseCost": 4500 },
-  { "id": "t-extraction", "name": "Extraction",          "description": "Simple tooth extraction",             "baseCost": 5000 },
-  { "id": "t-whitening",  "name": "Teeth whitening",     "description": "In-clinic whitening session",         "baseCost": 12000 },
-  { "id": "t-rootcanal",  "name": "Root canal therapy",  "description": "Endodontic treatment, single visit",  "baseCost": 18000 }
+  { "id": "t-checkup",    "name": "Routine check-up",    "description": "Examination and advice",              "baseCost": 1000.00 },
+  { "id": "t-scaling",    "name": "Scaling & polishing", "description": "Removal of plaque and stains",        "baseCost": 3500.00 },
+  { "id": "t-filling",    "name": "Composite filling",   "description": "Tooth-coloured restoration",          "baseCost": 4500.00 },
+  { "id": "t-extraction", "name": "Extraction",          "description": "Simple tooth extraction",             "baseCost": 5000.00 },
+  { "id": "t-whitening",  "name": "Teeth whitening",     "description": "In-clinic whitening session",         "baseCost": 12000.00 },
+  { "id": "t-rootcanal",  "name": "Root canal therapy",  "description": "Endodontic treatment, single visit",  "baseCost": 18000.00 }
 ]
 ```
 
