@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
           cache: maven
       - name: Test
-        working-directory: backend
+        working-directory: layered
         run: mvn -B --no-transfer-progress test
 
   deploy-qa:

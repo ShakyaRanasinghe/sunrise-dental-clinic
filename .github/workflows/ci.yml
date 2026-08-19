@@ -23,14 +23,14 @@ jobs:
           cache: maven
 
       - name: Build, test and package the WAR
-        working-directory: backend
+        working-directory: layered
         run: mvn -B --no-transfer-progress package
 
       - name: Upload the deployable WAR
         uses: actions/upload-artifact@v4
         with:
           name: clinic-war
-          path: backend/target/clinic.war
+          path: layered/target/clinic.war
           if-no-files-found: error
 
       - name: Publish test report
@@ -38,5 +38,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
-          path: backend/target/surefire-reports/
+          path: layered/target/surefire-reports/
           if-no-files-found: ignore
