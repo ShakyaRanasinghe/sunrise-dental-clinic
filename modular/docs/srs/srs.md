@@ -257,10 +257,38 @@ and reference data. Full list in the role documents under each role's operations
 |---|---|---|---|
 | **FR-BIL-01** | The total must be calculated from the treatment's cost and the treating dentist's consultation fee | Brief §4 | Built |
 | **FR-BIL-02** | A printable bill must be produced showing patient, appointment, itemised charges and total | Brief §4 | Built |
-| **FR-BIL-03** | Each bill must divide its total between dentist, clinic and receptionist and store all three amounts | Derived | Built |
-| **FR-BIL-04** | An appointment must not be billed twice | Derived | **Partial** — the `UNIQUE` key stops a duplicate row, but the API answers `201` with a bill id that was never persisted. Verified; see [`api/appointments.md`](../api/appointments.md) |
-| **FR-BIL-05** | A bill must only be issuable for a completed appointment | Derived | Partial |
+| **FR-BIL-03** | Each bill must divide its total between the dentist, the clinic and — where policy provides for it — the receptionist who handled it, and store all three amounts. The three must sum to the bill exactly | Derived | Built |
+| **FR-BIL-04** | An appointment must not be billed twice | Derived | Built — refused with `409` naming the receipt that already covers it. The `UNIQUE` key remains underneath, and the DAO no longer upserts |
+| **FR-BIL-05** | A bill must only be issuable for a completed appointment | Derived | Built — refused in plain language by the service, with `trg_bill_requires_completion` still guarding the table |
 | **FR-BIL-06** | Pricing must be selectable by strategy, so a rule change does not mean editing the billing service | Derived | Built |
+| **FR-BIL-07** | The revenue policy must be settable without a code change | Derived | Built — two properties, overridable by environment variable |
+
+### The revenue policy
+
+Two dials, and the clinic takes exactly what the other two do not — so the three shares sum
+to the bill however they are set.
+
+| Charge | Dentist | Clinic (the owner) | Receptionist |
+|---|---|---|---|
+| Consultation fee | all of it | — | — |
+| Treatment cost | `clinic.revenue.dentist-treatment-share` (0.60) | the remainder | — |
+| Service charge | — | the remainder | `clinic.revenue.receptionist-service-share` (0) |
+
+On the default policy a bill of Rs 5,200.00 — 1500 consultation, 3500 treatment, 200 service
+charge — pays the dentist Rs 3,600.00 and the clinic Rs 1,600.00. **The owner's margin is the
+whole difference between what the patient pays and what the dentist is paid**, which is what
+a service charge on top of the dentist's own fees is for.
+
+The consultation fee is not shared: the column is `dentist.consultation_fee`, that dentist's
+own fee, and taking a percentage of it would need a second dial that does nothing the
+treatment share cannot already do.
+
+The receptionist's share defaults to nothing because reception is salaried — a commission on
+every bill is unusual for a practice, and it puts an incentive on the person who decides what
+to charge. It is a dial rather than a deletion so a practice that does pay handling
+commission can say so: `=1.0` gives them the whole service charge, `=0.25` a quarter of it.
+Verified by redeploying the same WAR with one environment variable changed: the receptionist
+took Rs 50.00, the clinic Rs 1,550.00, and the sum stayed Rs 5,200.00.
 
 ### 4.3 Availability
 

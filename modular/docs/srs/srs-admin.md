@@ -72,7 +72,7 @@ it.
 |---|---|---|
 | **FR-ADM-10** | Reports must cover a date range the administrator chooses, defaulting to a sensible recent period | Built |
 | **FR-ADM-11** | Gross takings, bills issued, patients seen and registered patients must be shown as headline figures | Built |
-| **FR-ADM-12** | The three-way revenue split — dentist, clinic, reception — must be shown for the period | Built |
+| **FR-ADM-12** | The three-way revenue split — dentist, clinic, reception — must be shown for the period | **Specified** — stored on every bill and admin-only permission is enforced, but `/admin/reports` is still a placeholder, so nobody can see it yet |
 | **FR-ADM-13** | Earnings must be broken down per dentist and per receptionist | Built |
 | **FR-ADM-14** | Daily takings must be shown across the period, so a trend is visible rather than only a total | Built |
 | **FR-ADM-15** | Footfall — appointments attended — must be shown across the period | Built |

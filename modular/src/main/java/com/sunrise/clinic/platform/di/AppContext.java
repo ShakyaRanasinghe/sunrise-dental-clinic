@@ -146,7 +146,8 @@ public class AppContext implements AutoCloseable {
         this.billingService = new BillingService(bills, appointmentService, referenceService,
                 clinicAccess, new StandardBillingStrategy(),
                 new DefaultRevenueSplitStrategy(
-                        config.getDecimal("clinic.revenue.dentist-treatment-share", "0.60")),
+                        config.getDecimal("clinic.revenue.dentist-treatment-share", "0.60"),
+                        config.getDecimal("clinic.revenue.receptionist-service-share", "0")),
                 config.getDecimal("clinic.billing.service-charge", "200"),
                 transactionRunner);
     }
