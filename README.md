@@ -5,8 +5,8 @@ spreadsheet process — eliminating double bookings, lost records, long waits an
 errors — with one shared, reliable source of information.
 
 > **Stack:** Core Java 17 · Jakarta Servlets & JSP · JDBC · MySQL 8 · HTML/CSS
-> **Architecture:** 3-tier (presentation / business / data) · **Patterns:** Singleton, Strategy,
-> Factory Method, Observer, Repository (DAO), DTO, MVC, Builder
+> **Architecture:** 3 tiers × 8 feature modules · **Patterns:** Template Method, Strategy,
+> Factory Method, Observer, Repository (DAO), DTO, MVC, Builder, Singleton
 
 **No application framework is used.** Dependency wiring, request routing, transactions,
 JSON, password hashing and access control are all implemented in this project rather
@@ -18,10 +18,10 @@ than delegated to a framework. See [What we wrote ourselves](#-what-we-wrote-our
 
 | Role | Capabilities |
 |------|--------------|
-| **Patient** | Register · browse dentist availability · **book / cancel appointments** · view receipts |
+| **Patient** | Register · browse availability · **book / cancel appointments** · declare **medical notes** · raise a **complaint** · rate a visit · view receipts |
 | **Receptionist** | **Publish dentist availability (slots)** · register walk-ins · search patient records · **generate bills** |
-| **Dentist** | View own schedule · record **diagnosis (confidential)** · mark treatments completed |
-| **Administrator** | **Income & footfall reports** · three-way revenue split · CSV export · unlock accounts |
+| **Dentist** | View own schedule · read the patient's **declared medical notes** · record **diagnosis (confidential)** · mark treatments completed |
+| **Administrator** | **Income & footfall reports** · revenue split · no-show rate · CSV export · create and unlock accounts · review complaints · read the audit trail |
 
 **Highlights**
 
@@ -96,28 +96,58 @@ so each is implemented here — which is the substance of the project.
 
 ---
 
+## 📁 Two folders, one of which ships
+
+| Folder | What it is |
+|---|---|
+| **`modular/`** | **The application.** Everything is built, run, tested and deployed here |
+| `layered/` | The earlier layered arrangement, kept as the source the restructure copied from and as the git history. **Not run, not maintained, not deployable** |
+
+`modular/` arranges the same three tiers as a grid: eight feature modules —
+`platform`, `access`, `patients`, `scheduling`, `appointments`, `billing`, `reporting`,
+`feedback` — each holding its own `web/ service/ data/ domain/`. Every class has exactly one
+cell, so "where does this go" and "what breaks if I change this" have answers you can read off
+the directory tree. The reasoning, and the eight alternatives considered against it, is in
+[`modular/docs/architecture/`](modular/docs/architecture/).
+
+CI builds `modular/` only, and enforces the tier boundaries as a build step.
+
+---
+
 ## 🚀 Running it
 
-**Prerequisites:** JDK 17, Maven 3.9+, MySQL 8, Tomcat 10.1+ (Jakarta EE 10).
+**Prerequisites:** JDK 17, Maven 3.8+, Docker. No local MySQL or Tomcat needed.
 
 ```bash
-# 1. Create the schema and load the demo data
-mysql -u root -p < layered/src/main/resources/schema.sql
-mysql -u root -p sunrise_dental < layered/src/main/resources/demo-data.sql
+./scripts/dev-up.sh          # database, schema, demo data, build, deploy
+./scripts/smoke.sh           # 53 end-to-end checks against the running instance
+```
+
+That is the whole thing: <http://localhost:8080>. It is idempotent — re-run it after any
+change. See [`modular/docs/local-setup.md`](modular/docs/local-setup.md) for what it does and
+why MySQL is published on 3308.
+
+<details>
+<summary>Without Docker</summary>
+
+```bash
+# 1. Create the schema and load the demo data. --default-character-set=utf8mb4 is
+#    not optional: the client defaults to latin1 and will double-encode every
+#    non-ASCII character in the seed data.
+for f in schema procedures demo-data; do
+  mysql --default-character-set=utf8mb4 -u root -p < "modular/src/main/resources/$f.sql"
+done
 
 # 2. Point the application at your database (or edit clinic.properties)
 export DB_URL="jdbc:mysql://localhost:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 export DB_USER=root
 export DB_PASSWORD=yourpassword
 
-# 3. Build the WAR
-cd layered && mvn package
-
-# 4. Deploy it
-cp target/clinic.war "$CATALINA_HOME/webapps/"
+# 3. Build and deploy
+cd modular && mvn package
+cp target/clinic.war "$CATALINA_HOME/webapps/ROOT.war"
 ```
-
-Then open <http://localhost:8080/clinic/>.
+</details>
 
 Any setting in `clinic.properties` can be overridden by an environment variable named
 after it — upper-cased, dots to underscores — so the same WAR runs in every environment
@@ -138,15 +168,23 @@ All use the password `Password123`.
 
 ## ✅ Testing
 
+Two suites, deliberately different in kind.
+
 ```bash
-cd layered && mvn test
+cd modular && mvn test      # 266 JUnit 5 tests, no database required
+./scripts/smoke.sh          # 53 checks against a running instance
 ```
 
-48 JUnit 5 tests covering the booking workflow (including a **concurrency test** that fires
-twelve simultaneous bookings at one slot and asserts exactly one succeeds), billing and the
-revenue split, the JSON reader/writer, password hashing, and the lock-out state machine.
+**The unit tests** sit below the web tier and run against in-memory repositories, so they are
+fast and precise. They cover the booking workflow — including a **concurrency test** that
+releases twelve simultaneous bookings at one slot on a latch and asserts exactly one wins —
+the appointment and complaint status machines, the revenue split invariant across 49
+combinations of its two dials, every confidentiality gate, password hashing and lock-out.
 
-The tests run against the in-memory repositories, so no database is required.
+**The smoke test** assembles the whole application and drives it over HTTP as the four roles.
+It exists because the unit tests cannot see a servlet mapping, a JSP that will not compile, a
+JDBC statement a trigger refuses, a timezone or a charset — and every defect found late in
+this project was one of those. It would have caught all of them.
 
 ---
 

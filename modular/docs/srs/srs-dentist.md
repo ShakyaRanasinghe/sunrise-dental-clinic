@@ -47,10 +47,10 @@ dentist without an account is bookable but cannot sign in.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-DEN-01** | `/login/dentist` must present email and password only. No registration link — a dentist's account is issued by an administrator (ASM-05) | Specified |
-| **FR-DEN-02** | An account whose role is not `DENTIST` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Specified |
+| **FR-DEN-01** | `/login/dentist` must present email and password only. No registration link — a dentist's account is issued by an administrator (ASM-05) | Built |
+| **FR-DEN-02** | An account whose role is not `DENTIST` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Built |
 | **FR-DEN-03** | On success the dentist must land directly on today's schedule, not on an intermediate dashboard | Built |
-| **FR-DEN-04** | Sign-in must resolve the `dentist` profile row from the account. An account with role `DENTIST` and no matching profile must fail with a clear message rather than an empty schedule | Specified |
+| **FR-DEN-04** | Sign-in must resolve the `dentist` profile row from the account. An account with role `DENTIST` and no matching profile must fail with a clear message rather than an empty schedule | Built |
 
 ---
 
@@ -72,7 +72,7 @@ dentist without an account is bookable but cannot sign in.
 | **FR-DEN-12** | Each entry must show time, appointment number, patient name, treatment type and status | Built |
 | **FR-DEN-13** | The schedule must show only the signed-in dentist's own appointments. The dentist identity must come from the session, never from a request parameter | Built |
 | **FR-DEN-14** | A day with nothing booked must say so plainly | Built |
-| **FR-DEN-15** | The dentist should be able to see the week ahead, not only one day at a time | Specified |
+| **FR-DEN-15** | The dentist should be able to see the week ahead, not only one day at a time | **Specified** — one day at a time. A "should" |
 
 ### 4.2 What the patient has declared
 
@@ -81,13 +81,13 @@ patients on their own schedule.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-DEN-40** | Opening an appointment must show that patient's medical notes beside it, without a separate search | Specified |
-| **FR-DEN-41** | Notes must be grouped or labelled by category — allergy, medication, condition, other — so the list is scannable between patients | Specified |
-| **FR-DEN-42** | Where any note is marked critical, the **schedule** must indicate it before the appointment is opened. A dentist must not have to open a record to discover there is a warning in it | Specified |
-| **FR-DEN-43** | A patient who has declared nothing must produce an explicit "nothing declared" line, never blank space. Silence must not be readable as safety | Specified |
-| **FR-DEN-44** | The dentist must be able to read notes only for patients on their own schedule, not for the register at large (**FR-NOTE-09**) | Specified |
-| **FR-DEN-45** | The dentist must **not** be able to add, edit or delete a patient's notes. Clinical findings go in `diagnosis`; the notes belong to the patient | Specified |
-| **FR-DEN-46** | The note's last-updated date must be shown, since a five-year-old declaration carries different weight from last week's | Specified |
+| **FR-DEN-40** | Opening an appointment must show that patient's medical notes beside it, without a separate search | Built |
+| **FR-DEN-41** | Notes must be grouped or labelled by category — allergy, medication, condition, other — so the list is scannable between patients | Built |
+| **FR-DEN-42** | Where any note is marked critical, the **schedule** must indicate it before the appointment is opened. A dentist must not have to open a record to discover there is a warning in it | Built |
+| **FR-DEN-43** | A patient who has declared nothing must produce an explicit "nothing declared" line, never blank space. Silence must not be readable as safety | Built |
+| **FR-DEN-44** | The dentist must be able to read notes only for patients on their own schedule, not for the register at large (**FR-NOTE-09**) | Built |
+| **FR-DEN-45** | The dentist must **not** be able to add, edit or delete a patient's notes. Clinical findings go in `diagnosis`; the notes belong to the patient | Built |
+| **FR-DEN-46** | The note's last-updated date must be shown, since a five-year-old declaration carries different weight from last week's | **Specified** — the note carries `updatedAt` and the dentist's screen does not show it |
 
 **Why the dentist cannot edit them.** Two records, two owners, and keeping them separate is what
 makes each trustworthy. `patient_note` is what the patient says about themselves;
@@ -99,10 +99,10 @@ the ability to correct their own record.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-DEN-60** | The dentist must be able to see their own mean rating and the number of reviews behind it | Specified |
-| **FR-DEN-61** | The dentist must **not** see any individual rating, any comment, or who left it (**FR-RVW-08**, **NFR-SEC-13**) | Specified |
-| **FR-DEN-62** | No aggregate may be shown until at least five reviews exist, so one poor visit cannot define a dentist (**FR-RVW-12**) | Specified |
-| **FR-DEN-63** | The dentist must not see another dentist's rating | Specified |
+| **FR-DEN-60** | The dentist must be able to see their own mean rating and the number of reviews behind it | **Partial** — the aggregate is served by `GET /api/reviews`; the dentist has no screen showing it |
+| **FR-DEN-61** | The dentist must **not** see any individual rating, any comment, or who left it (**FR-RVW-08**, **NFR-SEC-13**) | Built |
+| **FR-DEN-62** | No aggregate may be shown until at least five reviews exist, so one poor visit cannot define a dentist (**FR-RVW-12**) | Built |
+| **FR-DEN-63** | The dentist must not see another dentist's rating | Built |
 
 **Why only the aggregate.** A mean rating is a performance signal a professional should have. An
 individual comment, in a clinic seeing a handful of patients a day, identifies its author by date
@@ -126,7 +126,7 @@ order:
 | **FR-DEN-20** | The dentist must be able to record a free-text diagnosis against their own appointment | Built |
 | **FR-DEN-21** | A recorded diagnosis must be visible to the treating dentist and the patient, and to no one else — not reception, not the administrator | Built |
 | **FR-DEN-22** | The dentist must not be able to read or write a diagnosis on another dentist's appointment | Built |
-| **FR-DEN-23** | An amended diagnosis must be recorded in the audit trail, since a clinical note that changes silently is worse than one that never changed | Partial — the change is audited, the previous text is not retained |
+| **FR-DEN-23** | An amended diagnosis must be recorded in the audit trail, since a clinical note that changes silently is worse than one that never changed | **Not applicable** — a diagnosis cannot be amended. `AppointmentStatus` refuses COMPLETED → COMPLETED, so there is no amendment to audit |
 | **FR-DEN-24** | The diagnosis field must accept at least 4,000 characters | Built — stored as `TEXT` |
 
 ### 4.5 Completing a treatment
@@ -134,10 +134,10 @@ order:
 | ID | Requirement | Status |
 |---|---|---|
 | **FR-DEN-30** | The dentist must be able to mark their own appointment `COMPLETED` | Built |
-| **FR-DEN-31** | Only a `CONFIRMED` appointment may be completed. A cancelled one must not be | Partial |
-| **FR-DEN-32** | Completion must be what makes an appointment billable by reception (FR-REC-55) | Partial |
+| **FR-DEN-31** | Only a `CONFIRMED` appointment may be completed. A cancelled one must not be | Built |
+| **FR-DEN-32** | Completion must be what makes an appointment billable by reception (FR-REC-55) | Built |
 | **FR-DEN-33** | Completion must record actor, role and time in the audit trail | Built |
-| **FR-DEN-34** | Completion should be possible without a diagnosis, since some visits produce none — but the dentist must be warned before proceeding | Specified |
+| **FR-DEN-34** | Completion should be possible without a diagnosis, since some visits produce none — but the dentist must be warned before proceeding | **Specified** — the form requires a diagnosis. A "should", and arguably wrong to relax: an appointment marked treated with nothing recorded is what the no-show derivation reads as an absence |
 
 ---
 

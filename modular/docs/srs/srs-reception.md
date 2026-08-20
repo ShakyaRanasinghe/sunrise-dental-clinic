@@ -46,9 +46,9 @@ row concerned.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-REC-01** | `/login/reception` must present email and password only. No registration link — staff accounts are created by an administrator (ASM-05) | Specified |
-| **FR-REC-02** | An account whose role is not `RECEPTIONIST` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Specified |
-| **FR-REC-03** | The email field must take focus on load, so signing in is two fields and Enter | Specified |
+| **FR-REC-01** | `/login/reception` must present email and password only. No registration link — staff accounts are created by an administrator (ASM-05) | Built |
+| **FR-REC-02** | An account whose role is not `RECEPTIONIST` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Built |
+| **FR-REC-03** | The email field must take focus on load, so signing in is two fields and Enter | Built |
 
 ---
 
@@ -81,8 +81,8 @@ row concerned.
 | **FR-REC-21** | A walk-in must be registrable with name and contact number alone; address, email and date of birth are optional. This creates a `patient` **record**, not an account — the patient may register for portal access themselves later (**FR-PAT-06**) | Built |
 | **FR-REC-22** | The register must show whether each patient holds a portal account, so reception knows whether they can self-serve | Built |
 | **FR-REC-23** | Each patient row must offer a direct route to book them | Built |
-| **FR-REC-24** | A patient's details must be correctable — a mistyped phone number is the commonest error at a busy desk | Specified |
-| **FR-REC-25** | Registering a walk-in whose contact number already exists must warn rather than silently create a duplicate | Specified |
+| **FR-REC-24** | A patient's details must be correctable — a mistyped phone number is the commonest error at a busy desk | **Specified** — no `PUT /api/patients/{id}`. The register can add and search but not correct. Carried forward from step 3 and never picked up |
+| **FR-REC-25** | Registering a walk-in whose contact number already exists must warn rather than silently create a duplicate | Built |
 
 ### 4.3 Booking on behalf
 
@@ -100,8 +100,8 @@ row concerned.
 |---|---|---|
 | **FR-REC-40** | Reception must publish availability as a dentist, a date, a start time, an end time and a slot length | Built |
 | **FR-REC-41** | Publishing must generate the individual slots automatically; reception must not enter them one at a time | Built |
-| **FR-REC-42** | The end time must be after the start time, and the span must divide into whole slots | Partial |
-| **FR-REC-43** | Publishing a session overlapping one already published for that dentist must be rejected | Specified |
+| **FR-REC-42** | The end time must be after the start time, and the span must divide into whole slots | Built |
+| **FR-REC-43** | Publishing a session overlapping one already published for that dentist must be rejected | Built |
 | **FR-REC-44** | The published session must record which receptionist published it | Built |
 
 ### 4.5 Billing
@@ -110,12 +110,12 @@ row concerned.
 |---|---|---|
 | **FR-REC-50** | An appointment must be retrievable for billing by its number alone | Built |
 | **FR-REC-51** | The bill must itemise consultation fee, treatment cost, service charge, any discount, tax and total | Built |
-| **FR-REC-52** | The bill must be printable on one page without navigation chrome | Partial |
+| **FR-REC-52** | The bill must be printable on one page without navigation chrome | Built |
 | **FR-REC-53** | Issuing a bill must record which receptionist issued it | Built |
 | **FR-REC-54** | Whether that receptionist earns a share of the service charge is a policy setting, `clinic.revenue.receptionist-service-share`, and defaults to **none** — the service charge is the clinic's | Built |
 | **FR-REC-54** | An appointment already billed must show its existing bill for reprinting, not offer to bill again | Built |
-| **FR-REC-55** | A bill must only be issuable once the dentist has marked the appointment complete | Partial |
-| **FR-REC-56** | A discount must be enterable and must be rejected if it exceeds the sum of fee and treatment cost | Specified |
+| **FR-REC-55** | A bill must only be issuable once the dentist has marked the appointment complete | Built |
+| **FR-REC-56** | A discount must be enterable and must be rejected if it exceeds the sum of fee and treatment cost | **Specified** — the discount column exists and every bill records 0.00. `StandardBillingStrategy` sets no discount and no screen offers one |
 
 ---
 
