@@ -36,6 +36,37 @@
                 <label for="confirmPassword">Confirm password</label>
                 <input type="password" id="confirmPassword" name="confirmPassword">
             </div>
+
+            <%--
+                Optional, all three, and labelled as such.
+
+                The contact number used to be required by the servlet and absent from this
+                form, so registration refused everybody with "Contact number is required" —
+                a field nobody could fill in. It is offered now rather than demanded: the
+                column is nullable, reception can add it at the desk, and asking for a
+                telephone number at sign-up turns away somebody who would otherwise have
+                become a patient.
+            --%>
+            <div class="field">
+                <label for="contactNumber">
+                    Contact number <span class="page-subtitle">(optional)</span>
+                </label>
+                <input type="tel" id="contactNumber" name="contactNumber"
+                       value="<c:out value='${param.contactNumber}' />">
+                <div class="page-subtitle">So the clinic can reach you about an appointment.</div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label for="dob">Date of birth <span class="page-subtitle">(optional)</span></label>
+                    <input type="date" id="dob" name="dob" value="<c:out value='${param.dob}' />">
+                </div>
+                <div class="field">
+                    <label for="address">Address <span class="page-subtitle">(optional)</span></label>
+                    <input type="text" id="address" name="address"
+                           value="<c:out value='${param.address}' />">
+                </div>
+            </div>
+
             <div class="notice">
                 Nothing medical is asked here. Allergies and medications are added from
                 your profile once you have signed in.

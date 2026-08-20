@@ -107,6 +107,23 @@ WRONG_PORTAL=$(curl -sS -d "email=admin@sunrisedental.lk&password=$PASSWORD" "$B
   | grep -o 'Incorrect email or password.' | head -1)
 check "a wrong portal reads like a wrong password" "$WRONG_PASSWORD" "$WRONG_PORTAL"
 
+# ---------------------------------------------------------------- registering
+bold "1a. a new patient registers"
+# This group exists because it was missing. The script signed in as the seeded patient and
+# never registered anybody, so it did not notice that registration was impossible: the
+# servlet required a contact number the form never asked for, and answered 400 to
+# everything. It also created only the account, so anything that got through signed in to
+# a profile that did not exist and failed at the first booking.
+NEW_EMAIL="smoke-$$@example.lk"
+NEW_JAR="$JARS/registered"
+REGISTERED=$(curl -sS -c "$NEW_JAR" -o /dev/null -w '%{http_code}' \
+  -d "name=Smoke Tester&email=$NEW_EMAIL&password=Password123&confirmPassword=Password123" \
+  "$BASE/register")
+check "registering needs no contact number"    302 "$REGISTERED"
+check "and lands on the patient's own page"    200 "$(status "$NEW_JAR" /patient/home)"
+# The profile row is what booking resolves through. Without it this answers 404.
+check "the new account has a patient profile"  200 "$(status "$NEW_JAR" /patient/profile)"
+
 # ---------------------------------------------------------------- role areas
 bold "2. every role reaches only its own pages"
 for path in /patient/home /reception/home /dentist/schedule /admin/reports; do
@@ -151,6 +168,13 @@ contains "the bill totals 5200.00" '"total":5200.00' "$(body "$RECEPTION" "/api/
 check "billing twice is refused"              409 "$(post "$RECEPTION" "/api/appointments/$APPOINTMENT/bill")"
 contains "the receipt prints a formatted total" "5,200.00" \
   "$(body "$RECEPTION" "/reception/receipt?appointmentNo=$APPOINTMENT")"
+
+# The point of 1a: a profile that exists is one that can book.
+postjson "$RECEPTION" /api/sessions \
+  "{\"dentistId\":\"d-jayasuriya\",\"date\":\"$TODAY\",\"startTime\":\"14:00\",\"endTime\":\"15:00\"}" >/dev/null
+NEW_BOOKING=$(curl -sS -b "$NEW_JAR" -o /dev/null -w '%{redirect_url}' \
+  -d "slotId=d-jayasuriya_${TODAY}_14:00&treatmentId=t-checkup" "$BASE/patient/book")
+contains "a freshly registered patient can book at once" "booked=APT-" "$NEW_BOOKING"
 
 # ---------------------------------------------------------------- money
 bold "4. the revenue policy"
