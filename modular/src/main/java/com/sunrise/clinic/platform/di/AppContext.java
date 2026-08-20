@@ -15,6 +15,7 @@ import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientNoteDao;
 import com.sunrise.clinic.patients.data.PatientNoteRepository;
 import com.sunrise.clinic.patients.service.PatientNoteService;
+import com.sunrise.clinic.patients.service.SelfRegistrationService;
 import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.appointments.data.AppointmentDao;
@@ -122,6 +123,7 @@ public class AppContext implements AutoCloseable {
     private final UserAccountFactory accountFactory;
     private final PatientService patientService;
     private final PatientNoteService patientNoteService;
+    private final SelfRegistrationService selfRegistrationService;
     private final ReferenceService referenceService;
     private final SlotService slotService;
     private final ClinicAccess clinicAccess;
@@ -157,6 +159,10 @@ public class AppContext implements AutoCloseable {
         this.authService = new AuthService(users, loginAttempts);
         this.accountFactory = new UserAccountFactory(users);
         this.patientService = new PatientService(patients);
+        // The account and the patient row are written together, so a registered patient can
+        // book immediately rather than signing in to an account with no profile behind it.
+        this.selfRegistrationService = new SelfRegistrationService(accountFactory, patients,
+                transactionRunner);
         this.referenceService = new ReferenceService(dentists, treatments);
         this.slotService = new SlotService(sessions, slots, referenceService);
         this.clinicAccess = new ClinicAccess(patients, dentists);
@@ -238,6 +244,11 @@ public class AppContext implements AutoCloseable {
 
     public LoginAttemptService loginAttemptService() {
         return loginAttempts;
+    }
+
+    /** Patient self-registration — the only public write endpoint. */
+    public SelfRegistrationService selfRegistrationService() {
+        return selfRegistrationService;
     }
 
     /** The patient's own declared medical notes. */

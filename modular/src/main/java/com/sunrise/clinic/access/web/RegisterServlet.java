@@ -1,42 +1,28 @@
 package com.sunrise.clinic.access.web;
 
 import com.sunrise.clinic.access.domain.ClinicPrincipal;
-import com.sunrise.clinic.access.domain.Role;
 import com.sunrise.clinic.access.domain.UserAccount;
+import com.sunrise.clinic.patients.service.SelfRegistrationService;
 import com.sunrise.clinic.platform.web.PageServlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.time.LocalDate;
 import java.io.IOException;
-import java.util.UUID;
 
 /**
- * Patient self-registration.
+ * Patient self-registration — the only public write endpoint in the system (FR-PAT-07).
  *
- * <p>Creates two linked records in one step: the {@link UserAccount} that lets the
- * person sign in, and the {@link Patient} profile that clinical records attach to.
- * The class diagram keeps these separate — "who can log in" is not the same thing
- * as "who they are in the clinic" — but from the patient's point of view signing up
- * is a single action, so the servlet creates both and links them.</p>
- *
- * <p>The pair is written inside one transaction. An account with no profile would
- * let someone sign in and immediately hit an error when they tried to book, which
- * is exactly the sort of half-finished state a transaction exists to prevent.</p>
+ * <p>Reads the form and hands it to {@link SelfRegistrationService}, which creates the
+ * {@link UserAccount} and the patient profile together in one transaction. This class validates
+ * nothing itself, which is the fix for how it went wrong: it used to require a
+ * {@code contactNumber} the form never asked for, so registration answered <b>400 "Contact
+ * number is required"</b> whatever anybody typed — and it never created the patient profile at
+ * all, so an account that did get made could sign in and then fail at the first thing it tried.
+ * Both are gone because the rules now live in one place that a test can reach.</p>
  */
 public class RegisterServlet extends PageServlet {
-    /*
-     * Creates the account only.
-     *
-     * FR-PAT-04 wants the user_account row and the patient profile row in one
-     * transaction. The patients module arrives in step 3, so the profile row is
-     * added there and this is the same Partial status layered/ already carried -
-     * not a new gap. Until then a freshly registered patient has an account and
-     * no profile, which is exactly the condition that makes booking answer
-     * "No patient profile for user ...".
-     */
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -48,31 +34,23 @@ public class RegisterServlet extends PageServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         page(request, response, () -> {
-            String name = requiredField(request, "name", "Full name");
-            String email = requiredField(request, "email", "Email").toLowerCase();
-            String password = requiredField(request, "password", "Password");
-            String confirm = requiredField(request, "confirmPassword", "Password confirmation");
-            String contactNumber = requiredField(request, "contactNumber", "Contact number");
-            String address = field(request, "address");
-            LocalDate dob = dateField(request, "dob", null);
+            SelfRegistrationService.Registered registered = app().selfRegistrationService()
+                    .register(new SelfRegistrationService.Registration(
+                            field(request, "name"),
+                            field(request, "email"),
+                            field(request, "password"),
+                            field(request, "confirmPassword"),
+                            // Optional, all three. The service says why.
+                            field(request, "contactNumber"),
+                            field(request, "address"),
+                            field(request, "dob")));
 
-            if (!password.equals(confirm)) {
-                throw new IllegalArgumentException("The two passwords do not match.");
-            }
-            if (password.length() < 8) {
-                throw new IllegalArgumentException("Please choose a password of at least 8 characters.");
-            }
-            // The factory rejects a duplicate email, so no pre-check here: asking
-            // and then acting is a race, and it duplicated the rule.
-            UserAccount created = app().accountFactory()
-                    .registerPatient(email, password, name);
-
-            // Sign them straight in — asking someone to log in immediately after
-            // typing their password is friction with no security benefit.
-            AuthenticationFilter.establishSession(request,
-                    new ClinicPrincipal(created.getUid(), created.getDisplayName(), created.getRole()));
-            redirect(request, response, AuthenticationFilter.homeFor(created.getRole()));
+            // Sign them straight in — asking somebody to log in immediately after typing their
+            // password is friction with no security benefit.
+            UserAccount account = registered.account();
+            AuthenticationFilter.establishSession(request, new ClinicPrincipal(
+                    account.getUid(), account.getDisplayName(), account.getRole()));
+            redirect(request, response, AuthenticationFilter.homeFor(account.getRole()));
         });
     }
-
 }
