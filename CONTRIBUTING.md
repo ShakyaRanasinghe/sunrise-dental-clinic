@@ -3,6 +3,10 @@
 This project uses a lightweight, professional Git workflow so that changes are small,
 reviewed, tested, and traceable.
 
+> **Every command, in one place:** [`modular/docs/git-workflow.md`](modular/docs/git-workflow.md).
+> It covers the daily loop, getting `develop` onto `main`, undoing things, and the day-by-day
+> plan for the requirements that are still outstanding.
+
 ## Branch strategy
 
 ```

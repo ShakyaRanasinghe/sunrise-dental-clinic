@@ -8,6 +8,7 @@
 | [`testing/`](testing/) | The three test suites, and 50 manual scenarios |
 | [`api/`](api/) | Every JSON endpoint, with worked examples |
 | [`local-setup.md`](local-setup.md) | **Start here** — how to run it on your machine |
+| [`git-workflow.md`](git-workflow.md) | Committing, pushing, getting onto `main`, and the plan for the work that is left |
 | [`servlets.md`](servlets.md) | The route contract: every URL the application answers |
 | [`class-diagram.md`](class-diagram.md) · [`er-diagram.md`](er-diagram.md) | Structure and schema |
 | [`use-case-diagram.md`](use-case-diagram.md) · [`sequence-diagrams.md`](sequence-diagrams.md) | Behaviour |
