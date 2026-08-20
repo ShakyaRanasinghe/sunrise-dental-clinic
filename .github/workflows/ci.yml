@@ -1,6 +1,12 @@
 name: CI
 
-# Quality gate: build and test on every PR and on pushes to the long-lived branches.
+# Quality gate: build, test and package on every PR and on pushes to the long-lived
+# branches.
+#
+# Builds modular/ and not layered/. layered/ remains in the repository as the source
+# the migration copied from and as the git history, but it is not run, maintained or
+# shipped - so building it here would spend minutes proving something about code
+# nobody deploys, and would fail the moment it drifted.
 on:
   pull_request:
     branches: [main, qa, develop]
@@ -8,8 +14,8 @@ on:
     branches: [main, qa, develop]
 
 jobs:
-  backend:
-    name: Application — build, test & package
+  build:
+    name: Build, test and package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,20 +29,126 @@ jobs:
           cache: maven
 
       - name: Build, test and package the WAR
-        working-directory: layered
+        working-directory: modular
         run: mvn -B --no-transfer-progress package
 
       - name: Upload the deployable WAR
         uses: actions/upload-artifact@v4
         with:
           name: clinic-war
-          path: layered/target/clinic.war
+          path: modular/target/clinic.war
           if-no-files-found: error
 
-      - name: Publish test report
-        if: always()
-        uses: actions/upload-artifact@v4
+  boundaries:
+    name: Module boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The two greps that keep the three tiers honest. An import grep alone finds
+      # only two of the twelve violations layered/ had: app().patients().search(term)
+      # names no type, so nothing to import. Both checks must print nothing.
+      - name: The web tier must not reach the data tier
+        run: |
+          set -e
+          if grep -rl 'import com.sunrise.clinic.[a-z]*\.data' --include='*.java' \
+               modular/src/main/java/com/sunrise/clinic/*/web/; then
+            echo "::error::a web-tier class imports from a data package"
+            exit 1
+          fi
+          if grep -rnE 'app\(\)\.[a-z]+(Repository|Dao)\(\)' --include='*.java' \
+               modular/src/main/java/com/sunrise/clinic/*/web/; then
+            echo "::error::a web-tier class reaches a repository through the context"
+            exit 1
+          fi
+          echo "Both boundary checks are clean."
+
+      # patients must not depend on appointments. The one place the two meet is
+      # TreatmentRelationship, which patients declares and appointments implements -
+      # so a cycle here would mean somebody had reversed that inversion.
+      - name: No cycle between patients and appointments
+        run: |
+          set -e
+          if grep -rn 'import com.sunrise.clinic.appointments' \
+               modular/src/main/java/com/sunrise/clinic/patients/; then
+            echo "::error::patients imports appointments — see TreatmentRelationship"
+            exit 1
+          fi
+          echo "No cycle."
+
+      # A missing view is not an exception, it is a silent 404 from the container.
+      # PageServletViewsTest covers this too; having it here means a pull request
+      # cannot merge on a red one being ignored locally.
+      - name: Every rendered view name resolves to a file
+        run: |
+          set -e
+          missing=0
+          for view in $(grep -rhoP 'render\(request, response, "\K[^"]+' \
+                          modular/src/main/java | sort -u); do
+            if [ ! -f "modular/src/main/webapp/WEB-INF/jsp/${view}.jsp" ]; then
+              echo "::error::no view file for '${view}'"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] && echo "Every rendered view exists."
+
+  smoke:
+    name: End-to-end smoke test
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: clinic
+          MYSQL_DATABASE: sunrise_dental
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -pclinic"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          name: surefire-reports
-          path: layered/target/surefire-reports/
-          if-no-files-found: ignore
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # utf8mb4 is not optional: the client defaults to latin1, and loading UTF-8
+      # SQL through it double-encodes every non-ASCII character. It round-trips
+      # cleanly through the same client, so the corruption only shows when the
+      # application reads it.
+      - name: Load the schema
+        run: |
+          for f in schema.sql procedures.sql demo-data.sql; do
+            mysql --default-character-set=utf8mb4 -h 127.0.0.1 -uroot -pclinic \
+              < "modular/src/main/resources/$f"
+          done
+
+      - name: Package
+        working-directory: modular
+        run: mvn -B --no-transfer-progress -DskipTests package
+
+      - name: Start Tomcat with the WAR
+        run: |
+          curl -sL -o tomcat.tar.gz \
+            https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.30/bin/apache-tomcat-10.1.30.tar.gz
+          mkdir tomcat && tar xzf tomcat.tar.gz -C tomcat --strip-components=1
+          rm -rf tomcat/webapps/ROOT
+          cp modular/target/clinic.war tomcat/webapps/ROOT.war
+          DB_URL='jdbc:mysql://127.0.0.1:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' \
+          DB_USER=root DB_PASSWORD=clinic \
+            tomcat/bin/startup.sh
+          for _ in $(seq 1 40); do
+            curl -sf -o /dev/null http://localhost:8080/help && break
+            sleep 2
+          done
+
+      - name: Smoke test
+        run: ./scripts/smoke.sh
+
+      - name: Tomcat log on failure
+        if: failure()
+        run: cat tomcat/logs/catalina.out || true

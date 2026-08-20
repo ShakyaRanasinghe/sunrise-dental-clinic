@@ -48,10 +48,10 @@ it.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-ADM-01** | `/login/admin` must present email and password only. No registration link, and no route to create an administrator from outside | Specified |
-| **FR-ADM-02** | An account whose role is not `ADMIN` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Specified |
-| **FR-ADM-03** | This portal must not be linked from the patient-facing portal chooser, since no member of the public has business there. It remains reachable by direct URL | Specified |
-| **FR-ADM-04** | A failed sign-in on this portal must be written to the audit trail, whether or not the email exists | Specified |
+| **FR-ADM-01** | `/login/admin` must present email and password only. No registration link, and no route to create an administrator from outside | Built |
+| **FR-ADM-02** | An account whose role is not `ADMIN` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Built |
+| **FR-ADM-03** | This portal must not be linked from the patient-facing portal chooser, since no member of the public has business there. It remains reachable by direct URL | Built |
+| **FR-ADM-04** | A failed sign-in on this portal must be written to the audit trail, whether or not the email exists | **Partial** — a failed administrator sign-in is written to the application log, not to the audit trail. The hook is there and writes the wrong sink |
 
 ---
 
@@ -72,14 +72,14 @@ it.
 |---|---|---|
 | **FR-ADM-10** | Reports must cover a date range the administrator chooses, defaulting to a sensible recent period | Built |
 | **FR-ADM-11** | Gross takings, bills issued, patients seen and registered patients must be shown as headline figures | Built |
-| **FR-ADM-12** | The three-way revenue split — dentist, clinic, reception — must be shown for the period | **Specified** — stored on every bill and admin-only permission is enforced, but `/admin/reports` is still a placeholder, so nobody can see it yet |
+| **FR-ADM-12** | The three-way revenue split — dentist, clinic, reception — must be shown for the period | Built |
 | **FR-ADM-13** | Earnings must be broken down per dentist and per receptionist | Built |
 | **FR-ADM-14** | Daily takings must be shown across the period, so a trend is visible rather than only a total | Built |
 | **FR-ADM-15** | Footfall — appointments attended — must be shown across the period | Built |
-| **FR-ADM-16** | Every report must state the decision it supports, so a figure is actionable rather than merely present | Specified |
+| **FR-ADM-16** | Every report must state the decision it supports, so a figure is actionable rather than merely present | Built |
 | **FR-ADM-17** | A period with no activity must say so, not render an empty chart | Built |
 | **FR-ADM-18** | Reports must be exportable as CSV for use in a spreadsheet | Built |
-| **FR-ADM-19** | Reports should include a no-show rate, since it is what justifies a reminder policy | Specified |
+| **FR-ADM-19** | Reports should include a no-show rate, since it is what justifies a reminder policy | Built |
 
 **Decisions each report supports** (FR-ADM-16):
 
@@ -97,14 +97,14 @@ it.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-ADM-20** | The administrator must be able to create an account for a **receptionist, dentist or administrator**. These three roles cannot self-register; only patients can (**ASM-05**, **FR-PAT-03**) | Specified |
-| **FR-ADM-21** | Creating a `DENTIST` account must create or link the matching `dentist` profile row in the same transaction, including specialization and consultation fee | Specified |
-| **FR-ADM-22** | Account creation must go through a single factory, so every role is created one way and a new role means one new case rather than a new screen | Specified |
+| **FR-ADM-20** | The administrator must be able to create an account for a **receptionist, dentist or administrator**. These three roles cannot self-register; only patients can (**ASM-05**, **FR-PAT-03**) | Built |
+| **FR-ADM-21** | Creating a `DENTIST` account must create or link the matching `dentist` profile row in the same transaction, including specialization and consultation fee | Built |
+| **FR-ADM-22** | Account creation must go through a single factory, so every role is created one way and a new role means one new case rather than a new screen | Built |
 | **FR-ADM-23** | The administrator must be able to unlock **any** account locked by failed sign-in attempts, of any role, **including a patient's**, resetting the counter | Built — endpoint exists, no screen |
-| **FR-ADM-24** | The administrator must be able to deactivate **any** account of any role, including a patient's, without deleting it, since audit records reference it | Partial — the column exists, nothing sets it |
+| **FR-ADM-24** | The administrator must be able to deactivate **any** account of any role, including a patient's, without deleting it, since audit records reference it | Built |
 | **FR-ADM-24a** | Deactivating a patient account must not delete or hide the `patient` record. The person stays bookable by reception over the counter; only their portal access ends | Specified |
-| **FR-ADM-25** | The administrator must not be able to read or set any password. A new account is issued a one-time credential the holder must change | Specified |
-| **FR-ADM-26** | An administrator must not be able to deactivate or lock their own account, which would leave the clinic with no administrator | Specified |
+| **FR-ADM-25** | The administrator must not be able to read or set any password. A new account is issued a one-time credential the holder must change | Built |
+| **FR-ADM-26** | An administrator must not be able to deactivate or lock their own account, which would leave the clinic with no administrator | Built |
 | **FR-ADM-27** | Every account change must be written to the audit trail with actor, target and time | Built |
 
 **Create and manage have different scopes, deliberately.** The two are easy to conflate and this
@@ -132,18 +132,18 @@ The administrator is the **only** role that reads these. The dentist named never
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-ADM-50** | The administrator must be able to list every complaint, filtered by state, dentist or date | Specified |
-| **FR-ADM-51** | Complaints awaiting review must be distinguishable at a glance from those already closed | Specified |
-| **FR-ADM-52** | The administrator must be able to move a complaint to `UNDER_REVIEW`, then to `RESOLVED` or `DISMISSED` | Specified |
-| **FR-ADM-53** | Closing a complaint must require a written resolution. A concern closed with no explanation is indistinguishable from one ignored | Specified |
-| **FR-ADM-54** | The administrator must be able to see the appointment a complaint concerns, and the dentist named | Specified |
-| **FR-ADM-55** | The administrator must **not** be able to edit or delete the patient's account of what happened. Only the state and the resolution are theirs to write | Specified |
-| **FR-ADM-56** | Every read of a complaint must be audited, naming the administrator who read it (**FR-CMP-11**) | Specified |
-| **FR-ADM-57** | Complaint volume per dentist should be visible on the reports screen as a count only, never as content, since a rising count is a management signal | Specified |
-| **FR-ADM-59** | The administrator must be able to read individual reviews with their comments, for every dentist (**FR-RVW-09**) | Specified |
-| **FR-ADM-60** | The reports screen must show mean rating and review count per dentist alongside earnings, since a dentist earning well on falling ratings is exactly the signal a manager needs | Specified |
-| **FR-ADM-61** | The administrator must not be able to edit or delete a review. Curating the feedback would make the average meaningless | Specified |
-| **FR-ADM-58** | A complaint must not expose the patient's medical notes or any diagnosis, even where the complaint concerns clinical care. The administrator reads the complaint, not the record it refers to | Specified |
+| **FR-ADM-50** | The administrator must be able to list every complaint, filtered by state, dentist or date | Built |
+| **FR-ADM-51** | Complaints awaiting review must be distinguishable at a glance from those already closed | Built |
+| **FR-ADM-52** | The administrator must be able to move a complaint to `UNDER_REVIEW`, then to `RESOLVED` or `DISMISSED` | Built |
+| **FR-ADM-53** | Closing a complaint must require a written resolution. A concern closed with no explanation is indistinguishable from one ignored | Built |
+| **FR-ADM-54** | The administrator must be able to see the appointment a complaint concerns, and the dentist named | Built |
+| **FR-ADM-55** | The administrator must **not** be able to edit or delete the patient's account of what happened. Only the state and the resolution are theirs to write | Built |
+| **FR-ADM-56** | Every read of a complaint must be audited, naming the administrator who read it (**FR-CMP-11**) | Built |
+| **FR-ADM-57** | Complaint volume per dentist should be visible on the reports screen as a count only, never as content, since a rising count is a management signal | **Partial** — `ComplaintService.countByDentist` exists and the reports screen does not show it |
+| **FR-ADM-59** | The administrator must be able to read individual reviews with their comments, for every dentist (**FR-RVW-09**) | Built |
+| **FR-ADM-60** | The reports screen must show mean rating and review count per dentist alongside earnings, since a dentist earning well on falling ratings is exactly the signal a manager needs | **Partial** — `ReviewService.summaryFor` exists and the reports screen does not show it |
+| **FR-ADM-61** | The administrator must not be able to edit or delete a review. Curating the feedback would make the average meaningless | Built |
+| **FR-ADM-58** | A complaint must not expose the patient's medical notes or any diagnosis, even where the complaint concerns clinical care. The administrator reads the complaint, not the record it refers to | Built |
 
 **FR-ADM-58 is the awkward one, and it is deliberate.** A clinical-concern complaint may be
 impossible to judge without the clinical record — and the administrator still cannot see it. The
@@ -155,18 +155,18 @@ is more honest than quietly widening the administrator's access.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-ADM-30** | The administrator must be able to read the audit trail, filtered by actor, target or date range | Specified — records are written, nothing reads them |
+| **FR-ADM-30** | The administrator must be able to read the audit trail, filtered by actor, target or date range | Built |
 | **FR-ADM-31** | Audit records must not be editable or deletable through any screen or endpoint | Built |
-| **FR-ADM-32** | The trail must answer "who changed this appointment, and when" for any appointment number | Specified |
+| **FR-ADM-32** | The trail must answer "who changed this appointment, and when" for any appointment number | Built |
 | **FR-ADM-33** | The trail must never expose a diagnosis, even where the audited action changed one. It records that a change happened, not its content | Built |
 
 ### 4.5 Reference data
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-ADM-40** | The administrator should be able to add a treatment and set its cost | Specified |
-| **FR-ADM-41** | The administrator should be able to change a dentist's consultation fee | Specified |
-| **FR-ADM-42** | A treatment must be deactivatable rather than deletable, since past appointments reference it | Specified |
+| **FR-ADM-40** | The administrator should be able to add a treatment and set its cost | **Specified** — no treatment catalogue screen. A "should" |
+| **FR-ADM-41** | The administrator should be able to change a dentist's consultation fee | **Specified** — a dentist's fee is set when the account is created and not editable afterwards |
+| **FR-ADM-42** | A treatment must be deactivatable rather than deletable, since past appointments reference it | **Specified** — the `active` column exists and no screen sets it |
 | **FR-ADM-43** | Changing a price must not alter any bill already issued. A bill records the amounts charged at the time | Built — amounts are copied onto the bill, not referenced |
 
 ---

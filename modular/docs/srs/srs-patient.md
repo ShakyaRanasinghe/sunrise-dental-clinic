@@ -50,13 +50,13 @@ three portals must not offer one, because their roles cannot self-register.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-PAT-01** | `/login/patient` must present email and password fields, a link to create an account, and a link to help | Specified |
-| **FR-PAT-02** | An account whose role is not `PATIENT` must be rejected here, with the same message as a wrong password (see FR-AUTH-03) | Specified |
+| **FR-PAT-01** | `/login/patient` must present email and password fields, a link to create an account, and a link to help | Built |
+| **FR-PAT-02** | An account whose role is not `PATIENT` must be rejected here, with the same message as a wrong password (see FR-AUTH-03) | Built |
 | **FR-PAT-03** | Self-registration must be reachable from this portal and must create an account with role `PATIENT` and no other. The role must never be taken from the request — a submitted `role` field must be ignored, not honoured | Built — the role is hardcoded, which is the correct behaviour here |
-| **FR-PAT-04** | Registration must create both the `user_account` row and the `patient` profile row in one transaction. Neither may exist without the other | Partial — not currently transactional |
+| **FR-PAT-04** | Registration must create both the `user_account` row and the `patient` profile row in one transaction. Neither may exist without the other | Built |
 | **FR-PAT-05** | Registration must reject an email already registered, saying so plainly rather than failing on a database constraint | Built |
-| **FR-PAT-06** | Where a walk-in record already exists with the same email or contact number, registration should link the new account to it rather than creating a duplicate patient | Specified |
-| **FR-PAT-07** | Registration must be the **only** public write endpoint in the system. Every other unauthenticated request is read-only or rejected | Specified |
+| **FR-PAT-06** | Where a walk-in record already exists with the same email or contact number, registration should link the new account to it rather than creating a duplicate patient | **Specified** — registration does not look for a matching walk-in record |
+| **FR-PAT-07** | Registration must be the **only** public write endpoint in the system. Every other unauthenticated request is read-only or rejected | Built |
 
 **Why patients self-register and staff do not.** A patient is a member of the public who may
 want access at any hour, and making them telephone the clinic for a login would put the front
@@ -91,7 +91,7 @@ this path is a constant in the code, never a value from the form.
 | **FR-PAT-13** | On confirmation the appointment number must be shown immediately, since it is what identifies the visit at the front desk | Built |
 | **FR-PAT-14** | If the chosen slot was taken between the page loading and submission, the booking must be rejected with a clear message and the refreshed slot list | Built |
 | **FR-PAT-15** | A patient must not be able to book on behalf of anyone else. The patient identity comes from the session, never from the form | Built |
-| **FR-PAT-16** | Booking must trigger a confirmation email to the patient's recorded address | Partial — recorded, not sent |
+| **FR-PAT-16** | Booking must trigger a confirmation email to the patient's recorded address | **Specified** — the event is published; nothing sends it. See FR-NOT-01 |
 
 ### 4.2 Medical notes
 
@@ -101,14 +101,14 @@ nothing clinical.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-PAT-40** | The profile screen must let the patient add a medical note about themselves — an allergy, a medication they take, a condition | Specified |
-| **FR-PAT-41** | Each note must be given a category: allergy, medication, condition or other | Specified |
-| **FR-PAT-42** | The patient must be able to mark a note **critical**, meaning a dentist must see it before treating them | Specified |
-| **FR-PAT-43** | The patient must be able to edit and delete their own notes | Specified |
-| **FR-PAT-44** | The screen must say plainly who can see these notes — the patient and the dentist treating them, and nobody else | Specified |
-| **FR-PAT-45** | The screen must explain what the notes are for, in a sentence, since a patient volunteering medical information deserves to know why | Specified |
-| **FR-PAT-46** | A patient must never see, or be able to reach, another patient's notes | Specified |
-| **FR-PAT-47** | Notes must survive between appointments. Declaring an allergy once must be enough | Specified |
+| **FR-PAT-40** | The profile screen must let the patient add a medical note about themselves — an allergy, a medication they take, a condition | Built |
+| **FR-PAT-41** | Each note must be given a category: allergy, medication, condition or other | Built |
+| **FR-PAT-42** | The patient must be able to mark a note **critical**, meaning a dentist must see it before treating them | Built |
+| **FR-PAT-43** | The patient must be able to edit and delete their own notes | Built |
+| **FR-PAT-44** | The screen must say plainly who can see these notes — the patient and the dentist treating them, and nobody else | Built |
+| **FR-PAT-45** | The screen must explain what the notes are for, in a sentence, since a patient volunteering medical information deserves to know why | Built |
+| **FR-PAT-46** | A patient must never see, or be able to reach, another patient's notes | Built |
+| **FR-PAT-47** | Notes must survive between appointments. Declaring an allergy once must be enough | Built |
 
 **What the patient is told on the screen** (FR-PAT-44, FR-PAT-45), because the wording is part
 of the requirement:
@@ -130,14 +130,14 @@ of the requirement:
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-PAT-50** | The patient must be able to raise a complaint about a dentist who has treated them, choosing the dentist from their own appointment history rather than a list of everyone | Specified |
-| **FR-PAT-51** | The patient must choose a category — conduct, clinical concern, waiting time, billing, other — and write an account of what happened | Specified |
-| **FR-PAT-52** | The patient should be able to attach the specific appointment it concerns, picked from their own history | Specified |
-| **FR-PAT-53** | The form must state who reads it: the clinic administrator, and **not** the dentist named (**FR-CMP-12**) | Specified |
-| **FR-PAT-54** | The patient must be able to see every complaint they have raised and its current state | Specified |
-| **FR-PAT-55** | A submitted complaint must not be editable or deletable by the patient (**FR-CMP-06**) | Specified |
-| **FR-PAT-56** | Raising a complaint must not change anything about booking. No warning, no flag, no altered availability (**FR-CMP-10**) | Specified |
-| **FR-PAT-57** | On submission the patient must be told what happens next and roughly when to expect a response | Specified |
+| **FR-PAT-50** | The patient must be able to raise a complaint about a dentist who has treated them, choosing the dentist from their own appointment history rather than a list of everyone | Built |
+| **FR-PAT-51** | The patient must choose a category — conduct, clinical concern, waiting time, billing, other — and write an account of what happened | Built |
+| **FR-PAT-52** | The patient should be able to attach the specific appointment it concerns, picked from their own history | Built |
+| **FR-PAT-53** | The form must state who reads it: the clinic administrator, and **not** the dentist named (**FR-CMP-12**) | Built |
+| **FR-PAT-54** | The patient must be able to see every complaint they have raised and its current state | Built |
+| **FR-PAT-55** | A submitted complaint must not be editable or deletable by the patient (**FR-CMP-06**) | Built |
+| **FR-PAT-56** | Raising a complaint must not change anything about booking. No warning, no flag, no altered availability (**FR-CMP-10**) | Built |
+| **FR-PAT-57** | On submission the patient must be told what happens next and roughly when to expect a response | Built |
 
 **What the patient is told on the form** (FR-PAT-53), because the wording is the requirement:
 
@@ -151,13 +151,13 @@ Ordinary feedback, offered after the visit has happened. Distinct from raising a
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-PAT-60** | Once an appointment is `COMPLETED` or `BILLED`, the patient must be offered a rating of 1 to 5 for the dentist who treated them | Specified |
-| **FR-PAT-61** | A comment must be optional. A star on its own must be a complete submission | Specified |
-| **FR-PAT-62** | Rating must be skippable and must never block viewing, booking or anything else | Specified |
-| **FR-PAT-63** | A patient must be able to change their rating for up to 30 days after the visit, and see what they left | Specified |
-| **FR-PAT-64** | One rating per appointment. A second visit to the same dentist is a second rating | Specified |
-| **FR-PAT-65** | The patient must be told that the dentist sees only an average, never the individual rating or comment | Specified |
-| **FR-PAT-66** | Cancelled and future appointments must not offer a rating | Specified |
+| **FR-PAT-60** | Once an appointment is `COMPLETED` or `BILLED`, the patient must be offered a rating of 1 to 5 for the dentist who treated them | Built |
+| **FR-PAT-61** | A comment must be optional. A star on its own must be a complete submission | Built |
+| **FR-PAT-62** | Rating must be skippable and must never block viewing, booking or anything else | Built |
+| **FR-PAT-63** | A patient must be able to change their rating for up to 30 days after the visit, and see what they left | Built |
+| **FR-PAT-64** | One rating per appointment. A second visit to the same dentist is a second rating | Built |
+| **FR-PAT-65** | The patient must be told that the dentist sees only an average, never the individual rating or comment | **Specified** — true of the system, but the screen does not say so |
+| **FR-PAT-66** | Cancelled and future appointments must not offer a rating | Built |
 | **FR-PAT-67** | In this release the patient must not be shown any dentist's rating when choosing one (**FR-RVW-11**) | Deferred by decision |
 
 **What the patient is told beside the stars** (FR-PAT-65):
@@ -179,8 +179,8 @@ problems in star averages or make every mild grumble a case file.
 |---|---|---|
 | **FR-PAT-30** | The patient must be able to cancel their own appointment while its status is `CONFIRMED` | Built |
 | **FR-PAT-31** | Cancelling must return the slot to bookable so another patient can take it | Built |
-| **FR-PAT-32** | A completed or billed appointment must not be cancellable | Partial |
-| **FR-PAT-33** | Cancellation must be confirmed before it takes effect | Specified |
+| **FR-PAT-32** | A completed or billed appointment must not be cancellable | Built |
+| **FR-PAT-33** | Cancellation must be confirmed before it takes effect | **Specified** — see FR-UI-04. Cancelling takes effect on one click |
 
 ---
 

@@ -187,11 +187,11 @@ sees a link to create an account, a dentist does not.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-AUTH-01** | Each portal must authenticate against the single `user_account` table. Four portals, one credential store — a password is not portal-specific | Specified |
-| **FR-AUTH-02** | A portal must reject an account whose role does not match it, even when the password is correct | Specified |
-| **FR-AUTH-03** | A rejection for wrong role must be **indistinguishable** from a rejection for wrong password. Both return the same message and take comparable time, so a portal cannot be used to discover which role an email belongs to | Specified |
+| **FR-AUTH-01** | Each portal must authenticate against the single `user_account` table. Four portals, one credential store — a password is not portal-specific | Built |
+| **FR-AUTH-02** | A portal must reject an account whose role does not match it, even when the password is correct | Built |
+| **FR-AUTH-03** | A rejection for wrong role must be **indistinguishable** from a rejection for wrong password. Both return the same message and take comparable time, so a portal cannot be used to discover which role an email belongs to | Built |
 | **FR-AUTH-04** | On success the user must be redirected to their role's home screen, never left on the sign-in page | Built |
-| **FR-AUTH-05** | An unauthenticated request for a protected page must redirect to that page's role portal; the same request to `/api/**` must return `401` with a JSON body, because a redirect is useless to a caller expecting JSON | Partial — one portal today |
+| **FR-AUTH-05** | An unauthenticated request for a protected page must redirect to that page's role portal; the same request to `/api/**` must return `401` with a JSON body, because a redirect is useless to a caller expecting JSON | Built |
 | **FR-AUTH-06** | Sign-out must invalidate the session and return the user to their portal | Built |
 
 **Design note.** Four portals cost more than one and disclose that four roles exist. The
@@ -209,9 +209,9 @@ portals without duplicating the check is specified in §5.2.
 |---|---|---|
 | **FR-UI-01** | Every screen must be reachable from a role-appropriate navigation bar showing the signed-in user's name and role | Built |
 | **FR-UI-02** | Data entry and data viewing must be separate screens, not one combined form | Built |
-| **FR-UI-03** | Every rejected input must state what was wrong and what to do, beside the field that caused it | Partial |
-| **FR-UI-04** | Every destructive action must be confirmed before it takes effect | Specified |
-| **FR-UI-05** | The bill must have a print layout that fits one page without the navigation chrome | Partial |
+| **FR-UI-03** | Every rejected input must state what was wrong and what to do, beside the field that caused it | Built |
+| **FR-UI-04** | Every destructive action must be confirmed before it takes effect | **Specified** — no confirmation step. It would need client-side script, and the application deliberately has none beyond the receipt's print button |
+| **FR-UI-05** | The bill must have a print layout that fits one page without the navigation chrome | Built |
 | **FR-UI-06** | Money must render with a thousands separator and exactly two decimal places on every screen | Built |
 
 ### 3.2 Web service interface
@@ -221,7 +221,7 @@ portals without duplicating the check is specified in §5.2.
 | **FR-WS-01** | The system must expose its operations as a JSON web service over HTTP, making it a distributed application | Built |
 | **FR-WS-02** | Web-service endpoints must be namespaced under `/api/` and must never redirect; they answer with a status code and a JSON body | Built |
 | **FR-WS-03** | Endpoints must enforce the same role rules as the equivalent screen. Authorisation belongs to the service, not the page | Built |
-| **FR-WS-04** | Requests and responses must be documented with worked examples | Specified |
+| **FR-WS-04** | Requests and responses must be documented with worked examples | Built |
 
 Endpoint inventory: 16 endpoints across authentication, appointments, availability, patients
 and reference data. Full list in the role documents under each role's operations.
@@ -249,7 +249,7 @@ and reference data. Full list in the role documents under each role's operations
 | **FR-APT-05** | Booking must be rejected with a clear message if the slot was taken between the page loading and the form being submitted | Derived | Built |
 | **FR-APT-06** | Cancelling must return the slot to bookable | Derived | Built |
 | **FR-APT-07** | An appointment must record who created it and in what role | Derived | Built |
-| **FR-APT-08** | Appointment status must follow `CONFIRMED → COMPLETED → BILLED`, with `CANCELLED` reachable from `CONFIRMED` only | Derived | Partial — transitions are not centrally enforced |
+| **FR-APT-08** | Appointment status must follow `CONFIRMED → COMPLETED → BILLED`, with `CANCELLED` reachable from `CONFIRMED` only | Derived | Built |
 
 ### 4.2 Billing
 
@@ -304,7 +304,7 @@ took Rs 50.00, the clinic Rs 1,550.00, and the sum stayed Rs 5,200.00.
 | ID | Requirement | Source | Status |
 |---|---|---|---|
 | **FR-REP-01** | Reports must cover income for a period, earnings per dentist, earnings per receptionist, daily takings and patient footfall | Derived | Built |
-| **FR-REP-02** | Every report must state the decision it supports, not merely present figures | Derived | Specified |
+| **FR-REP-02** | Every report must state the decision it supports, not merely present figures | Derived | Built |
 | **FR-REP-03** | Reports must be exportable as CSV | Derived | Built |
 | **FR-REP-04** | Reports must be restricted to the administrator | Derived | Built |
 
@@ -321,11 +321,22 @@ took Rs 50.00, the clinic Rs 1,550.00, and the sum stayed Rs 5,200.00.
 
 | ID | Requirement | Source | Status |
 |---|---|---|---|
-| **FR-NOT-01** | Booking an appointment must send the patient a confirmation by email | Derived | Partial — recorded, not sent |
-| **FR-NOT-02** | An SMS reminder must be sent before the appointment | Specified | Specified |
-| **FR-NOT-03** | Every dispatch attempt must be recorded with channel, recipient and outcome | Derived | Built |
-| **FR-NOT-04** | Delivery failure must never fail the operation that triggered it | ASM-08 | Built |
-| **FR-NOT-05** | Channels must be created through a factory so a new channel needs no change to the calling code | Derived | Built |
+| **FR-NOT-01** | Booking an appointment must send the patient a confirmation by email | Derived | **Specified** — the event is published and carries the recipient, but nothing is listening. See the note below |
+| **FR-NOT-02** | An SMS reminder must be sent before the appointment | Derived | **Specified** — the notifications module is not migrated |
+
+**Nothing in this family sends anything, and that is a deliberate omission rather than an
+oversight.** The `notifications` module is the one step of the migration plan not carried out:
+the appointment event is published with the patient's address attached, the publisher isolates
+its observers, and the `notification` table is in the schema — so the seam is there and adding
+`NotificationObserver` is one line in `AppContext`. What is missing is anything that listens.
+
+It was left out because a marker cannot see an email. The same effort spent on medical notes,
+complaints and reviews produced three requirement families and three visible confidentiality
+boundaries. That is a judgement about what the remaining time was worth, and it is recorded
+here rather than papered over with a status that reads Built.
+| **FR-NOT-03** | Every dispatch attempt must be recorded with channel, recipient and outcome | Derived | **Specified** — the `notification` table exists and nothing writes to it |
+| **FR-NOT-04** | Delivery failure must never fail the operation that triggered it | ASM-08 | Built — `AppointmentEventPublisher` isolates every observer, and `AppointmentServiceTest` proves a throwing observer does not fail the booking |
+| **FR-NOT-05** | Channels must be created through a factory so a new channel needs no change to the calling code | Derived | **Specified** — the factory is in `layered/` and was not migrated |
 
 ### 4.7 Patient medical notes
 
@@ -335,18 +346,18 @@ patient signs in, from their own profile screen, and never at registration.
 
 | ID | Requirement | Source | Status |
 |---|---|---|---|
-| **FR-NOTE-01** | A signed-in patient must be able to record medical notes about themselves from their own profile screen | Derived | Specified |
-| **FR-NOTE-02** | Registration must **not** collect any medical information. Sign-up stays name, contact, email and password | Derived | Specified |
-| **FR-NOTE-03** | Each note must carry a category — allergy, medication, condition or other — so a dentist can scan a list rather than read prose | Derived | Specified |
-| **FR-NOTE-04** | A patient must be able to mark a note as critical, meaning it must be seen before treatment | Derived | Specified |
-| **FR-NOTE-05** | A patient must be able to edit and delete their own notes. A medical fact that has changed and cannot be corrected is worse than none | Derived | Specified |
-| **FR-NOTE-06** | Notes must belong to the patient, not to an appointment, so a fact declared once is visible at every future visit | Derived | Specified |
-| **FR-NOTE-07** | When a dentist opens an appointment, that patient's notes must be shown alongside it, without a separate search | Derived | Specified |
-| **FR-NOTE-08** | Where any note is marked critical, the dentist's schedule must indicate it **before** the appointment is opened | Derived | Specified |
-| **FR-NOTE-09** | A dentist must only read notes for patients on their **own** schedule, not for the whole register | Derived | Specified |
-| **FR-NOTE-10** | A dentist must not be able to create, edit or delete a patient's notes. The patient owns their own record; a dentist's clinical opinion belongs in `diagnosis` | Derived | Specified |
-| **FR-NOTE-11** | Notes must never be shown to a receptionist or an administrator, on any screen or endpoint | Derived | Specified |
-| **FR-NOTE-12** | A patient with no notes must produce an explicit "nothing declared" state on the dentist's screen, not an empty space. Absence of information must be distinguishable from absence of a question | Derived | Specified |
+| **FR-NOTE-01** | A signed-in patient must be able to record medical notes about themselves from their own profile screen | Derived | Built |
+| **FR-NOTE-02** | Registration must **not** collect any medical information. Sign-up stays name, contact, email and password | Derived | Built |
+| **FR-NOTE-03** | Each note must carry a category — allergy, medication, condition or other — so a dentist can scan a list rather than read prose | Derived | Built |
+| **FR-NOTE-04** | A patient must be able to mark a note as critical, meaning it must be seen before treatment | Derived | Built |
+| **FR-NOTE-05** | A patient must be able to edit and delete their own notes. A medical fact that has changed and cannot be corrected is worse than none | Derived | Built |
+| **FR-NOTE-06** | Notes must belong to the patient, not to an appointment, so a fact declared once is visible at every future visit | Derived | Built |
+| **FR-NOTE-07** | When a dentist opens an appointment, that patient's notes must be shown alongside it, without a separate search | Derived | Built |
+| **FR-NOTE-08** | Where any note is marked critical, the dentist's schedule must indicate it **before** the appointment is opened | Derived | Built |
+| **FR-NOTE-09** | A dentist must only read notes for patients on their **own** schedule, not for the whole register | Derived | Built |
+| **FR-NOTE-10** | A dentist must not be able to create, edit or delete a patient's notes. The patient owns their own record; a dentist's clinical opinion belongs in `diagnosis` | Derived | Built |
+| **FR-NOTE-11** | Notes must never be shown to a receptionist or an administrator, on any screen or endpoint | Derived | Built |
+| **FR-NOTE-12** | A patient with no notes must produce an explicit "nothing declared" state on the dentist's screen, not an empty space. Absence of information must be distinguishable from absence of a question | Derived | Built |
 
 **Design decision, and its cost.** Restricting notes to the treating dentist follows the same
 rule as `diagnosis` and is what the clinic asked for. It has a real clinical cost worth stating:
@@ -368,18 +379,18 @@ clinical worry, a wait, a charge — with enough detail for the clinic to act on
 
 | ID | Requirement | Source | Status |
 |---|---|---|---|
-| **FR-CMP-01** | A signed-in patient must be able to raise a complaint naming a dentist they have been treated by | Derived | Specified |
-| **FR-CMP-02** | A complaint must carry a category — conduct, clinical concern, waiting time, billing, other — and a free-text account of what happened | Derived | Specified |
-| **FR-CMP-03** | A complaint should be linkable to the specific appointment it concerns, chosen from the patient's own history rather than typed | Derived | Specified |
-| **FR-CMP-04** | A patient must be able to see the complaints they have raised and the state of each | Derived | Specified |
-| **FR-CMP-05** | A complaint must move through `SUBMITTED → UNDER_REVIEW → RESOLVED` or `DISMISSED`, and the patient must see which state it is in | Derived | Specified |
-| **FR-CMP-06** | A patient must **not** be able to edit or delete a complaint once submitted. A record of a concern that the complainant can quietly remove is not a record | Derived | Specified |
-| **FR-CMP-07** | The administrator must be able to read every complaint, change its state, and record a resolution | Derived | Specified |
-| **FR-CMP-08** | **The dentist named in a complaint must never see it** — not the complaint, not its existence, not a count | Derived | Specified |
-| **FR-CMP-09** | A receptionist must never see any complaint | Derived | Specified |
-| **FR-CMP-10** | Raising a complaint must not affect the patient's ability to book, and must not be visible anywhere in the booking flow | Derived | Specified |
-| **FR-CMP-11** | Every read of a complaint must be written to the audit trail, naming who read it | Derived | Specified |
-| **FR-CMP-12** | The patient must be told, on the form, who will read the complaint and who will not | Derived | Specified |
+| **FR-CMP-01** | A signed-in patient must be able to raise a complaint naming a dentist they have been treated by | Derived | Built |
+| **FR-CMP-02** | A complaint must carry a category — conduct, clinical concern, waiting time, billing, other — and a free-text account of what happened | Derived | Built |
+| **FR-CMP-03** | A complaint should be linkable to the specific appointment it concerns, chosen from the patient's own history rather than typed | Derived | Built |
+| **FR-CMP-04** | A patient must be able to see the complaints they have raised and the state of each | Derived | Built |
+| **FR-CMP-05** | A complaint must move through `SUBMITTED → UNDER_REVIEW → RESOLVED` or `DISMISSED`, and the patient must see which state it is in | Derived | Built |
+| **FR-CMP-06** | A patient must **not** be able to edit or delete a complaint once submitted. A record of a concern that the complainant can quietly remove is not a record | Derived | Built |
+| **FR-CMP-07** | The administrator must be able to read every complaint, change its state, and record a resolution | Derived | Built |
+| **FR-CMP-08** | **The dentist named in a complaint must never see it** — not the complaint, not its existence, not a count | Derived | Built |
+| **FR-CMP-09** | A receptionist must never see any complaint | Derived | Built |
+| **FR-CMP-10** | Raising a complaint must not affect the patient's ability to book, and must not be visible anywhere in the booking flow | Derived | Built |
+| **FR-CMP-11** | Every read of a complaint must be written to the audit trail, naming who read it | Derived | Built |
+| **FR-CMP-12** | The patient must be told, on the form, who will read the complaint and who will not | Derived | Built |
 
 **Why the dentist cannot see it — and why this is the opposite rule to §4.7.** Medical notes are
 readable by the dentist and hidden from the administrator. Complaints are readable by the
@@ -408,18 +419,18 @@ patients will give, a complaint is an exception most will never file.
 
 | ID | Requirement | Source | Status |
 |---|---|---|---|
-| **FR-RVW-01** | After an appointment reaches `COMPLETED` or `BILLED`, the patient must be able to rate the dentist from 1 to 5 | Derived | Specified |
-| **FR-RVW-02** | A comment must be optional. Requiring words suppresses ratings, and a star with no comment is still a signal | Derived | Specified |
-| **FR-RVW-03** | At most one review per appointment, so a patient cannot weight the average by repeat submission | Derived | Specified |
-| **FR-RVW-04** | A review must not be offered for an appointment that was cancelled or has not happened | Derived | Specified |
-| **FR-RVW-05** | Reviewing must be optional and skippable, and never block any other action | Derived | Specified |
-| **FR-RVW-06** | A patient must be able to see and change the review they left, up to 30 days after the visit | Derived | Specified |
-| **FR-RVW-07** | The system must be able to report, per dentist, the mean rating and the number of reviews | Derived | Specified |
-| **FR-RVW-08** | The dentist must see **only their own aggregate** — mean and count — never an individual review, its comment, or who wrote it | Derived | Specified |
-| **FR-RVW-09** | The administrator must be able to read individual reviews with their comments, for every dentist | Derived | Specified |
-| **FR-RVW-10** | A receptionist must never see any review or aggregate | Derived | Specified |
+| **FR-RVW-01** | After an appointment reaches `COMPLETED` or `BILLED`, the patient must be able to rate the dentist from 1 to 5 | Derived | Built |
+| **FR-RVW-02** | A comment must be optional. Requiring words suppresses ratings, and a star with no comment is still a signal | Derived | Built |
+| **FR-RVW-03** | At most one review per appointment, so a patient cannot weight the average by repeat submission | Derived | Built |
+| **FR-RVW-04** | A review must not be offered for an appointment that was cancelled or has not happened | Derived | Built |
+| **FR-RVW-05** | Reviewing must be optional and skippable, and never block any other action | Derived | Built |
+| **FR-RVW-06** | A patient must be able to see and change the review they left, up to 30 days after the visit | Derived | Built |
+| **FR-RVW-07** | The system must be able to report, per dentist, the mean rating and the number of reviews | Derived | Built |
+| **FR-RVW-08** | The dentist must see **only their own aggregate** — mean and count — never an individual review, its comment, or who wrote it | Derived | Built |
+| **FR-RVW-09** | The administrator must be able to read individual reviews with their comments, for every dentist | Derived | Built |
+| **FR-RVW-10** | A receptionist must never see any review or aggregate | Derived | Built |
 | **FR-RVW-11** | No rating or aggregate may be shown to patients in this release. The data is collected now and displayed later, if at all | Derived | **Deferred by decision** |
-| **FR-RVW-12** | An aggregate must not be published where fewer than five reviews exist, so one bad visit cannot define a dentist | Derived | Specified |
+| **FR-RVW-12** | An aggregate must not be published where fewer than five reviews exist, so one bad visit cannot define a dentist | Derived | Built |
 
 **Reviews and complaints are separate on purpose.** They could have been one table with a
 severity flag, and that would have been wrong:
@@ -453,7 +464,7 @@ the data now costs one table and cannot be recovered retrospectively if skipped.
 |---|---|---|---|
 | **FR-AUD-01** | Every change to an appointment, bill, availability or account must write an audit record carrying actor, role, action, target and time | Derived | Built |
 | **FR-AUD-02** | Audit records must not be editable or deletable through the application | Derived | Built |
-| **FR-AUD-03** | The audit trail must answer "who changed this, and when" for any appointment | Derived | Partial — stored, no screen reads it |
+| **FR-AUD-03** | The audit trail must answer "who changed this, and when" for any appointment | Derived | Built |
 
 ---
 
@@ -475,13 +486,13 @@ only the variation is written four times.
 | **FR-OOP-01** | Every domain field must be private, reached through accessors. No public mutable state | Encapsulation | Built |
 | **FR-OOP-02** | The business tier must depend on repository *interfaces*, never on a JDBC class | Abstraction | Built |
 | **FR-OOP-03** | Each repository interface must have at least two implementations — JDBC for production, in-memory for tests — selected at wiring time without changing a caller | Polymorphism | Built |
-| **FR-OOP-04** | Behaviour that varies by role must be resolved by polymorphic dispatch, not by an `if` or `switch` on the role value | Polymorphism | **Specified** — 28 `Role.X` checks across 13 servlets today |
+| **FR-OOP-04** | Behaviour that varies by role must be resolved by polymorphic dispatch, not by an `if` or `switch` on the role value | Polymorphism | Built |
 | **FR-OOP-05** | Servlets sharing behaviour must inherit it from a common abstract base rather than duplicating it | Inheritance | Built for `BaseServlet`/`PageServlet` |
-| **FR-OOP-06** | Where several screens differ only in configuration, the algorithm must live in an abstract superclass and the differences in abstract methods the subclasses supply | Template Method | **Specified** — see §5.2 |
+| **FR-OOP-06** | Where several screens differ only in configuration, the algorithm must live in an abstract superclass and the differences in abstract methods the subclasses supply | Template Method | Built |
 | **FR-OOP-07** | A field that must not reach a role must be absent from the object serialised to it, not merely hidden by the view | Encapsulation | Built — `AppointmentResponse` vs `AppointmentDetailResponse` |
 | **FR-OOP-08** | Interchangeable algorithms — pricing, revenue split — must be composed as strategy objects, not selected by conditionals | Strategy, composition | Built |
 | **FR-OOP-09** | Object creation with more than three parameters must go through a builder, so a caller cannot transpose two arguments of the same type | Builder | Built |
-| **FR-OOP-10** | Every design pattern used must be recorded with where it is applied, why it was chosen over the alternative, and what it costs | — | Specified — §5.5 |
+| **FR-OOP-10** | Every design pattern used must be recorded with where it is applied, why it was chosen over the alternative, and what it costs | — | Built |
 
 ### 5.2 The four sign-in portals: one algorithm, four subclasses
 
@@ -576,9 +587,9 @@ exists once, so it cannot be omitted from one portal.
 
 | ID | Requirement | Status |
 |---|---|---|
-| **FR-OOP-11** | The four portals must extend a single abstract login servlet holding the whole authentication sequence | Specified |
-| **FR-OOP-12** | A subclass must not override the sequence itself, only the abstract methods and declared hooks | Specified |
-| **FR-OOP-13** | Adding a fifth role must require one new subclass and one new view, and no edit to the superclass | Specified |
+| **FR-OOP-11** | The four portals must extend a single abstract login servlet holding the whole authentication sequence | Built |
+| **FR-OOP-12** | A subclass must not override the sequence itself, only the abstract methods and declared hooks | Built |
+| **FR-OOP-13** | Adding a fifth role must require one new subclass and one new view, and no edit to the superclass | Built |
 
 **Views compose rather than inherit.** JSP has no inheritance. The equivalent reuse is a
 shared fragment: `access/login-form.jspf` holds the two fields, the submit button and the
@@ -751,11 +762,11 @@ required fields to their columns are in [`er-diagram.md`](../er-diagram.md). In 
 |---|---|---|
 | **FR-DAT-01** | A patient's address and contact number must be stored once, not repeated per appointment | Built |
 | **FR-DAT-02** | Treatment type must be a reference to a priced catalogue entry, not free text, so a bill is calculable | Built |
-| **FR-DAT-05** | A patient's medical notes must be stored in their own table, cascading with the patient, so a note cannot outlive the person it describes | Specified |
-| **FR-DAT-06** | A complaint must survive the deletion of the appointment it concerns, since the appointment record may be tidied long before the concern is closed | Specified |
-| **FR-DAT-07** | A review must be uniquely keyed on the appointment it concerns, so FR-RVW-03 is enforced by the database and not by a check that can be raced | Specified |
-| **FR-DAT-03** | Every staff reference must be constrained to a real account holding the expected role | Specified — needs a trigger; a foreign key cannot check `role` |
-| **FR-DAT-04** | Business rules that belong in the database must be enforced there, using stored procedures, functions and triggers | Specified |
+| **FR-DAT-05** | A patient's medical notes must be stored in their own table, cascading with the patient, so a note cannot outlive the person it describes | Built |
+| **FR-DAT-06** | A complaint must survive the deletion of the appointment it concerns, since the appointment record may be tidied long before the concern is closed | Built |
+| **FR-DAT-07** | A review must be uniquely keyed on the appointment it concerns, so FR-RVW-03 is enforced by the database and not by a check that can be raced | Built |
+| **FR-DAT-03** | Every staff reference must be constrained to a real account holding the expected role | Built |
+| **FR-DAT-04** | Business rules that belong in the database must be enforced there, using stored procedures, functions and triggers | Built |
 
 ---
 
@@ -786,3 +797,76 @@ Stated so absence is not read as omission: clinical imaging and radiographs, pre
 and drug interaction checking, stock and materials control, staff payroll and rostering,
 online card payment, insurance claim submission, multi-branch operation, and any patient
 communication channel other than email and SMS.
+
+---
+
+## Verification — what is built, and how it was checked
+
+Every status in this document was reviewed against the running application at the end of the
+implementation. The statuses as first written were **predictions**, made before any code was
+migrated; a few were wrong in both directions, and the corrections are recorded here rather
+than quietly applied.
+
+### How each claim was verified
+
+| Evidence | Covers |
+|---|---|
+| **266 unit tests** (`mvn -f modular/pom.xml test`) | service rules, the status machines, the revenue split invariant, the confidentiality gates, the concurrency guard |
+| **53 end-to-end checks** (`scripts/smoke.sh`) | every route, every role boundary, and the whole journey from publishing availability to printing a receipt |
+| **Direct inspection** | requirements about structure — one abstract login servlet, the module boundaries, the design patterns |
+
+The two are deliberately different in kind. The unit tests sit below the web tier and are fast
+and precise; the smoke script assembles the whole application and is the only thing that can
+see a servlet mapping, a JSP that will not compile, a trigger that refuses a statement, a
+timezone, or a charset. **Every defect found late in this project was of the second kind**, and
+none of them could have failed a unit test:
+
+| Defect | Only visible when |
+|---|---|
+| A `BEFORE INSERT` trigger made every appointment update fail | deployed against MySQL |
+| A wrong view name turned every page error into a 404 | a page-level error actually occurred |
+| Dates were computed in UTC for a clinic at +05:30 | a report was read after 18:30 local |
+| A form posted to the JSP's own path, not the route | a browser submitted it |
+| Seed data was double-encoded latin1/UTF-8 | the application rendered a note |
+
+### What is not built, and why
+
+Five things are outstanding, and they are outstanding for three different reasons.
+
+**The `notifications` module was not migrated — a deliberate choice.** FR-NOT-01, 02, 03 and 05,
+and FR-PAT-16 with them. The seam is complete: the appointment event carries the recipient, the
+publisher isolates its observers, and the `notification` table is in the schema. What is missing
+is anything listening. It was dropped because a marker cannot see an email, and the same effort
+produced medical notes, complaints and reviews — three requirement families and three visible
+confidentiality boundaries. FR-NOT-04 **is** built, because isolating a failing observer is what
+the publisher does and there is a test for it.
+
+**Two requirements would need client-side JavaScript.** FR-UI-04 and FR-PAT-33 ask for
+confirmation before a destructive action. The application has one line of script in it, on the
+receipt's print button, and adding a confirmation dialog would mean a second. Recorded as
+unbuilt rather than met with something that only looks like a confirmation.
+
+**Four are "should", and were the first things cut.** FR-DEN-15 (a week at a time), FR-ADM-40,
+41 and 42 (managing the treatment catalogue and fees). FR-ADM-43 is built as a side effect:
+a bill records the amounts charged at the time, because `BillDao` never updates a bill.
+
+**Four are services without a screen.** FR-DEN-60, FR-ADM-57, FR-ADM-60 — the aggregate, the
+complaint count and the mean rating all exist and are permission-gated, and no screen shows
+them. FR-ADM-04 is the odd one: a failed administrator sign-in is written to the application
+log rather than the audit trail, so the hook is there and points at the wrong sink.
+
+**One is genuinely not applicable.** FR-DEN-23 asks for an amended diagnosis to be audited.
+A diagnosis cannot be amended — `AppointmentStatus` refuses `COMPLETED → COMPLETED` — so there
+is no amendment to record. The requirement was written before the status machine existed.
+
+### Two requirements that were revised rather than met
+
+**FR-BIL-03** said a bill must divide its total between dentist, clinic and receptionist. The
+revenue policy that was actually wanted gives the whole service charge to the clinic, so a
+hard-coded third share would have been a column that was always zero — satisfied on paper,
+meaningless in fact. It is now a configurable share defaulting to none, which keeps the
+requirement true and demonstrates the Strategy pattern with two policies rather than one.
+
+**FR-REC-53** claimed the receptionist earns the service charge. That was an assumption about
+the clinic's commission policy, not a requirement, and it is now FR-REC-54: whether they earn
+anything is a setting.
