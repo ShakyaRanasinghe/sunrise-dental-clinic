@@ -7,6 +7,7 @@ How the application is put in front of users, and why it is shaped this way.
 | [`1-architecture.md`](1-architecture.md) | What runs where, and what talks to what |
 | [`2-environments.md`](2-environments.md) | What differs between a developer's machine and a clinic |
 | [`3-runbook.md`](3-runbook.md) | Deploy it, roll it back, and what to check afterwards |
+| [`4-external-database.md`](4-external-database.md) | Moving to a hosted database — Aiven, RDS, anything. **Three environment variables and a URL** |
 
 ---
 

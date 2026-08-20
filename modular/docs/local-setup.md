@@ -155,6 +155,10 @@ docker run -d --name sunrise-tomcat --network sunrise-net -p 8080:8080 \
   tomcat:10.1-jdk17-temurin
 ```
 
+**Pointing at a hosted database** — Aiven, RDS, a MySQL elsewhere? Three environment variables
+and a URL; nothing is rebuilt. See
+[`deploy/4-external-database.md`](deploy/4-external-database.md).
+
 **Running from an IDE instead of the container?** Point at the published port:
 
 ```bash

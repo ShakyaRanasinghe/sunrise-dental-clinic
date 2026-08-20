@@ -22,6 +22,11 @@ upper-cased, dots to underscores. So `db.url` is overridden by `DB_URL`.
 something behaves differently between two environments and it is not in this table, that is a
 defect rather than configuration.
 
+> Moving to a hosted database — Aiven, RDS, a MySQL elsewhere on the practice's network — is
+> covered in full by [`4-external-database.md`](4-external-database.md). The summary is that the
+> host, the port, the database name, the credentials and the TLS settings all live in `DB_URL`,
+> `DB_USER` and `DB_PASSWORD`, and nothing is rebuilt.
+
 ## The database credential
 
 `clinic.properties` ships with `db.password=` — empty. That is intentional: the file is in
