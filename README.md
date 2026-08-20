@@ -112,6 +112,15 @@ the directory tree. The reasoning, and the eight alternatives considered against
 
 CI builds `modular/` only, and enforces the tier boundaries as a build step.
 
+| Documentation | |
+|---|---|
+| [Run it locally](modular/docs/local-setup.md) | One command, and what to check when it does not work |
+| [Manual test scenarios](modular/docs/testing/scenarios.md) | 50 walkthroughs in plain language — the fastest way to see what it does |
+| [Deployment](modular/docs/deploy/) | Architecture, environments, runbook |
+| [Architecture](modular/docs/architecture/) | Why the code is arranged this way, and the alternatives |
+| [Requirements](modular/docs/srs/) | The SRS, with the verified status of every requirement |
+| [API](modular/docs/api/) | Every JSON endpoint, with worked examples |
+
 ---
 
 ## 🚀 Running it
