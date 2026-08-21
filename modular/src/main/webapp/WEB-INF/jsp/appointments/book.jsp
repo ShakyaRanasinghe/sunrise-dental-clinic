@@ -17,6 +17,9 @@
 <div class="card">
     <h2>1. Dentist and date</h2>
     <form method="get" action="${ctx}/patient/book">
+        <c:if test="${not empty patientId}">
+            <input type="hidden" name="patientId" value="<c:out value='${patientId}' />">
+        </c:if>
         <div class="form-row">
             <div class="field">
                 <label for="dentistId">Dentist</label>
@@ -107,18 +110,42 @@
                     submit button. The treatment is chosen once, above the times.
                 --%>
                 <form method="post" action="${ctx}/patient/book">
+                    <c:if test="${not empty patientId}">
+                        <input type="hidden" name="patientId" value="<c:out value='${patientId}' />">
+                    </c:if>
                     <div class="field">
                         <label for="treatmentId">Treatment</label>
                         <select id="treatmentId" name="treatmentId" required>
                             <c:forEach var="t" items="${treatments}">
                                 <option value="<c:out value='${t.id()}' />">
                                     <c:out value="${t.name()}" />
-                                    &mdash; Rs <fmt:formatNumber value="${t.baseCost()}"
-                                                                 minFractionDigits="2"
-                                                                 maxFractionDigits="2" />
                                 </option>
                             </c:forEach>
                         </select>
+                    </div>
+                    <div class="table-wrap" style="margin-top:0.5rem;margin-bottom:1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Treatment</th>
+                                    <th>Description</th>
+                                    <th>Price (Rs)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="t" items="${treatments}">
+                                    <tr>
+                                        <td><c:out value="${t.name()}" /></td>
+                                        <td><c:out value="${t.description()}" /></td>
+                                        <td>
+                                            <fmt:formatNumber value="${t.baseCost()}"
+                                                             minFractionDigits="2"
+                                                             maxFractionDigits="2" />
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
                     </div>
 
                     <p class="page-subtitle">

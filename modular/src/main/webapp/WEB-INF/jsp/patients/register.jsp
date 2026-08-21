@@ -126,7 +126,7 @@
                     <thead>
                         <tr>
                             <th>Name</th><th>Contact</th><th>Email</th>
-                            <th>Date of birth</th><th>Portal account</th>
+                            <th>Date of birth</th><th>Portal account</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +154,10 @@
                                         </c:when>
                                         <c:otherwise><span class="pill">Walk-in</span></c:otherwise>
                                     </c:choose>
+                                </td>
+                                <td>
+                                    <a href="${ctx}/patient/book?patientId=<c:out value='${p.id()}' />"
+                                       class="btn small">Book</a>
                                 </td>
                             </tr>
                         </c:forEach>

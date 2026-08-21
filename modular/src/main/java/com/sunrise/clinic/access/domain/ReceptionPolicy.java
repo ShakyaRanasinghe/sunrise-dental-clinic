@@ -37,9 +37,15 @@ public final class ReceptionPolicy extends RolePolicy {
     }
 
     /**
-     * The front desk's own screens. Grows as modules land: the day view and billing
-     * arrive with {@code appointments} and {@code billing}.
+     * Reception also enters /patient/book to book on behalf of a walk-in patient.
+     * Fine-grained checks in the servlet enforce BOOK_FOR_PATIENT; this just opens
+     * the structural gate the filter checks.
      */
+    @Override
+    public Set<String> enterablePrefixes() {
+        return Set.of(ownedPrefix(), RolePolicy.of(Role.PATIENT).ownedPrefix());
+    }
+
     @Override
     protected List<NavItem> ownNavigation() {
         return List.of(
