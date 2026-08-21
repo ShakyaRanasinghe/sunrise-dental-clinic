@@ -209,6 +209,19 @@ public class SlotService {
                 .toList();
     }
 
+    /**
+     * All published sessions from today onwards, with dentist names resolved.
+     * Used by the availability overview so reception sees the full diary at a glance.
+     */
+    public List<SessionRow> upcomingSessions(LocalDate from) {
+        return sessions.findFromDate(from).stream()
+                .map(s -> new SessionRow(s, reference.requireDentist(s.getDentistId()).getName()))
+                .toList();
+    }
+
+    /** One row in the upcoming sessions overview: the session and the dentist's name. */
+    public record SessionRow(DentistSession session, String dentistName) {}
+
     /** Every window published for a dentist, most recent first. */
     public List<DentistSession> publishedFor(String dentistId) {
         return sessions.findByDentistId(dentistId).stream()

@@ -26,4 +26,13 @@ public class InMemorySessionRepository
     public List<DentistSession> findByDate(LocalDate date) {
         return store.values().stream().filter(s -> date.equals(s.getDate())).toList();
     }
+
+    @Override
+    public List<DentistSession> findFromDate(LocalDate from) {
+        return store.values().stream()
+                .filter(s -> !s.getDate().isBefore(from))
+                .sorted(java.util.Comparator.comparing(DentistSession::getDate)
+                        .thenComparing(DentistSession::getStartTime))
+                .toList();
+    }
 }

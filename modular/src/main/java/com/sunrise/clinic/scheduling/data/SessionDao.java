@@ -69,6 +69,14 @@ public class SessionDao extends JdbcDao<DentistSession, String> implements Sessi
     }
 
     @Override
+    public List<DentistSession> findFromDate(LocalDate from) {
+        return queryList("SELECT " + COLUMNS + " FROM dentist_session WHERE session_date >= ?"
+                        + " ORDER BY session_date, start_time",
+                statement -> statement.setDate(1, toSqlDate(from)),
+                SessionDao::mapSession);
+    }
+
+    @Override
     public void deleteById(String id) {
         update("DELETE FROM dentist_session WHERE id = ?", statement -> statement.setString(1, id));
     }

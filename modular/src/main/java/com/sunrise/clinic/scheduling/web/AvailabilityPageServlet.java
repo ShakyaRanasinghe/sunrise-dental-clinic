@@ -75,9 +75,11 @@ public class AvailabilityPageServlet extends PageServlet {
         request.setAttribute("confirmation", confirmation);
         request.setAttribute("warning", warning);
         request.setAttribute("error", error);
+        // Always show the full upcoming diary so reception sees what is published
+        // before attempting to publish, not just after a conflict.
+        request.setAttribute("upcomingSessions",
+                app().slotService().upcomingSessions(LocalDate.now()));
         if (dentistId != null && !dentistId.isBlank()) {
-            // Every slot, not only the open ones: the point of this panel is to show
-            // which times are already taken.
             request.setAttribute("published", app().slotService().allSlots(dentistId, date));
             request.setAttribute("dentistName",
                     app().referenceService().requireDentist(dentistId).getName());

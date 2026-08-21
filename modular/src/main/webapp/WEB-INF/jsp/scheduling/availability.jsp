@@ -32,6 +32,40 @@
     </div>
 </c:if>
 
+<%-- ── Upcoming sessions overview ──────────────────────────────────── --%>
+<div class="card">
+    <h2>Already published <span class="count">${fn:length(upcomingSessions)}</span></h2>
+    <c:choose>
+        <c:when test="${empty upcomingSessions}">
+            <p class="page-subtitle">Nothing published from today onwards yet.</p>
+        </c:when>
+        <c:otherwise>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dentist</th>
+                            <th>Date</th>
+                            <th>Window</th>
+                            <th>Slot length</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="row" items="${upcomingSessions}">
+                            <tr>
+                                <td><c:out value="${row.dentistName()}" /></td>
+                                <td>${row.session().getDate()}</td>
+                                <td>${row.session().getStartTime()} &ndash; ${row.session().getEndTime()}</td>
+                                <td>${row.session().getSlotDurationMinutes()} min</td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+        </c:otherwise>
+    </c:choose>
+</div>
+
 <div class="card">
     <h2>New session</h2>
     <form method="post" action="${ctx}/reception/availability">

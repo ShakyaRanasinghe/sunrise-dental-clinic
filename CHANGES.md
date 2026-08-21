@@ -4,6 +4,17 @@ Tracks additions and fixes made during development and QA. Updated on every push
 
 ---
 
+## [develop] — 2026-08-21 (push 4)
+
+### Fixed
+
+- **Availability page now shows all upcoming published sessions on load** (`scheduling/availability.jsp`, `AvailabilityPageServlet.java`, `SlotService.java`, `SessionRepository`, `SessionDao`, `InMemorySessionRepository`)
+  - Receptionist had no visibility of what was already published until they attempted to publish and hit a conflict
+  - Page now shows a full table of all upcoming sessions (all dentists, from today) the moment it loads
+  - Added `SessionRepository.findFromDate(LocalDate)`, `SessionDao` implementation, `SlotService.upcomingSessions()`, `SlotService.SessionRow` record
+
+---
+
 ## [develop] — 2026-08-21 (push 3)
 
 ### Fixed

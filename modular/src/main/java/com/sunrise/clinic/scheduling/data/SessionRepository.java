@@ -13,4 +13,7 @@ public interface SessionRepository extends Repository<DentistSession, String> {
     List<DentistSession> findByDentistId(String dentistId);
 
     List<DentistSession> findByDate(LocalDate date);
+
+    /** All sessions on or after {@code from}, ordered by date then start time. */
+    List<DentistSession> findFromDate(LocalDate from);
 }
