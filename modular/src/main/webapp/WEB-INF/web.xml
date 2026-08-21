@@ -203,6 +203,15 @@
         <url-pattern>/reception/availability</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>WalkIn</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.WalkInServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WalkIn</servlet-name>
+        <url-pattern>/reception/walkin</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  appointments                                                -->
     <!-- ============================================================ -->
