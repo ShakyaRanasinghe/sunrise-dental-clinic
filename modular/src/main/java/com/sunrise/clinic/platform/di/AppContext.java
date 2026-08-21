@@ -12,6 +12,9 @@ import com.sunrise.clinic.platform.data.JdbcTransactionRunner;
 import com.sunrise.clinic.platform.data.TransactionRunner;
 import com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship;
 import com.sunrise.clinic.notifications.data.NotificationDao;
+import com.sunrise.clinic.notifications.service.EmailChannel;
+import com.sunrise.clinic.notifications.service.NotificationChannelFactory;
+import com.sunrise.clinic.notifications.service.SmsChannel;
 import com.sunrise.clinic.notifications.data.NotificationRepository;
 import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientNoteDao;
@@ -118,6 +121,7 @@ public class AppContext implements AutoCloseable {
     private final ReportRepository reports;
     private final ComplaintRepository complaints;
     private final NotificationRepository notifications;
+    private final NotificationChannelFactory notificationChannels;
     private final ReviewRepository reviews;
 
     // Services, which are what the presentation tier may reach.
@@ -156,9 +160,14 @@ public class AppContext implements AutoCloseable {
         this.bills = new BillDao(database);
         this.reports = new JdbcReportDao(database, clinicZone());
         this.complaints = new ComplaintDao(database);
-        // Day one of the notifications module: the dispatch record exists and is wired.
-        // Nothing writes to it yet — the channels and the observer follow.
         this.notifications = new NotificationDao(database);
+
+        // Every channel this deployment has, indexed by the factory. Adding a real SMTP or
+        // SMS transport is one more entry in this list and no change anywhere else - which is
+        // the whole return on the Factory Method pattern being here (FR-NOT-05).
+        this.notificationChannels = new NotificationChannelFactory(java.util.List.of(
+                new EmailChannel(config.get("clinic.mail.from", "no-reply@sunrisedental.lk")),
+                new SmsChannel()));
         this.reviews = new ReviewDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
@@ -250,6 +259,16 @@ public class AppContext implements AutoCloseable {
 
     public LoginAttemptService loginAttemptService() {
         return loginAttempts;
+    }
+
+    /**
+     * The notification channels this deployment can use.
+     *
+     * <p>Both record rather than send, for now. The observer that calls them arrives next; until
+     * then nothing writes a notification row.</p>
+     */
+    public NotificationChannelFactory notificationChannels() {
+        return notificationChannels;
     }
 
     /** Patient self-registration — the only public write endpoint. */
