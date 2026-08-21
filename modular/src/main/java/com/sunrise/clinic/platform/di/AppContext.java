@@ -11,6 +11,8 @@ import com.sunrise.clinic.platform.config.AppConfig;
 import com.sunrise.clinic.platform.data.JdbcTransactionRunner;
 import com.sunrise.clinic.platform.data.TransactionRunner;
 import com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship;
+import com.sunrise.clinic.notifications.data.NotificationDao;
+import com.sunrise.clinic.notifications.data.NotificationRepository;
 import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientNoteDao;
 import com.sunrise.clinic.patients.data.PatientNoteRepository;
@@ -115,6 +117,7 @@ public class AppContext implements AutoCloseable {
     private final BillRepository bills;
     private final ReportRepository reports;
     private final ComplaintRepository complaints;
+    private final NotificationRepository notifications;
     private final ReviewRepository reviews;
 
     // Services, which are what the presentation tier may reach.
@@ -153,6 +156,9 @@ public class AppContext implements AutoCloseable {
         this.bills = new BillDao(database);
         this.reports = new JdbcReportDao(database, clinicZone());
         this.complaints = new ComplaintDao(database);
+        // Day one of the notifications module: the dispatch record exists and is wired.
+        // Nothing writes to it yet — the channels and the observer follow.
+        this.notifications = new NotificationDao(database);
         this.reviews = new ReviewDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
