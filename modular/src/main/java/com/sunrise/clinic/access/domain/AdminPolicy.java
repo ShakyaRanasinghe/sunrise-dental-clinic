@@ -17,6 +17,7 @@ public final class AdminPolicy extends RolePolicy {
             Action.ISSUE_BILL,
             Action.READ_REPORTS,
             Action.MANAGE_ACCOUNTS,
+            Action.MANAGE_TREATMENTS,
             Action.READ_AUDIT,
             Action.REVIEW_CONCERNS,
             Action.READ_REVIEWS
@@ -58,6 +59,7 @@ public final class AdminPolicy extends RolePolicy {
         return List.of(
                 new NavItem("Reports", "/admin/reports"),
                 new NavItem("Accounts", "/admin/accounts"),
+                new NavItem("Treatments", "/admin/treatments"),
                 new NavItem("Complaints", "/admin/complaints"),
                 new NavItem("Audit", "/admin/audit"));
     }

@@ -310,6 +310,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>TreatmentAdmin</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.TreatmentAdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TreatmentAdmin</servlet-name>
+        <url-pattern>/admin/treatments</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AuditTrail</servlet-name>
         <servlet-class>com.sunrise.clinic.reporting.web.AuditTrailServlet</servlet-class>
     </servlet>

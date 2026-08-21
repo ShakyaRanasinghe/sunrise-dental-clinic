@@ -4,6 +4,22 @@ Tracks additions and fixes made during development and QA. Updated on every push
 
 ---
 
+## [develop] — 2026-08-21 (push 2)
+
+### Added
+
+- **Treatment catalogue management** — closes issue #22
+  - New admin page at `/admin/treatments` — list, add, edit price/description, activate/deactivate
+  - Deactivated treatments are hidden from patient booking immediately, history preserved
+  - `TreatmentAdminService` (`modular/src/main/java/.../reporting/service/TreatmentAdminService.java`)
+  - `TreatmentAdminServlet` (`modular/src/main/java/.../reporting/web/TreatmentAdminServlet.java`)
+  - `treatments.jsp` (`modular/src/main/webapp/WEB-INF/jsp/reporting/treatments.jsp`)
+  - New `MANAGE_TREATMENTS` action added to `Action.java` and `AdminPolicy`
+  - **Treatments** nav link added to admin navigation
+  - Servlet registered in `web.xml` at `/admin/treatments`
+
+---
+
 ## [develop] — 2026-08-21
 
 ### Fixed

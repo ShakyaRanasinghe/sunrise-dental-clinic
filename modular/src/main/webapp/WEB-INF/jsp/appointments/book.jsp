@@ -80,16 +80,16 @@
                     </p>
                     <div class="slots">
                         <c:forEach var="slot" items="${slots}">
-                            <button type="submit" class="btn secondary"
-                                    name="slotId" value="${slot.id()}">
-                                ${slot.startTime()}
-                            </button>
+                            <div class="slot">
+                                <input type="radio" id="slot-${slot.id()}"
+                                       name="slotId" value="${slot.id()}" required>
+                                <label for="slot-${slot.id()}">${slot.startTime()}</label>
+                            </div>
                         </c:forEach>
                     </div>
-                    <p class="page-subtitle">
-                        Choosing a time books it straight away. You can cancel afterwards
-                        from your appointments.
-                    </p>
+                    <div class="form-actions" style="margin-top:1rem;">
+                        <button type="submit" class="btn">Confirm booking</button>
+                    </div>
                 </form>
             </c:otherwise>
         </c:choose>

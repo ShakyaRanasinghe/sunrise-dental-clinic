@@ -18,8 +18,10 @@ import com.sunrise.clinic.platform.error.SlotUnavailableException;
 import com.sunrise.clinic.scheduling.data.SlotRepository;
 import com.sunrise.clinic.scheduling.domain.Dentist;
 import com.sunrise.clinic.scheduling.domain.Slot;
+import com.sunrise.clinic.scheduling.domain.Treatment;
 import com.sunrise.clinic.scheduling.service.ReferenceService;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -396,12 +398,14 @@ public class AppointmentService {
     public List<DentistDay> forDentistWithWarnings(ClinicPrincipal caller, LocalDate date) {
         return forDentistOn(caller, date).stream()
                 .map(appointment -> new DentistDay(appointment,
-                        patientNotes.hasCriticalNotes(caller, appointment.patientId())))
+                        patientNotes.hasCriticalNotes(caller, appointment.patientId()),
+                        treatmentCost(appointment.treatmentId())))
                 .toList();
     }
 
-    /** One row of a dentist's day: the appointment, and whether to warn about it. */
-    public record DentistDay(AppointmentResponse appointment, boolean hasCriticalNotes) {
+    /** One row of a dentist's day: the appointment, whether to warn about it, and the treatment cost. */
+    public record DentistDay(AppointmentResponse appointment, boolean hasCriticalNotes,
+                             BigDecimal treatmentCost) {
     }
 
     private List<AppointmentResponse> describeAll(List<Appointment> found) {
@@ -432,6 +436,11 @@ public class AppointmentService {
     private String treatmentName(Appointment appointment) {
         return appointment.getTreatmentId() == null ? null
                 : reference.requireTreatment(appointment.getTreatmentId()).getName();
+    }
+
+    private BigDecimal treatmentCost(String treatmentId) {
+        return treatmentId == null ? null
+                : reference.requireTreatment(treatmentId).getBaseCost();
     }
 
     private static String describeCaller(ClinicPrincipal caller) {

@@ -58,7 +58,17 @@
                 <div class="table-wrap">
                     <table>
                         <tbody>
-                            <tr><th>Treatment</th><td><c:out value="${a.treatmentName()}" /></td></tr>
+                            <tr>
+                                <th>Treatment</th>
+                                <td>
+                                    <c:out value="${a.treatmentName()}" />
+                                    <c:if test="${not empty row.treatmentCost()}">
+                                        &mdash; Rs <fmt:formatNumber value="${row.treatmentCost()}"
+                                                                     minFractionDigits="2"
+                                                                     maxFractionDigits="2" />
+                                    </c:if>
+                                </td>
+                            </tr>
                             <tr><th>Appointment</th><td><code>${a.appointmentNo()}</code></td></tr>
                             <tr>
                                 <th>Declared by the patient</th>

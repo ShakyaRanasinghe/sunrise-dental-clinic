@@ -43,6 +43,7 @@ import com.sunrise.clinic.reporting.data.JdbcReportDao;
 import com.sunrise.clinic.reporting.data.ReportRepository;
 import com.sunrise.clinic.reporting.service.AccountAdminService;
 import com.sunrise.clinic.reporting.service.ReportService;
+import com.sunrise.clinic.reporting.service.TreatmentAdminService;
 import com.sunrise.clinic.scheduling.data.DentistDao;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
 import com.sunrise.clinic.scheduling.data.SessionDao;
@@ -134,6 +135,7 @@ public class AppContext implements AutoCloseable {
     private final ComplaintService complaintService;
     private final ReviewService reviewService;
     private final AccountAdminService accountAdminService;
+    private final TreatmentAdminService treatmentAdminService;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -198,6 +200,7 @@ public class AppContext implements AutoCloseable {
         this.reportService = new ReportService(reports, java.time.Clock.system(clinicZone()));
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
                 dentists, auditEvents);
+        this.treatmentAdminService = new TreatmentAdminService(treatments);
         this.complaintService = new ComplaintService(complaints, appointmentService, clinicAccess,
                 referenceService, auditEvents);
         // The clinic's zone again: the review window is measured in the clinic's days.
@@ -299,6 +302,11 @@ public class AppContext implements AutoCloseable {
     /** Creating, unlocking and deactivating accounts. */
     public AccountAdminService accountAdminService() {
         return accountAdminService;
+    }
+
+    /** Adding, editing and deactivating treatments. */
+    public TreatmentAdminService treatmentAdminService() {
+        return treatmentAdminService;
     }
 
     /**

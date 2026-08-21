@@ -59,6 +59,8 @@ public enum Action {
     // --- governance ---------------------------------------------------
     /** Create, unlock or deactivate an account. */
     MANAGE_ACCOUNTS,
+    /** Add, edit pricing and deactivate treatments in the catalogue. */
+    MANAGE_TREATMENTS,
     /** Read the audit trail. */
     READ_AUDIT,
     /** Raise a concern about a dentist. */
