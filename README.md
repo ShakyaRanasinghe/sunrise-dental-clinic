@@ -197,6 +197,12 @@ this project was one of those. It would have caught all of them.
 
 ---
 
+## 📝 Changes
+
+Additions and fixes made during development and QA are tracked in [`CHANGES.md`](CHANGES.md).
+
+---
+
 ## 📐 Design
 
 UML sources and rendered diagrams are in [`UML/`](UML/): use case diagrams (patient portal
