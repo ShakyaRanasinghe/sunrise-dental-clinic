@@ -176,6 +176,21 @@ NEW_BOOKING=$(curl -sS -b "$NEW_JAR" -o /dev/null -w '%{redirect_url}' \
   -d "slotId=d-jayasuriya_${TODAY}_14:00&treatmentId=t-checkup" "$BASE/patient/book")
 contains "a freshly registered patient can book at once" "booked=APT-" "$NEW_BOOKING"
 
+# The confirmation is recorded by an observer the appointment service knows nothing about,
+# after the transaction has committed. Nothing is actually sent - no transport is
+# configured - so the row reads LOGGED, which is the point: it is not SENT.
+bold "3a. the patient is told, and it is on the record"
+CONFIRMATION=$(body "$PATIENT" "/api/appointments/$APPOINTMENT")
+check "booking left a notification row" 1 \
+  "$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+      -e "SELECT COUNT(*) FROM notification WHERE appointment_no='$APPOINTMENT';" 2>/dev/null)"
+check "recorded as LOGGED, not SENT"    LOGGED \
+  "$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+      -e "SELECT status FROM notification WHERE appointment_no='$APPOINTMENT' LIMIT 1;" 2>/dev/null)"
+contains "and it carries the appointment number" "$APPOINTMENT" \
+  "$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+      -e "SELECT body FROM notification WHERE appointment_no='$APPOINTMENT' LIMIT 1;" 2>/dev/null)"
+
 # ---------------------------------------------------------------- money
 bold "4. the revenue policy"
 REPORT=$(body "$ADMIN" "/admin/reports")

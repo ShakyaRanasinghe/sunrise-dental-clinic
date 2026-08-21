@@ -14,6 +14,7 @@ import com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship;
 import com.sunrise.clinic.notifications.data.NotificationDao;
 import com.sunrise.clinic.notifications.service.EmailChannel;
 import com.sunrise.clinic.notifications.service.NotificationChannelFactory;
+import com.sunrise.clinic.notifications.service.NotificationObserver;
 import com.sunrise.clinic.notifications.service.SmsChannel;
 import com.sunrise.clinic.notifications.data.NotificationRepository;
 import com.sunrise.clinic.patients.data.PatientDao;
@@ -185,8 +186,12 @@ public class AppContext implements AutoCloseable {
         // The Observer pattern's subject. Observers are registered here, at the one place
         // that knows the whole graph, so AppointmentService never learns who is listening.
         // NotificationObserver joins them when the notifications module lands.
+        // Two observers, and AppointmentService knows about neither. Both run after the
+        // booking transaction has committed, and the publisher isolates each of them - so a
+        // mail transport being down cannot fail a booking that has already happened.
         this.appointmentEvents = new AppointmentEventPublisher(java.util.List.of(
-                new AuditObserver(auditEvents)));
+                new AuditObserver(auditEvents),
+                new NotificationObserver(notificationChannels, notifications)));
 
         // The inversion described in TreatmentRelationship: patients declares the question,
         // appointments answers it, and this is the one place that knows both.
