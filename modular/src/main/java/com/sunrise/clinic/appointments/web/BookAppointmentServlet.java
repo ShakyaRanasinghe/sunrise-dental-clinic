@@ -33,6 +33,8 @@ public class BookAppointmentServlet extends PageServlet {
                     app().referenceService().activeTreatments(currentUser(request)));
             request.setAttribute("dentistId", dentistId);
             request.setAttribute("date", date);
+            request.setAttribute("serviceCharge",
+                    app().config().getDecimal("clinic.billing.service-charge", "200"));
             if (dentistId != null && !dentistId.isBlank()) {
                 // Only the open ones: a patient must not be offered a time they cannot have.
                 request.setAttribute("slots", app().slotService().openSlots(dentistId, date));

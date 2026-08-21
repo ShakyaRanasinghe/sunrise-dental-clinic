@@ -202,6 +202,19 @@ schema.
 
 ---
 
+## 10. Identified gaps and enhancements
+
+Gaps found during QA on the `develop` branch.
+
+| Ref | Gap observed | Fix applied | Status |
+|---|---|---|---|
+| **GAP-REC-01** | Availability page: publishing a session that overlapped an existing one sent the receptionist to a generic dead-end error page — no context, no way to see what was already published or fix it | Error now caught inline; availability page re-renders with the conflict message and the already-published slots visible below (`AvailabilityPageServlet.java`, `availability.jsp`) | **Fixed** |
+| **GAP-REC-02** | Availability page: no overview of what was already published across all dentists — receptionist only discovered existing sessions after attempting to publish and hitting a conflict | Upcoming sessions table (all dentists, from today) now shown at the top of the availability page on every load (`availability.jsp`, `SlotService`, `SessionDao`) | **Fixed** |
+| **GAP-REC-03** | FR-REC-24: patient details are not correctable — a mistyped phone number cannot be fixed through any screen | Not yet addressed | **Open** |
+| **GAP-REC-04** | FR-REC-43: overlapping session rejection existed in the service but the error surfaced as a generic page rather than actionable feedback (see GAP-REC-01) | Fixed via GAP-REC-01 | **Fixed** |
+
+---
+
 ## 9. Out of scope for this role
 
 Reading any review or rating aggregate (**FR-RVW-10**), reading any complaint (**FR-CMP-09**), reading a patient's medical notes, recording or reading a diagnosis, marking a treatment complete, viewing clinic revenue or

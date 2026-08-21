@@ -26,11 +26,6 @@
                         <option value="<c:out value='${d.id()}' />"
                             <c:if test="${d.id() eq dentistId}">selected</c:if>>
                             <c:out value="${d.name()}" />
-                            <c:if test="${not empty d.specialization()}">
-                                &mdash; <c:out value="${d.specialization()}" />
-                            </c:if>
-                            (Rs <fmt:formatNumber value="${d.consultationFee()}"
-                                                  minFractionDigits="2" maxFractionDigits="2" />)
                         </option>
                     </c:forEach>
                 </select>
@@ -42,6 +37,58 @@
             <div class="form-actions"><button type="submit" class="btn">Show times</button></div>
         </div>
     </form>
+    <c:forEach var="d" items="${dentists}">
+        <c:if test="${d.id() eq dentistId}">
+            <div class="table-wrap" style="margin-top:1rem;">
+                <table>
+                    <tbody>
+                        <c:if test="${not empty d.specialization()}">
+                            <tr>
+                                <th>Specialisation</th>
+                                <td><c:out value="${d.specialization()}" /></td>
+                            </tr>
+                        </c:if>
+                        <tr>
+                            <th>Consultation fee</th>
+                            <td>
+                                Rs <fmt:formatNumber value="${d.consultationFee()}"
+                                                     minFractionDigits="2" maxFractionDigits="2" />
+                                <span class="page-subtitle"> — charged for every visit with this dentist</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Service charge</th>
+                            <td>
+                                Rs <fmt:formatNumber value="${serviceCharge}"
+                                                     minFractionDigits="2" maxFractionDigits="2" />
+                                <span class="page-subtitle"> — fixed clinic fee per appointment</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Treatment cost</th>
+                            <td>
+                                <span class="page-subtitle">Shown in the treatment dropdown below — varies by procedure</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Your estimated total</th>
+                            <td>
+                                Treatment cost
+                                + Rs <fmt:formatNumber value="${d.consultationFee()}"
+                                                       minFractionDigits="2" maxFractionDigits="2" />
+                                + Rs <fmt:formatNumber value="${serviceCharge}"
+                                                       minFractionDigits="2" maxFractionDigits="2" />
+                                <br>
+                                <span class="page-subtitle">
+                                    This is an estimate. The final bill is issued by reception after your appointment.
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </c:if>
+    </c:forEach>
 </div>
 
 <c:if test="${not empty dentistId}">

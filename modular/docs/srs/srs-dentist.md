@@ -221,6 +221,19 @@ patient id, but the service rejects any patient the caller is not treating.
 
 ---
 
+## 10. Identified gaps and enhancements
+
+Gaps found during QA on the `develop` branch.
+
+| Ref | Gap observed | Fix applied | Status |
+|---|---|---|---|
+| **GAP-DEN-01** | Dentist schedule showed treatment name only — the dentist had no visibility of what the patient was being charged for their treatment, which is relevant for explaining the visit to the patient | Treatment name now shown alongside its base cost on the schedule (`dentist-schedule.jsp`, `AppointmentService.DentistDay`) | **Fixed** |
+| **GAP-DEN-02** | FR-DEN-15: dentist can only view one day at a time — no week-ahead view | Not yet addressed | **Open** |
+| **GAP-DEN-03** | FR-DEN-46: note's last-updated date not shown on the appointment detail screen | Not yet addressed | **Open** |
+| **GAP-DEN-04** | FR-DEN-60: dentist has no screen showing their own mean rating and review count — the API endpoint exists but is not surfaced | Not yet addressed | **Open** |
+
+---
+
 ## 9. Out of scope for this role
 
 Reading any individual review, comment or reviewer identity (**FR-DEN-61**), seeing another

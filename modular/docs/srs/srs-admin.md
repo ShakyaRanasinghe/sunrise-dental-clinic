@@ -253,6 +253,20 @@ reporting endpoint if one is added.
 
 ---
 
+## 10. Identified gaps and enhancements
+
+Gaps found during QA on the `develop` branch.
+
+| Ref | Gap observed | Fix applied | Status |
+|---|---|---|---|
+| **GAP-ADM-01** | FR-ADM-40 / FR-ADM-42: no UI to manage the treatment catalogue — prices, names and active status were hardcoded in `demo-data.sql` and only changeable via direct DB access | Built `/admin/treatments` — list all treatments, add new, edit name/price/description inline, deactivate/reactivate. `TreatmentAdminService`, `TreatmentAdminServlet`, `treatments.jsp`. New `MANAGE_TREATMENTS` action added. **FR-ADM-40 and FR-ADM-42 are now Built** | **Fixed** |
+| **GAP-ADM-02** | FR-ADM-41: dentist consultation fee is set at account creation and cannot be changed afterwards — no edit path exists | Not yet addressed | **Open** |
+| **GAP-ADM-03** | FR-ADM-04: failed administrator sign-in is written to the application log, not to the audit trail | Not yet addressed | **Open** |
+| **GAP-ADM-04** | FR-ADM-57: complaint volume per dentist exists in `ComplaintService.countByDentist` but is not shown on the reports screen | Not yet addressed | **Open** |
+| **GAP-ADM-05** | FR-ADM-60: mean rating and review count per dentist exists in `ReviewService.summaryFor` but is not shown on the reports screen | Not yet addressed | **Open** |
+
+---
+
 ## 9. Out of scope for this role
 
 Reading any patient's medical notes, reading any patient's diagnosis, reading any password hash, booking or cancelling

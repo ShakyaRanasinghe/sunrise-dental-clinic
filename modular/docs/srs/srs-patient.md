@@ -291,6 +291,22 @@ requires `ADMIN` — see [`srs-admin.md`](srs-admin.md) and [`../api/auth.md`](.
 
 ---
 
+## 10. Identified gaps and enhancements
+
+Gaps found during QA on the `develop` branch. Each entry states the problem observed,
+the fix applied and the current status.
+
+| Ref | Gap observed | Fix applied | Status |
+|---|---|---|---|
+| **GAP-PAT-01** | Booking page: clicking a time slot booked immediately with no confirmation step — accidental bookings were frequent | Changed time slots from submit buttons to radio buttons; added a single **Confirm booking** button below (`book.jsp`) | **Fixed** |
+| **GAP-PAT-02** | Dentist dropdown showed name, specialisation and consultation fee crammed into one option label — truncated and unreadable | Dropdown now shows name only; specialisation and fee shown in a details table below the dropdown after selecting (`book.jsp`) | **Fixed** |
+| **GAP-PAT-03** | No cost explanation before confirming — a new patient had no way to know what consultation fee or service charge meant, or what their total would be | Added cost breakdown table showing consultation fee (with explanation), service charge (with explanation), treatment cost pointer, and estimated total formula with an "estimate only" note (`book.jsp`) | **Fixed** — awaiting verification |
+| **GAP-PAT-04** | FR-PAT-33: cancellation takes effect on one click with no confirmation. Specified but not built | Not yet addressed | **Open** |
+| **GAP-PAT-05** | FR-PAT-65: patient is not told that their dentist sees only an aggregate rating, never their individual comment | Not yet addressed | **Open** |
+| **GAP-PAT-06** | FR-PAT-06: walk-in registration does not look for an existing patient with the same email or contact number before creating a new row | Not yet addressed | **Open** |
+
+---
+
 ## 9. Out of scope for this role
 
 Creating an account for anyone else or in any other role, rescheduling in place (cancel and
