@@ -21,9 +21,15 @@
     <div class="notice"><c:out value="${confirmation}" /></div>
 </c:if>
 <c:if test="${not empty warning}">
-    <%-- A warning, not a refusal: 16:00-17:20 in 30-minute slots is a legitimate
-         thing to publish; the desk simply needs to know 20 minutes are unbookable. --%>
     <div class="notice error"><c:out value="${warning}" /></div>
+</c:if>
+<c:if test="${not empty error}">
+    <div class="notice error">
+        <strong>Could not publish.</strong> <c:out value="${error}" />
+        <c:if test="${not empty published}">
+            The existing sessions for this dentist and date are shown below.
+        </c:if>
+    </div>
 </c:if>
 
 <div class="card">

@@ -31,7 +31,7 @@ public class AvailabilityPageServlet extends PageServlet {
         page(request, response, () -> {
             AccessControl.require(currentUser(request), Action.PUBLISH_AVAILABILITY);
             show(request, response, field(request, "dentistId"),
-                    dateField(request, "date", LocalDate.now()), null, null);
+                    dateField(request, "date", LocalDate.now()), null, null, null);
         });
     }
 
@@ -44,30 +44,37 @@ public class AvailabilityPageServlet extends PageServlet {
             if (date == null) {
                 throw new IllegalArgumentException("Please choose a date.");
             }
-            SlotService.Published published = app().slotService().publishSession(
-                    currentUser(request),
-                    new SlotService.NewSession(dentistId, date,
-                            time(request, "startTime", "From"),
-                            time(request, "endTime", "To"),
-                            minutes(request)));
+            try {
+                SlotService.Published result = app().slotService().publishSession(
+                        currentUser(request),
+                        new SlotService.NewSession(dentistId, date,
+                                time(request, "startTime", "From"),
+                                time(request, "endTime", "To"),
+                                minutes(request)));
 
-            // Rendered rather than redirected, because the warning about an uneven
-            // window belongs beside the slots it is about. A refresh re-renders the
-            // same page from the query string, not the POST.
-            show(request, response, dentistId, date,
-                    published.slots().size() + " bookable times published.",
-                    published.warning());
+                // Rendered rather than redirected, because the warning about an uneven
+                // window belongs beside the slots it is about.
+                show(request, response, dentistId, date,
+                        result.slots().size() + " bookable times published.",
+                        result.warning(), null);
+            } catch (IllegalArgumentException e) {
+                // Conflict (overlap) — stay on the page so the receptionist can see
+                // what is already published for this dentist and date.
+                show(request, response, dentistId, date, null, null, e.getMessage());
+            }
         });
     }
 
     private void show(HttpServletRequest request, HttpServletResponse response,
-                      String dentistId, LocalDate date, String confirmation, String warning)
+                      String dentistId, LocalDate date, String confirmation, String warning,
+                      String error)
             throws ServletException, IOException {
         request.setAttribute("dentists", app().referenceService().activeDentists(currentUser(request)));
         request.setAttribute("dentistId", dentistId);
         request.setAttribute("date", date);
         request.setAttribute("confirmation", confirmation);
         request.setAttribute("warning", warning);
+        request.setAttribute("error", error);
         if (dentistId != null && !dentistId.isBlank()) {
             // Every slot, not only the open ones: the point of this panel is to show
             // which times are already taken.

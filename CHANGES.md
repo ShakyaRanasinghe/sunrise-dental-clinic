@@ -4,6 +4,16 @@ Tracks additions and fixes made during development and QA. Updated on every push
 
 ---
 
+## [develop] — 2026-08-21 (push 3)
+
+### Fixed
+
+- **Availability overlap error now stays on the page** (`scheduling/web/AvailabilityPageServlet.java`, `scheduling/availability.jsp`)
+  - Overlap conflict sent receptionist to a dead-end generic error page with no context
+  - Error is now shown inline on the availability page, with existing published slots visible below so receptionist can see what's already there and act on it
+
+---
+
 ## [develop] — 2026-08-21 (push 2)
 
 ### Added
