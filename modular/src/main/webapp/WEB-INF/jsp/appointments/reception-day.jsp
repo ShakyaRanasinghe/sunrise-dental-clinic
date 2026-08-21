@@ -54,12 +54,29 @@
                                 <td><c:out value="${a.treatmentName()}" /></td>
                                 <td><code>${a.appointmentNo()}</code></td>
                                 <td>
-                                    <span class="pill <c:choose>
-                                        <c:when test="${a.status() eq 'CONFIRMED'}">open</c:when>
-                                        <c:when test="${a.status() eq 'CANCELLED'}">error</c:when>
-                                    </c:choose>">${a.status()}</span>
+                                    <c:choose>
+                                        <c:when test="${a.status() eq 'CONFIRMED'}">
+                                            <span class="pill open">Waiting</span>
+                                        </c:when>
+                                        <c:when test="${a.status() eq 'COMPLETED'}">
+                                            <span class="pill" style="background:var(--sunrise);color:#fff;border-color:var(--sunrise);">Ready to bill</span>
+                                        </c:when>
+                                        <c:when test="${a.status() eq 'BILLED'}">
+                                            <span class="pill">Paid &amp; done</span>
+                                        </c:when>
+                                        <c:when test="${a.status() eq 'CANCELLED'}">
+                                            <span class="pill error">Cancelled</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="pill">${a.status()}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
+                                    <c:if test="${a.status() eq 'COMPLETED'}">
+                                        <a href="${ctx}/reception/billing?appointmentNo=${a.appointmentNo()}"
+                                           class="btn small">Bill</a>
+                                    </c:if>
                                     <c:if test="${a.isCancellable()}">
                                         <form method="post" action="${ctx}/reception/home"
                                               style="display:inline">
