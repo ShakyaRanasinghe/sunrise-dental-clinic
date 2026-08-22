@@ -30,9 +30,18 @@ public class WalkInServlet extends PageServlet {
             String patientId = field(request, "patientId");
             LocalDate date = dateField(request, "date", LocalDate.now());
 
+            String filterDentistId = field(request, "filterDentistId");
+
             request.setAttribute("q", q);
             request.setAttribute("date", date);
             request.setAttribute("patientId", patientId);
+            request.setAttribute("filterDentistId", filterDentistId);
+            request.setAttribute("dentists",
+                    app().referenceService().activeDentists(currentUser(request)));
+            request.setAttribute("serviceCharge",
+                    app().config().getDecimal("clinic.billing.service-charge", "200"));
+            request.setAttribute("treatments",
+                    app().referenceService().activeTreatments(currentUser(request)));
 
             if (q != null) {
                 request.setAttribute("results",
@@ -41,8 +50,15 @@ public class WalkInServlet extends PageServlet {
             if (patientId != null) {
                 request.setAttribute("patient",
                         app().patientService().findById(currentUser(request), patientId));
-                request.setAttribute("slots",
-                        app().slotService().openSlotsBetween(date, date));
+                java.util.List<com.sunrise.clinic.scheduling.domain.SlotResponse> allSlots =
+                        app().slotService().openSlotsBetween(date, date);
+                // Apply dentist filter if selected
+                if (filterDentistId != null && !filterDentistId.isBlank()) {
+                    allSlots = allSlots.stream()
+                            .filter(s -> filterDentistId.equals(s.dentistId()))
+                            .toList();
+                }
+                request.setAttribute("slots", allSlots);
             }
             render(request, response, "scheduling/walkin");
         });

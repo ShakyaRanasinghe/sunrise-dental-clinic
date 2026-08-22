@@ -212,6 +212,24 @@
         <url-pattern>/reception/walkin</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>DentistReference</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.DentistReferenceServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistReference</servlet-name>
+        <url-pattern>/reception/dentists</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AppointmentSlip</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.AppointmentSlipServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AppointmentSlip</servlet-name>
+        <url-pattern>/reception/slip</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  appointments                                                -->
     <!-- ============================================================ -->

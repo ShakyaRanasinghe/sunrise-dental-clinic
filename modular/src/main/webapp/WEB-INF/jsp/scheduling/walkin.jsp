@@ -87,10 +87,30 @@
                 <label for="date">Date</label>
                 <input type="date" id="date" name="date" value="${date}">
             </div>
+            <div class="field">
+                <label for="filterDentistId">Doctor <span class="page-subtitle">(optional)</span></label>
+                <select id="filterDentistId" name="filterDentistId">
+                    <option value="">All doctors</option>
+                    <c:forEach var="d" items="${dentists}">
+                        <option value="<c:out value='${d.id()}' />"
+                            <c:if test="${d.id() eq filterDentistId}">selected</c:if>>
+                            <c:out value="${d.name()}" />
+                        </option>
+                    </c:forEach>
+                </select>
+            </div>
             <div class="form-actions">
                 <button type="submit" class="btn">Show slots</button>
             </div>
         </form>
+
+        <%-- Cost reference for quoting patient before booking --%>
+        <div class="notice" style="margin-top:0.75rem;">
+            Service charge: <strong>Rs <fmt:formatNumber value="${serviceCharge}"
+                minFractionDigits="2" maxFractionDigits="2" /></strong> per appointment.
+            Estimated total = treatment cost + consultation fee + service charge.
+            <a href="${ctx}/reception/dentists">See all consultation fees</a>.
+        </div>
 
         <c:choose>
             <c:when test="${empty slots}">
@@ -102,13 +122,27 @@
                 <div class="table-wrap" style="margin-top:1rem;">
                     <table>
                         <thead>
-                            <tr><th>Time</th><th>Dentist</th><th></th></tr>
+                            <tr>
+                                <th>Time</th>
+                                <th>Dentist</th>
+                                <th class="right">Consultation fee</th>
+                                <th></th>
+                            </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="slot" items="${slots}">
                                 <tr>
                                     <td><strong>${slot.startTime()}</strong></td>
                                     <td><c:out value="${slot.dentistName()}" /></td>
+                                    <td class="right">
+                                        <%-- Look up this dentist's fee from the dentists list --%>
+                                        <c:forEach var="d" items="${dentists}">
+                                            <c:if test="${d.id() eq slot.dentistId()}">
+                                                Rs <fmt:formatNumber value="${d.consultationFee()}"
+                                                    minFractionDigits="2" maxFractionDigits="2" />
+                                            </c:if>
+                                        </c:forEach>
+                                    </td>
                                     <td>
                                         <a href="${ctx}/patient/book?patientId=<c:out value='${patientId}' />&dentistId=<c:out value='${slot.dentistId()}' />&date=${date}"
                                            class="btn small">Book this slot</a>

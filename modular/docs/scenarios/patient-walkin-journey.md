@@ -270,10 +270,10 @@ or contact number.
 | # | Gap | Impact | Real-world need |
 |---|---|---|---|
 | 1 | Clinic telephone number and email not stored or shown anywhere in the system | Patient who wants to call cannot find the number from within the system | Configure `clinic.phone` and `clinic.email` in `clinic.properties`; show on help page and appointment slip |
-| 2 | No "Our dentists" quick-reference screen for reception | Reception must recall doctor details from memory when advising a walk-in patient | A read-only dentist overview screen in the reception portal |
-| 3 | Walk-in screen shows all slots but has no filter by dentist | Reception must scan the full slot table to find a specific doctor's availability | Add dentist filter to the Walk-in screen |
-| 4 | No cost breakdown visible from the Walk-in screen before booking | Reception must navigate away or calculate manually before quoting the patient | Show consultation fee + service charge + treatment price on the Walk-in slot table |
-| 5 | No printable appointment confirmation slip for walk-in patients | Patient may forget their appointment time, date or doctor | A "Print appointment card" function after booking — separate from the billing receipt |
+| 2 | No "Our dentists" quick-reference screen for reception | Reception must recall doctor details from memory when advising a walk-in patient | **Fixed** — `/reception/dentists` screen added, linked from reception navigation (issue #6) |
+| 3 | Walk-in screen shows all slots but has no filter by dentist | Reception must scan the full slot table to find a specific doctor's availability | **Fixed** — dentist filter dropdown added to Walk-in screen (issue #7) |
+| 4 | No cost breakdown visible from the Walk-in screen before booking | Reception must navigate away or calculate manually before quoting the patient | **Fixed** — consultation fee shown per slot row, service charge shown on page, link to dentists screen (issue #8) |
+| 5 | No printable appointment confirmation slip for walk-in patients | Patient may forget their appointment time, date or doctor | **Fixed** — `/reception/slip` page shown automatically after reception books on behalf; print-friendly layout with appointment details, clinic address and phone (issue #9) |
 | 6 | No SMS reminder for patients without email or portal access | Walk-in patients with no email get no reminder before their appointment | SMS integration using the patient's contact number |
 | 7 | No waiting queue or "call patient" function | Reception manages the waiting room verbally | A queue display or notification system — larger scope enhancement |
 | 8 | No room or location information on the dentist record | Patient must be told verbally which room to go to | Add `room` field to the dentist profile; show on appointment slip and day view |

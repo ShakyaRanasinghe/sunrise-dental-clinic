@@ -50,6 +50,7 @@ public final class ReceptionPolicy extends RolePolicy {
     protected List<NavItem> ownNavigation() {
         return List.of(
                 new NavItem("Walk-in", "/reception/walkin"),
+                new NavItem("Dentists", "/reception/dentists"),
                 new NavItem("Patients", "/reception/patients"),
                 new NavItem("Availability", "/reception/availability"),
                 new NavItem("Billing", "/reception/billing"));

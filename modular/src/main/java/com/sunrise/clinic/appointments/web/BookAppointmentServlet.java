@@ -48,16 +48,22 @@ public class BookAppointmentServlet extends PageServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         page(request, response, () -> {
+            String patientId = field(request, "patientId");
             AppointmentResponse booked = app().appointmentService().book(
                     currentUser(request),
                     requiredField(request, "slotId", "Time"),
                     requiredField(request, "treatmentId", "Treatment"),
                     // Staff booking on a patient's behalf name them; a patient sending
                     // this is ignored, because the service resolves from the account.
-                    field(request, "patientId"));
+                    patientId);
 
-            // Redirect after post, so a refresh cannot book a second appointment.
-            redirect(request, response, "/patient/home?booked=" + booked.appointmentNo());
+            // Reception booking on behalf: redirect to the printable slip.
+            // Patient self-booking: redirect to their home page.
+            if (patientId != null && !patientId.isBlank()) {
+                redirect(request, response, "/reception/slip?appointmentNo=" + booked.appointmentNo());
+            } else {
+                redirect(request, response, "/patient/home?booked=" + booked.appointmentNo());
+            }
         });
     }
 }
