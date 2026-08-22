@@ -322,7 +322,7 @@ took Rs 50.00, the clinic Rs 1,550.00, and the sum stayed Rs 5,200.00.
 | ID | Requirement | Source | Status |
 |---|---|---|---|
 | **FR-NOT-01** | Booking an appointment must send the patient a confirmation by email | Derived | **Partial** — the confirmation is composed, addressed, dispatched through the channel and recorded. With no mail transport configured it records `LOGGED` rather than `SENT`, so nothing actually leaves the building. Deliberately not called Built: the requirement says *send* |
-| **FR-NOT-02** | An SMS reminder must be sent before the appointment | Derived | **Specified** — the notifications module is not migrated |
+| **FR-NOT-02** | An SMS reminder must be sent before the appointment | Derived | **Partial** — the sweep finds every CONFIRMED appointment due tomorrow, composes the reminder, dispatches it by SMS and records the attempt, at most once per appointment. With no SMS gateway configured it records `LOGGED`, so as with FR-NOT-01 nothing actually leaves |
 
 **The module is now migrated, and still nothing is actually sent.** Those are two different
 statements and the family is split along exactly that line.
@@ -341,8 +341,16 @@ lying about whether anybody was informed. Adding real SMTP is one implementation
 `NotificationChannel` and one entry in one list in `AppContext`; no caller changes, which is what
 the Factory Method pattern is here for.
 
-So FR-NOT-01 and FR-PAT-16 read **Partial** rather than Built. The requirement says *send*, and
-the honest answer is that everything up to the wire is done.
+So FR-NOT-01, FR-NOT-02 and FR-PAT-16 read **Partial** rather than Built. The requirement says
+*send*, and the honest answer is that everything up to the wire is done.
+
+The reminder needed one thing the others did not: something to run it. It is the only behaviour
+here caused by time passing rather than by somebody acting, and nothing in the application
+happens when time passes. It is a sweep behind `POST /api/reminders/run`, called by cron — chosen
+over a background thread because it adds no dependency and no thread to reason about, can be
+triggered by hand while somebody watches, and is visibly not running when it stops. The cost is
+that the clinic has to set up the cron entry, and if nobody does then no reminders go out and
+nothing complains; [`../deploy/3-runbook.md`](../deploy/3-runbook.md) says so in those words.
 | **FR-NOT-03** | Every dispatch attempt must be recorded with channel, recipient and outcome | Derived | Built — every attempt writes a row carrying the channel, the recipient, the outcome and the words that were sent. Verified against MySQL: a booking records one and a cancellation a second |
 | **FR-NOT-04** | Delivery failure must never fail the operation that triggered it | ASM-08 | Built — `AppointmentEventPublisher` isolates every observer, and `AppointmentServiceTest` proves a throwing observer does not fail the booking |
 | **FR-NOT-05** | Channels must be created through a factory so a new channel needs no change to the calling code | Derived | Built — `NotificationChannelFactory`, with a test that registers a channel it has never heard of as one constructor argument |

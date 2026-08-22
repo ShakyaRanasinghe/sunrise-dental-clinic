@@ -6,6 +6,7 @@ import com.sunrise.clinic.notifications.data.NotificationRepository;
 import com.sunrise.clinic.notifications.domain.ChannelType;
 import com.sunrise.clinic.notifications.domain.DispatchResult;
 import com.sunrise.clinic.notifications.domain.Notification;
+import com.sunrise.clinic.notifications.domain.NotificationKind;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -76,6 +77,7 @@ public class NotificationObserver implements AppointmentObserver {
                 .id(UUID.randomUUID().toString())
                 .appointmentNo(message.appointmentNo())
                 .channel(ChannelType.EMAIL)
+                .kind(message.kind())
                 .recipient(event.recipientEmail())
                 .subject(message.subject())
                 .body(message.body())
@@ -92,12 +94,14 @@ public class NotificationObserver implements AppointmentObserver {
         String no = event.appointment().getAppointmentNo();
         String name = event.recipientName() == null ? "Patient" : event.recipientName();
         return switch (event.type()) {
-            case CREATED -> new Message(no, "Your appointment is confirmed — " + no,
+            case CREATED -> new Message(no, NotificationKind.CONFIRMATION,
+                    "Your appointment is confirmed — " + no,
                     "Dear " + name + ", your appointment on " + event.appointment().getDate()
                             + " at " + event.appointment().getTime() + " is confirmed."
                             + " Please quote " + no + " if you contact us."
                             + " — Sunrise Dental Clinic");
-            case CANCELLED -> new Message(no, "Your appointment has been cancelled — " + no,
+            case CANCELLED -> new Message(no, NotificationKind.CANCELLATION,
+                    "Your appointment has been cancelled — " + no,
                     "Dear " + name + ", your appointment on " + event.appointment().getDate()
                             + " at " + event.appointment().getTime() + " has been cancelled."
                             + " Please contact us to book another time."
@@ -106,6 +110,7 @@ public class NotificationObserver implements AppointmentObserver {
         };
     }
 
-    private record Message(String appointmentNo, String subject, String body) {
+    private record Message(String appointmentNo, NotificationKind kind, String subject,
+                           String body) {
     }
 }

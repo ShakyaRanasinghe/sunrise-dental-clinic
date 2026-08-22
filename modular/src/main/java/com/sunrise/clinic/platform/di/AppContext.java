@@ -15,6 +15,7 @@ import com.sunrise.clinic.notifications.data.NotificationDao;
 import com.sunrise.clinic.notifications.service.EmailChannel;
 import com.sunrise.clinic.notifications.service.NotificationChannelFactory;
 import com.sunrise.clinic.notifications.service.NotificationObserver;
+import com.sunrise.clinic.notifications.service.ReminderService;
 import com.sunrise.clinic.notifications.service.SmsChannel;
 import com.sunrise.clinic.notifications.data.NotificationRepository;
 import com.sunrise.clinic.patients.data.PatientDao;
@@ -138,6 +139,7 @@ public class AppContext implements AutoCloseable {
     private final AppointmentEventPublisher appointmentEvents;
     private final AppointmentService appointmentService;
     private final BillingService billingService;
+    private final ReminderService reminderService;
     private final ReportService reportService;
     private final ComplaintService complaintService;
     private final ReviewService reviewService;
@@ -215,6 +217,9 @@ public class AppContext implements AutoCloseable {
         // The clinic's zone, not the server's. A clock injected rather than
         // LocalDate.now() inside the service, so a test can fix "today" and the no-show
         // derivation is checkable.
+        // The clinic's zone again: "tomorrow" is tomorrow at the clinic, not at the server.
+        this.reminderService = new ReminderService(appointments, patients, notificationChannels,
+                notifications, java.time.Clock.system(clinicZone()));
         this.reportService = new ReportService(reports, java.time.Clock.system(clinicZone()));
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
                 dentists, auditEvents);
@@ -274,6 +279,11 @@ public class AppContext implements AutoCloseable {
      */
     public NotificationChannelFactory notificationChannels() {
         return notificationChannels;
+    }
+
+    /** The reminder sweep, run on a timer from outside the application. */
+    public ReminderService reminderService() {
+        return reminderService;
     }
 
     /** Patient self-registration — the only public write endpoint. */

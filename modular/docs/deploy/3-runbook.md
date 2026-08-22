@@ -62,6 +62,43 @@ look unfixed and cost an hour before recreating the container proved the fix.
 **Everyone is signed out by a restart.** Sessions live in Tomcat's memory, so deploy outside
 clinic hours or accept that whoever is mid-booking starts again.
 
+## The reminder sweep
+
+Reminders are the one thing in this application caused by time passing rather than by somebody
+doing something, so they are run from outside it. **If nobody sets this up, no reminders go
+out** — and nothing will complain, which is why it is here rather than in a footnote.
+
+```bash
+# Generate a token, once per deployment
+openssl rand -hex 32
+```
+
+Set it as `CLINIC_REMINDERS_TOKEN` where Tomcat's other environment variables live, then:
+
+```bash
+# Every morning at 08:00, remind everybody due tomorrow
+0 8 * * * curl -fsS -X POST -H "X-Clinic-Token: $CLINIC_REMINDERS_TOKEN" \
+            http://localhost:8080/api/reminders/run >> /var/log/clinic-reminders.log 2>&1
+```
+
+`-f` matters: without it `curl` exits 0 on a 403 and cron reports success while nothing is
+being sent.
+
+**Check it before trusting it.** `GET` says which day it would sweep without sending anything:
+
+```bash
+curl -sS -H "X-Clinic-Token: $CLINIC_REMINDERS_TOKEN" http://localhost:8080/api/reminders/run
+#  -> {"remindingAbout":"2026-08-23","note":"POST to this address to run the sweep."}
+```
+
+An administrator can also run it from a signed-in session, which is how to try it while
+watching. **With no token configured that is the only way it can be run** — so a clinic that has
+not set one up cannot have its patients swept by a stranger.
+
+Running it twice is safe: the second run skips what the first already attempted, and reports how
+many it skipped. A reminder that failed is **not** retried — the row saying so is the record to
+act on, and retrying daily against a broken gateway would achieve nothing but noise.
+
 ## Roll back
 
 ```bash

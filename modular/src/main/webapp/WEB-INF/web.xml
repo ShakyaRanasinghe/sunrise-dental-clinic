@@ -319,6 +319,24 @@
     </servlet-mapping>
 
     <!-- ============================================================ -->
+    <!--  notifications                                               -->
+    <!-- ============================================================ -->
+
+    <!--
+        The reminder sweep. Called by cron, so it has no session and authorises itself
+        against a configured token - which is why AuthenticationFilter lets it through.
+        See ReminderServlet, and docs/deploy/3-runbook.md for the cron entry.
+    -->
+    <servlet>
+        <servlet-name>Reminders</servlet-name>
+        <servlet-class>com.sunrise.clinic.notifications.web.ReminderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Reminders</servlet-name>
+        <url-pattern>/api/reminders/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- ============================================================ -->
     <!--  feedback — complaints and reviews                           -->
     <!-- ============================================================ -->
 
