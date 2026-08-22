@@ -91,7 +91,7 @@ this path is a constant in the code, never a value from the form.
 | **FR-PAT-13** | On confirmation the appointment number must be shown immediately, since it is what identifies the visit at the front desk | Built |
 | **FR-PAT-14** | If the chosen slot was taken between the page loading and submission, the booking must be rejected with a clear message and the refreshed slot list | Built |
 | **FR-PAT-15** | A patient must not be able to book on behalf of anyone else. The patient identity comes from the session, never from the form | Built |
-| **FR-PAT-16** | Booking must trigger a confirmation email to the patient's recorded address | **Specified** — the event is published; nothing sends it. See FR-NOT-01 |
+| **FR-PAT-16** | Booking must trigger a confirmation email to the patient's recorded address | **Partial** — booking composes, addresses, dispatches and records the confirmation; with no mail transport configured nothing leaves. See FR-NOT-01 |
 
 ### 4.2 Medical notes
 

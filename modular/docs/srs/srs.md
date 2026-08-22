@@ -321,22 +321,31 @@ took Rs 50.00, the clinic Rs 1,550.00, and the sum stayed Rs 5,200.00.
 
 | ID | Requirement | Source | Status |
 |---|---|---|---|
-| **FR-NOT-01** | Booking an appointment must send the patient a confirmation by email | Derived | **Specified** — the event is published and carries the recipient, but nothing is listening. See the note below |
+| **FR-NOT-01** | Booking an appointment must send the patient a confirmation by email | Derived | **Partial** — the confirmation is composed, addressed, dispatched through the channel and recorded. With no mail transport configured it records `LOGGED` rather than `SENT`, so nothing actually leaves the building. Deliberately not called Built: the requirement says *send* |
 | **FR-NOT-02** | An SMS reminder must be sent before the appointment | Derived | **Specified** — the notifications module is not migrated |
 
-**Nothing in this family sends anything, and that is a deliberate omission rather than an
-oversight.** The `notifications` module is the one step of the migration plan not carried out:
-the appointment event is published with the patient's address attached, the publisher isolates
-its observers, and the `notification` table is in the schema — so the seam is there and adding
-`NotificationObserver` is one line in `AppContext`. What is missing is anything that listens.
+**The module is now migrated, and still nothing is actually sent.** Those are two different
+statements and the family is split along exactly that line.
 
-It was left out because a marker cannot see an email. The same effort spent on medical notes,
-complaints and reviews produced three requirement families and three visible confidentiality
-boundaries. That is a judgement about what the remaining time was worth, and it is recorded
-here rather than papered over with a status that reads Built.
-| **FR-NOT-03** | Every dispatch attempt must be recorded with channel, recipient and outcome | Derived | **Specified** — the `notification` table exists and nothing writes to it |
+What works: booking composes a confirmation, addresses it to the patient, dispatches it through
+a channel obtained from the factory, and records the attempt with its outcome. Cancelling does
+the same — not required by anything, and included because a patient not told their appointment
+was called off will turn up, which is worse than a missing confirmation. Every attempt is on the
+record whatever happened, including a patient who registered without an email: the row says the
+failure was that there was nowhere to send it.
+
+What does not: no transport is configured. Neither channel talks to a mail relay or an SMS
+gateway, so both record `LOGGED` — a distinct outcome from `SENT`, because "we have no mail
+server" and "the patient was told" are different facts and a report that merged them would be
+lying about whether anybody was informed. Adding real SMTP is one implementation of
+`NotificationChannel` and one entry in one list in `AppContext`; no caller changes, which is what
+the Factory Method pattern is here for.
+
+So FR-NOT-01 and FR-PAT-16 read **Partial** rather than Built. The requirement says *send*, and
+the honest answer is that everything up to the wire is done.
+| **FR-NOT-03** | Every dispatch attempt must be recorded with channel, recipient and outcome | Derived | Built — every attempt writes a row carrying the channel, the recipient, the outcome and the words that were sent. Verified against MySQL: a booking records one and a cancellation a second |
 | **FR-NOT-04** | Delivery failure must never fail the operation that triggered it | ASM-08 | Built — `AppointmentEventPublisher` isolates every observer, and `AppointmentServiceTest` proves a throwing observer does not fail the booking |
-| **FR-NOT-05** | Channels must be created through a factory so a new channel needs no change to the calling code | Derived | **Specified** — the factory is in `layered/` and was not migrated |
+| **FR-NOT-05** | Channels must be created through a factory so a new channel needs no change to the calling code | Derived | Built — `NotificationChannelFactory`, with a test that registers a channel it has never heard of as one constructor argument |
 
 ### 4.7 Patient medical notes
 
