@@ -15,10 +15,10 @@ explicitly so the gap is visible in context, not buried in a specification table
 | File | Role | Scenario |
 |---|---|---|
 | [patient-online-journey.md](patient-online-journey.md) | Patient | Tech-aware patient who discovers the clinic online, registers, books and attends |
-| patient-walkin-journey.md | Patient | Patient who walks directly into the physical clinic — *(coming next)* |
+| [patient-walkin-journey.md](patient-walkin-journey.md) | Patient | Patient who walks directly into the physical clinic with no online account |
 | reception-journey.md | Receptionist | Front-desk day: walk-ins, availability, billing — *(coming next)* |
 | dentist-journey.md | Dentist | Clinical day: schedule, treating, recording — *(coming next)* |
-| admin-journey.md | Administrator | Management view: reports, accounts, complaints — *(coming next)* |
+| [admin-journey.md](admin-journey.md) | Administrator | Reports, accounts, treatments, complaints and audit trail |
 
 ---
 
