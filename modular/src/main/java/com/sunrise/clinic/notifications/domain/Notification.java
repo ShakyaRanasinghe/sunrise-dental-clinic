@@ -19,6 +19,7 @@ public class Notification {
     private String id;
     private String appointmentNo;
     private ChannelType channel;
+    private NotificationKind kind;
     private String recipient;
     private String subject;
     private String body;
@@ -28,10 +29,13 @@ public class Notification {
     public Notification() {
     }
 
-    public Notification(String id, String appointmentNo, ChannelType channel, String recipient, String subject, String body, NotificationStatus status, Instant sentAt) {
+    public Notification(String id, String appointmentNo, ChannelType channel,
+                        NotificationKind kind, String recipient, String subject, String body,
+                        NotificationStatus status, Instant sentAt) {
         this.id = id;
         this.appointmentNo = appointmentNo;
         this.channel = channel;
+        this.kind = kind;
         this.recipient = recipient;
         this.subject = subject;
         this.body = body;
@@ -53,6 +57,14 @@ public class Notification {
 
     public void setAppointmentNo(String appointmentNo) {
         this.appointmentNo = appointmentNo;
+    }
+
+    public NotificationKind getKind() {
+        return kind;
+    }
+
+    public void setKind(NotificationKind kind) {
+        this.kind = kind;
     }
 
     public ChannelType getChannel() {
@@ -117,7 +129,7 @@ public class Notification {
 
     @Override
     public String toString() {
-        return "Notification{id=" + id + "}";
+        return "Notification{id=" + id + ", kind=" + kind + ", status=" + status + "}";
     }
 
     public static Builder builder() {
@@ -129,6 +141,7 @@ public class Notification {
         private String id;
         private String appointmentNo;
         private ChannelType channel;
+        private NotificationKind kind;
         private String recipient;
         private String subject;
         private String body;
@@ -142,6 +155,11 @@ public class Notification {
 
         public Builder appointmentNo(String appointmentNo) {
             this.appointmentNo = appointmentNo;
+            return this;
+        }
+
+        public Builder kind(NotificationKind kind) {
+            this.kind = kind;
             return this;
         }
 
@@ -176,7 +194,8 @@ public class Notification {
         }
 
         public Notification build() {
-            return new Notification(id, appointmentNo, channel, recipient, subject, body, status, sentAt);
+            return new Notification(id, appointmentNo, channel, kind, recipient, subject, body,
+                    status, sentAt);
         }
     }
 }

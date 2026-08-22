@@ -22,4 +22,13 @@ public class InMemoryNotificationRepository
                 .filter(n -> appointmentNo.equals(n.getAppointmentNo()))
                 .toList();
     }
+
+    @Override
+    public boolean hasBeenAttempted(String appointmentNo,
+                                    com.sunrise.clinic.notifications.domain.NotificationKind kind) {
+        return store.values().stream()
+                .anyMatch(n -> appointmentNo != null
+                        && appointmentNo.equals(n.getAppointmentNo())
+                        && kind == n.getKind());
+    }
 }

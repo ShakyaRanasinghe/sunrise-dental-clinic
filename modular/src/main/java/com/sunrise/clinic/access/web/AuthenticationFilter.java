@@ -64,7 +64,11 @@ public class AuthenticationFilter implements Filter {
             "/register",
             "/help",
             "/css/", "/js/", "/images/", "/favicon.ico",
-            "/api/auth/");
+            "/api/auth/",
+            // The reminder sweep is called by cron, which has no session. It authorises
+            // itself - an administrator, or the configured token - and being on this list is
+            // what lets it see the request in order to do so. See ReminderServlet.
+            "/api/reminders/");
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)

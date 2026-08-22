@@ -208,6 +208,11 @@ CREATE TABLE IF NOT EXISTS notification (
     id             VARCHAR(64) NOT NULL,
     appointment_no VARCHAR(32) NOT NULL,
     channel        ENUM('EMAIL','SMS') NOT NULL,
+    -- What the message was for. Explicit rather than inferred from the channel:
+    -- "has a reminder already gone out for this appointment" is the question the
+    -- reminder sweep asks, and answering it by looking for an SMS would break the
+    -- day somebody sends a reminder by email.
+    kind           ENUM('CONFIRMATION','REMINDER','CANCELLATION') NOT NULL,
     recipient      VARCHAR(255),
     subject        VARCHAR(255),
     body           TEXT,
@@ -215,6 +220,8 @@ CREATE TABLE IF NOT EXISTS notification (
     sent_at        TIMESTAMP   NULL,
     PRIMARY KEY (id),
     KEY idx_notification_appointment (appointment_no),
+    -- The sweep runs every day and asks this for every appointment due tomorrow.
+    KEY idx_notification_kind (appointment_no, kind),
     CONSTRAINT fk_notification_appointment FOREIGN KEY (appointment_no)
         REFERENCES appointment (appointment_no) ON DELETE CASCADE
 ) ENGINE=InnoDB;

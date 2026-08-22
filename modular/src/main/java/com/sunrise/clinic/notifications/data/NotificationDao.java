@@ -5,6 +5,7 @@ import com.sunrise.clinic.platform.data.JdbcDao;
 import com.sunrise.clinic.platform.db.Database;
 import com.sunrise.clinic.notifications.domain.ChannelType;
 import com.sunrise.clinic.notifications.domain.Notification;
+import com.sunrise.clinic.notifications.domain.NotificationKind;
 import com.sunrise.clinic.notifications.domain.NotificationStatus;
 
 import java.sql.PreparedStatement;
@@ -17,7 +18,7 @@ import java.util.Optional;
 public class NotificationDao extends JdbcDao<Notification, String> implements NotificationRepository {
 
     private static final String COLUMNS =
-            "id, appointment_no, channel, recipient, subject, body, status, sent_at";
+            "id, appointment_no, channel, kind, recipient, subject, body, status, sent_at";
 
     public NotificationDao(Database db) {
         super(db);
@@ -26,9 +27,9 @@ public class NotificationDao extends JdbcDao<Notification, String> implements No
     @Override
     public Notification save(Notification notification) {
         update("""
-                INSERT INTO notification (id, appointment_no, channel, recipient, subject, body,
-                                          status, sent_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO notification (id, appointment_no, channel, kind, recipient, subject,
+                                          body, status, sent_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     status = VALUES(status),
                     sent_at = VALUES(sent_at)
@@ -58,6 +59,16 @@ public class NotificationDao extends JdbcDao<Notification, String> implements No
     }
 
     @Override
+    public boolean hasBeenAttempted(String appointmentNo, NotificationKind kind) {
+        return queryOne("SELECT COUNT(*) FROM notification WHERE appointment_no = ? AND kind = ?",
+                statement -> {
+                    statement.setString(1, appointmentNo);
+                    statement.setString(2, enumName(kind));
+                },
+                rs -> rs.getInt(1)).orElse(0) > 0;
+    }
+
+    @Override
     public void deleteById(String id) {
         update("DELETE FROM notification WHERE id = ?", statement -> statement.setString(1, id));
     }
@@ -71,11 +82,12 @@ public class NotificationDao extends JdbcDao<Notification, String> implements No
         statement.setString(1, n.getId());
         statement.setString(2, n.getAppointmentNo());
         statement.setString(3, enumName(n.getChannel()));
-        statement.setString(4, n.getRecipient());
-        statement.setString(5, n.getSubject());
-        statement.setString(6, n.getBody());
-        statement.setString(7, enumName(n.getStatus()));
-        statement.setTimestamp(8, toSqlTimestamp(n.getSentAt()));
+        statement.setString(4, enumName(n.getKind()));
+        statement.setString(5, n.getRecipient());
+        statement.setString(6, n.getSubject());
+        statement.setString(7, n.getBody());
+        statement.setString(8, enumName(n.getStatus()));
+        statement.setTimestamp(9, toSqlTimestamp(n.getSentAt()));
     }
 
     private static Notification mapNotification(ResultSet rs) throws SQLException {
@@ -83,6 +95,7 @@ public class NotificationDao extends JdbcDao<Notification, String> implements No
                 .id(rs.getString("id"))
                 .appointmentNo(rs.getString("appointment_no"))
                 .channel(readEnum(rs, "channel", ChannelType.class))
+                .kind(readEnum(rs, "kind", NotificationKind.class))
                 .recipient(rs.getString("recipient"))
                 .subject(rs.getString("subject"))
                 .body(rs.getString("body"))
