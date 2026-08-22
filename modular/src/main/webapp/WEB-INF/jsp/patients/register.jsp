@@ -63,39 +63,71 @@
     </div>
 
     <div class="card">
-        <h2>Add a walk-in</h2>
+        <%--
+            One form for both jobs. Registering and correcting ask for the same five fields and
+            refuse the same things, so they share a form and a handler - the hidden patientId is
+            the only difference, and it is what tells the servlet which this is.
+        --%>
+        <h2>
+            <c:choose>
+                <c:when test="${not empty editing}">Correct these details</c:when>
+                <c:otherwise>Add a walk-in</c:otherwise>
+            </c:choose>
+        </h2>
         <form method="post" action="${ctx}/reception/patients">
+            <c:if test="${not empty editing}">
+                <input type="hidden" name="patientId" value="${editing.id()}">
+            </c:if>
             <div class="field">
                 <label for="name">Full name</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" required
+                       value="<c:out value='${editing.name()}' />">
             </div>
             <div class="form-row">
                 <div class="field">
                     <label for="contactNumber">Contact number</label>
-                    <input type="tel" id="contactNumber" name="contactNumber" required>
+                    <input type="tel" id="contactNumber" name="contactNumber" required
+                           value="<c:out value='${editing.contactNumber()}' />">
                 </div>
                 <div class="field">
                     <label for="email">Email <span class="page-subtitle">(optional)</span></label>
-                    <input type="email" id="email" name="email">
+                    <input type="email" id="email" name="email"
+                           value="<c:out value='${editing.email()}' />">
                 </div>
             </div>
             <div class="form-row">
                 <div class="field">
                     <label for="dob">Date of birth <span class="page-subtitle">(optional)</span></label>
-                    <input type="date" id="dob" name="dob">
+                    <input type="date" id="dob" name="dob" value="${editing.dob()}">
                 </div>
                 <div class="field">
                     <label for="address">Address <span class="page-subtitle">(optional)</span></label>
-                    <input type="text" id="address" name="address">
+                    <input type="text" id="address" name="address"
+                           value="<c:out value='${editing.address()}' />">
                 </div>
             </div>
-            <div class="notice">
-                This creates a patient record, not a login. The patient can create their own
-                account later if they want online booking.
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn">Add patient</button>
-            </div>
+            <c:choose>
+                <c:when test="${not empty editing}">
+                    <div class="notice">
+                        Correcting the record does not touch the patient's login. If they have an
+                        account it stays theirs, and their appointments and receipts are
+                        unaffected.
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Save the correction</button>
+                        <a class="btn btn-secondary" href="${ctx}/reception/patients">Cancel</a>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="notice">
+                        This creates a patient record, not a login. The patient can create their
+                        own account later if they want online booking.
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Add patient</button>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </form>
     </div>
 </div>
@@ -126,7 +158,7 @@
                     <thead>
                         <tr>
                             <th>Name</th><th>Contact</th><th>Email</th>
-                            <th>Date of birth</th><th>Portal account</th>
+                            <th>Date of birth</th><th>Portal account</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +186,12 @@
                                         </c:when>
                                         <c:otherwise><span class="pill">Walk-in</span></c:otherwise>
                                     </c:choose>
+                                </td>
+                                <td>
+                                    <%-- FR-REC-24. A mistyped number is the commonest error at
+                                         a busy desk, and until now it stayed wrong. --%>
+                                    <a class="btn small secondary"
+                                       href="${ctx}/reception/patients?edit=${p.id()}">Edit</a>
                                 </td>
                             </tr>
                         </c:forEach>

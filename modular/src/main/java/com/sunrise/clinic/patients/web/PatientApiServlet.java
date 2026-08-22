@@ -19,6 +19,7 @@ import java.util.Map;
  *   <tr><td>{@code GET  /api/patients?q=}</td><td>search or list the register</td></tr>
  *   <tr><td>{@code GET  /api/patients/{id}}</td><td>one record</td></tr>
  *   <tr><td>{@code POST /api/patients}</td><td>register a walk-in</td></tr>
+ *   <tr><td>{@code PUT  /api/patients/{id}}</td><td>correct their details</td></tr>
  * </table>
  *
  * <p>Every route delegates to {@link PatientService}, which holds the permission
@@ -87,6 +88,20 @@ public class PatientApiServlet extends BaseServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         handle(response, () -> {
             List<String> path = pathParts(request);
+
+            // PUT /api/patients/{id} — correct a patient's details (FR-REC-24).
+            if (path.size() == 1) {
+                Map<String, Object> body = readBody(request);
+                writeJson(response, app().patientService().correct(
+                        currentUser(request), path.get(0),
+                        new PatientService.NewPatient(
+                                Json.string(body, "name"),
+                                Json.string(body, "contactNumber"),
+                                Json.string(body, "address"),
+                                Json.string(body, "email"),
+                                Json.string(body, "dob"))));
+                return;
+            }
             if (path.size() != 3 || !"notes".equals(path.get(1))) {
                 throw new IllegalArgumentException("Unknown endpoint");
             }

@@ -124,6 +124,27 @@ check "and lands on the patient's own page"    200 "$(status "$NEW_JAR" /patient
 # The profile row is what booking resolves through. Without it this answers 404.
 check "the new account has a patient profile"  200 "$(status "$NEW_JAR" /patient/profile)"
 
+# ---------------------------------------------------------------- correcting
+bold "1b. reception corrects a mistyped number"
+# FR-REC-24, outstanding from the step that built the register. The check that matters is
+# not that the number changed - it is that the account link did not, because a user_uid
+# reception can move is a way to attach a patient record to somebody else's account.
+LINK_BEFORE=$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+  -e "SELECT IFNULL(user_uid,'none') FROM patient WHERE id='p-nimal';" 2>/dev/null)
+curl -sS -b "$RECEPTION" -o /dev/null -X PUT -H 'Content-Type: application/json' \
+  -d '{"name":"Nimal Perera","contactNumber":"0771230000","email":"nimal@example.lk"}' \
+  "$BASE/api/patients/p-nimal"
+check "the number is corrected" 0771230000 \
+  "$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+      -e "SELECT contact_number FROM patient WHERE id='p-nimal';" 2>/dev/null)"
+check "and the account link is untouched" "$LINK_BEFORE" \
+  "$(docker exec -i sunrise-mysql mysql -uroot -pclinic sunrise_dental -N \
+      -e "SELECT IFNULL(user_uid,'none') FROM patient WHERE id='p-nimal';" 2>/dev/null)"
+check "a patient cannot correct a record" 403 \
+  "$(curl -sS -b "$PATIENT" -o /dev/null -w '%{http_code}' -X PUT \
+      -H 'Content-Type: application/json' -d '{"name":"X","contactNumber":"0000000000"}' \
+      "$BASE/api/patients/p-arun")"
+
 # ---------------------------------------------------------------- role areas
 bold "2. every role reaches only its own pages"
 for path in /patient/home /reception/home /dentist/schedule /admin/reports; do

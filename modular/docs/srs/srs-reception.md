@@ -81,7 +81,7 @@ row concerned.
 | **FR-REC-21** | A walk-in must be registrable with name and contact number alone; address, email and date of birth are optional. This creates a `patient` **record**, not an account — the patient may register for portal access themselves later (**FR-PAT-06**) | Built |
 | **FR-REC-22** | The register must show whether each patient holds a portal account, so reception knows whether they can self-serve | Built |
 | **FR-REC-23** | Each patient row must offer a direct route to book them | Built |
-| **FR-REC-24** | A patient's details must be correctable — a mistyped phone number is the commonest error at a busy desk | **Specified** — no `PUT /api/patients/{id}`. The register can add and search but not correct. Carried forward from step 3 and never picked up |
+| **FR-REC-24** | A patient's details must be correctable — a mistyped phone number is the commonest error at a busy desk | Built — `PUT /api/patients/{id}`, and an Edit link on every row of the register. The correction cannot touch the account link, which is the one field reception must not be able to move |
 | **FR-REC-25** | Registering a walk-in whose contact number already exists must warn rather than silently create a duplicate | Built |
 
 ### 4.3 Booking on behalf

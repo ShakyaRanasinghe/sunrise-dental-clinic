@@ -162,6 +162,49 @@ public class PatientService {
         return new Registration(PatientResponse.of(patient), duplicates);
     }
 
+    /**
+     * Correct a patient's details — FR-REC-24.
+     *
+     * <p>A mistyped telephone number is the commonest error at a busy desk, and until now the
+     * register could add and search but not correct: the number stayed wrong, and the only way
+     * round it was a second record for the same person. This was outstanding from the step that
+     * built the register and is the oldest item on the list.</p>
+     *
+     * <p><b>It cannot change the account link.</b> {@code userUid} is not a field here and is
+     * never written — the entity is loaded, five fields are replaced, and it is saved. That is
+     * deliberate and it is the same defect as the one this module opened with: a
+     * {@code userUid} that reception can set is a way to attach a patient record to somebody
+     * else's account, and {@code findByUserUid} — which patient booking resolves through — would
+     * then answer with the wrong person.</p>
+     *
+     * <p>Same authority as registering. Adding a walk-in and correcting their number are both
+     * front-desk record-keeping on the same register, and the clinic makes no distinction
+     * between staff who may do one and staff who may do the other — so inventing one in the
+     * permission model would be inventing a rule the practice does not have.</p>
+     *
+     * @return the corrected record, and anybody else now sharing its contact number
+     */
+    public Registration correct(ClinicPrincipal caller, String id, NewPatient details) {
+        AccessControl.require(caller, Action.REGISTER_PATIENT);
+        Patient patient = require(id);
+
+        String contactNumber = required(details.contactNumber(), "contactNumber");
+        patient.setName(required(details.name(), "name"));
+        patient.setContactNumber(contactNumber);
+        patient.setEmail(validEmail(details.email()));
+        patient.setAddress(trimToNull(details.address()));
+        patient.setDob(parseDob(details.dob()));
+        patients.save(patient);
+
+        List<PatientResponse> duplicates = patients.findByContactNumber(contactNumber).stream()
+                .filter(other -> !other.getId().equals(id))
+                .map(PatientResponse::of).toList();
+
+        log.log(Level.INFO, "patient_corrected id={0} by={1} duplicates={2}",
+                new Object[] { id, caller.uid(), duplicates.size() });
+        return new Registration(PatientResponse.of(patient), duplicates);
+    }
+
     /** What the caller supplies to register someone. */
     public record NewPatient(String name,
                              String contactNumber,

@@ -321,9 +321,29 @@ Refusing the second would block a legitimate registration.
 
 ### Still missing
 
-**No update endpoint.** **FR-REC-24** requires a patient's details to be correctable — a
-mistyped phone number is the commonest error at a busy desk — and there is no `PUT` or `PATCH`.
-Still outstanding after step 3a; the register can add and search but not correct.
+### `PUT /api/patients/{id}` — implemented
+
+**FR-REC-24.** Takes the same five fields as `POST`, refuses the same things, and returns the
+corrected record with any other patient now sharing its contact number.
+
+```bash
+curl -s -b jar.txt -X PUT http://localhost:8080/api/patients/p-nimal \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Nimal Perera","contactNumber":"0771230000","email":"nimal@example.lk"}'
+```
+
+`RECEPTIONIST` and `ADMIN` only — the same authority as registering, because adding a walk-in and
+correcting their number are the same front-desk record-keeping and the clinic draws no
+distinction between staff who may do one and staff who may do the other.
+
+**It cannot change `user_uid`.** There is no field for it and nothing writes it: the record is
+loaded, five fields are replaced, and it is saved. A `user_uid` reception can set is a way to
+attach a patient record to somebody else's account, and `findByUserUid` — which patient booking
+resolves through — would then answer with the wrong person. That is the defect this endpoint's
+own module opened with, and it is not being reintroduced through the back door.
+
+**Blank optional fields are cleared, not kept.** Correcting a record means the form is
+authoritative: somebody who deletes a wrong address expects it gone.
 A wrong number can only be fixed in the database.
 
 **Registration does not create the profile row.** **FR-PAT-04** requires

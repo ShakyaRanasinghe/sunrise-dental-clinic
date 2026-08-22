@@ -255,6 +255,111 @@ class PatientServiceTest {
         assertEquals(List.of("Nimal Perera Jr"), names(service.possibleDuplicatesOf(RECEPTION, "p-nimal")));
     }
 
+    // --- correcting details, FR-REC-24 --------------------------------
+
+    @Test
+    void aMistypedNumberCanBeCorrected() {
+        // The oldest outstanding item on the list. Until this existed the number stayed wrong,
+        // and the only way round it was a second record for the same person.
+        PatientResponse corrected = service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771230000", "14 Galle Road",
+                        "nimal@example.lk", "1988-04-12")).patient();
+
+        assertEquals("0771230000", corrected.contactNumber());
+        assertEquals("0771230000", patients.findById("p-nimal").orElseThrow().getContactNumber());
+    }
+
+    @Test
+    void correctingNeverTouchesTheAccountLink() {
+        // The important one. A userUid reception can set is a way to attach a patient record to
+        // somebody else's account - and findByUserUid, which patient booking resolves through,
+        // would then answer with the wrong person. It is the same defect this module opened
+        // with, arriving by a different door.
+        service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771230000", null, null, null));
+
+        assertEquals("u-pat1", patients.findById("p-nimal").orElseThrow().getUserUid());
+        assertEquals(1, patients.findAll().stream()
+                .filter(p -> "u-pat1".equals(p.getUserUid())).count(),
+                "and no second record acquires the link");
+    }
+
+    @Test
+    void correctingAWalkInLeavesThemAWalkIn() {
+        service.correct(RECEPTION, "p-arun",
+                new NewPatient("Arun Wickrama", "0712223999", null, null, null));
+
+        assertNull(patients.findById("p-arun").orElseThrow().getUserUid());
+        assertFalse(service.findById(RECEPTION, "p-arun").hasPortalAccount());
+    }
+
+    @Test
+    void theAdministratorMayCorrectToo() {
+        assertEquals("0771230000", service.correct(ADMIN, "p-nimal",
+                new NewPatient("Nimal Perera", "0771230000", null, null, null))
+                .patient().contactNumber());
+    }
+
+    @Test
+    void neitherAPatientNorADentistMayCorrectARecord() {
+        for (ClinicPrincipal caller : List.of(PATIENT, DENTIST)) {
+            assertThrows(AccessControl.AccessDeniedException.class,
+                    () -> service.correct(caller, "p-nimal",
+                            new NewPatient("Changed Name", "0000000000", null, null, null)));
+        }
+        assertEquals("Nimal Perera", patients.findById("p-nimal").orElseThrow().getName());
+    }
+
+    @Test
+    void correctingIntoAnExistingNumberWarnsWithoutRefusing()
+    {
+        // The same rule as registering: a household shares a number, so this is advice.
+        var corrected = service.correct(RECEPTION, "p-arun",
+                new NewPatient("Arun Wickrama", "0771234567", null, null, null));
+
+        assertTrue(corrected.hasPossibleDuplicates());
+        assertEquals(List.of("Nimal Perera"), names(corrected.possibleDuplicates()));
+    }
+
+    @Test
+    void aCorrectedRecordIsNotItsOwnDuplicate() {
+        var corrected = service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771234567", null, null, null));
+
+        assertFalse(corrected.hasPossibleDuplicates(), "the record itself is excluded");
+    }
+
+    @Test
+    void correctingRefusesTheSameThingsRegisteringDoes() {
+        assertThrows(IllegalArgumentException.class, () -> service.correct(RECEPTION, "p-nimal",
+                new NewPatient("  ", "0771234567", null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", null, null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771234567", null, "not-an-address", null)));
+        assertThrows(IllegalArgumentException.class, () -> service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771234567", null, null,
+                        LocalDate.now().plusDays(1).toString())));
+    }
+
+    @Test
+    void correctingAnUnknownPatientIsNotFound() {
+        assertThrows(ResourceNotFoundException.class, () -> service.correct(RECEPTION, "p-nobody",
+                new NewPatient("Somebody", "0771234567", null, null, null)));
+    }
+
+    @Test
+    void blankOptionalFieldsAreClearedRatherThanKept() {
+        // Correcting a record means the form is authoritative. Somebody who deletes a wrong
+        // address expects it gone, not silently retained.
+        service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771234567", "14 Galle Road", null, null));
+        service.correct(RECEPTION, "p-nimal",
+                new NewPatient("Nimal Perera", "0771234567", "  ", null, null));
+
+        assertNull(patients.findById("p-nimal").orElseThrow().getAddress());
+    }
+
     // --- what leaves the module ---------------------------------------
 
     @Test
