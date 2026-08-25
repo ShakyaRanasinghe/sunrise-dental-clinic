@@ -28,17 +28,19 @@ They form an impression of the clinic from what they read. If they are satisfied
 move forward. If the information is not there or is unclear, many will leave and look
 elsewhere.
 
-> **[GAP]** The current system has no public-facing website with this information. The
-> home page (`/login`) is a role chooser — a page for people who already have an account.
-> A first-time visitor landing on it sees three login portals and nothing about the clinic
-> itself: no services list, no dentist profiles, no location, no contact number.
+> **[CLOSED]** The front door (`/`) is now a public landing page. A visitor who has
+> never signed in sees the clinic's services with prices (from the live treatment
+> catalogue), each practising dentist with specialisation and consultation fee (from
+> the dentist table), and the clinic's address, telephone and email (from
+> `clinic.properties`). A navigation bar for visitors carries *Services*, *Dentists*,
+> *Contact* and *Help*, plus the two doors that exist before an account: **Sign in**
+> (to `/login`, the role chooser) and **Register**. A signed-in visitor skips it all
+> and goes straight to their role's home, exactly as before.
 >
-> This is a significant real-world gap. A clinic website and the appointment booking system
-> are two different things. In production, the public website would typically exist
-> separately (a WordPress site, a landing page, or similar) and link to this system's
-> `/register` page when a visitor is ready to book. Until that exists, patients who find
-> the system URL directly have no way to learn about the clinic before being asked to
-> create an account.
+> What remains genuinely out of scope is the richer marketing content a separate
+> website would carry — photo galleries, social feeds, a map embed. In production that
+> would typically live on its own site linking here; the system no longer depends on
+> one existing before a newcomer can learn anything.
 
 ---
 
@@ -50,10 +52,11 @@ describe their symptom, and ask which dentist would be right for them. Reception
 their questions. The patient may then go online to book, or ask reception to book on their
 behalf.
 
-> **[GAP]** The clinic telephone number and email are referenced in the help page
-> (`/help`) via `${clinicPhone}` and `${clinicEmail}` attributes — but these are never
-> populated. They show blank. The contact details of the clinic are not configurable in
-> `clinic.properties` and not shown anywhere in the system.
+> **[CLOSED]** The earlier note that these attributes were never populated no longer
+> matched the code: the help page reads `clinic.phone` and `clinic.email` from
+> `clinic.properties` (with the committed defaults `+94 11 234 5678` /
+> `hello@sunrisedental.lk`), and the landing page shows the address alongside them.
+> Every value is overridable by environment variable like any other setting.
 
 ---
 
@@ -268,8 +271,8 @@ receipt.
 
 | # | Gap | Impact | Status |
 |---|---|---|---|
-| 1 | No public-facing website — home page is a role chooser with no clinic information | New patients cannot learn about the clinic before being asked to register | Open |
-| 2 | Clinic contact details (phone, email) not populated anywhere in the system | Patients cannot find the telephone number from within the system | Open |
+| 1 | No public-facing website — home page is a role chooser with no clinic information | New patients cannot learn about the clinic before being asked to register | **Closed** — `/` renders a public landing page (services, dentists, contact) with sign-in/register in the nav bar |
+| 2 | Clinic contact details (phone, email) not populated anywhere in the system | Patients cannot find the telephone number from within the system | **Closed** — read from `clinic.properties`; shown on the landing page and the help page |
 | 3 | No dentist profile or biography page | Patient chooses a dentist by name and specialisation only | Open |
 | 4 | Estimated total does not update dynamically when treatment is changed | Patient must calculate manually using the reference table | Open — requires JavaScript |
 | 5 | No confirmation message (email/SMS) after booking | Patient has no record outside the system | Open — FR-PAT-16 |
