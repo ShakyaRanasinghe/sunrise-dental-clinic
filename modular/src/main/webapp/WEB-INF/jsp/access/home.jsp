@@ -23,19 +23,18 @@
 </div>
 
 <h2 id="services" class="page-title">Services</h2>
-<p class="page-subtitle">What we treat, and what it costs. The final bill is confirmed by reception after your visit.</p>
+<p class="page-subtitle">What we treat. Sign in to see pricing and book online.</p>
 
 <div class="card">
     <table class="table">
         <thead>
-            <tr><th>Treatment</th><th>What it covers</th><th style="text-align:right;">From (Rs)</th></tr>
+            <tr><th>Treatment</th><th>What it covers</th></tr>
         </thead>
         <tbody>
             <c:forEach var="t" items="${treatments}">
                 <tr>
                     <td><c:out value="${t.name()}" /></td>
                     <td><c:out value="${t.description()}" /></td>
-                    <td style="text-align:right;"><fmt:formatNumber value="${t.baseCost()}" pattern="#,##0.00" /></td>
                 </tr>
             </c:forEach>
         </tbody>
@@ -50,10 +49,6 @@
         <div class="card">
             <h2><c:out value="${d.name()}" /></h2>
             <p><c:out value="${d.specialization()}" /></p>
-            <p class="page-subtitle">
-                Consultation fee: Rs <fmt:formatNumber value="${d.consultationFee()}" pattern="#,##0.00" />
-                per visit
-            </p>
         </div>
     </c:forEach>
 </div>
