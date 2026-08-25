@@ -130,6 +130,20 @@ public class AppointmentDao extends JdbcDao<Appointment, String> implements Appo
     }
 
     @Override
+    public List<Appointment> findByDentistIdAndDateBetween(String dentistId, LocalDate from,
+                                                           LocalDate to) {
+        return queryList("SELECT " + COLUMNS + " FROM appointment"
+                        + " WHERE dentist_id = ? AND appointment_date BETWEEN ? AND ?"
+                        + " ORDER BY appointment_date, appointment_time",
+                statement -> {
+                    statement.setString(1, dentistId);
+                    statement.setDate(2, toSqlDate(from));
+                    statement.setDate(3, toSqlDate(to));
+                },
+                AppointmentDao::mapAppointment);
+    }
+
+    @Override
     public void deleteById(String appointmentNo) {
         update("DELETE FROM appointment WHERE appointment_no = ?",
                 statement -> statement.setString(1, appointmentNo));

@@ -28,6 +28,54 @@
     </form>
 </div>
 
+<%--
+    FR-DEN-15: the week ahead. The picker above answers "what is happening on a day I
+    name"; this section answers "what is coming", which a one-day view never could -
+    a booking made for tomorrow was invisible until tomorrow was picked.
+--%>
+<h2 class="page-title">The week ahead</h2>
+<c:choose>
+    <c:when test="${not hasWeekAppointments}">
+        <div class="card">
+            <p class="page-subtitle">Nothing booked with you in the seven days from ${date}.</p>
+        </div>
+    </c:when>
+    <c:otherwise>
+        <c:forEach var="day" items="${week}">
+            <c:if test="${not empty day.appointments()}">
+                <div class="card">
+                    <h2>${day.date()}</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="row" items="${day.appointments()}">
+                                    <tr>
+                                        <td>${row.appointment().time()}</td>
+                                        <td>
+                                            <c:out value="${row.appointment().patientName()}" />
+                                            <c:if test="${row.hasCriticalNotes()}">
+                                                <span class="count">&#9888; notes</span>
+                                            </c:if>
+                                        </td>
+                                        <td><c:out value="${row.appointment().treatmentName()}" /></td>
+                                        <td><span class="count">${row.appointment().status()}</span></td>
+                                        <td>
+                                            <a href="${ctx}/dentist/appointment?appointmentNo=${row.appointment().appointmentNo()}">Open</a>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:if>
+        </c:forEach>
+    </c:otherwise>
+</c:choose>
+
 <c:choose>
     <c:when test="${empty appointments}">
         <div class="card">

@@ -24,9 +24,12 @@ import com.sunrise.clinic.scheduling.service.ReferenceService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -401,6 +404,37 @@ public class AppointmentService {
                         patientNotes.hasCriticalNotes(caller, appointment.patientId()),
                         treatmentCost(appointment.treatmentId())))
                 .toList();
+    }
+
+    /**
+     * The dentist's week ahead, grouped by day - FR-DEN-15.
+     *
+     * <p>The day view answers "what is happening today"; it cannot answer "what is
+     * coming", because a booking made for any other day simply does not appear until
+     * that day is picked. This returns today and the days after it as separate groups,
+     * each flagged exactly as {@link #forDentistWithWarnings} flags a single day, so
+     * the schedule can show the whole week at once. Days with nothing booked are
+     * included, so the screen can say so instead of skipping them silently.</p>
+     */
+    public List<WeekDay> forDentistWeekWithWarnings(ClinicPrincipal caller, LocalDate from,
+                                                    LocalDate to) {
+        Dentist dentist = clinicAccess.dentistFor(caller).orElseThrow(() ->
+                new ResourceNotFoundException("No dentist record for " + describeCaller(caller)));
+        Map<LocalDate, List<DentistDay>> byDay = new TreeMap<>();
+        for (LocalDate day = from; !day.isAfter(to); day = day.plusDays(1)) {
+            byDay.put(day, new ArrayList<>());
+        }
+        appointments.findByDentistIdAndDateBetween(dentist.getId(), from, to).forEach(appointment ->
+                byDay.get(appointment.getDate()).add(new DentistDay(describe(appointment),
+                        patientNotes.hasCriticalNotes(caller, appointment.getPatientId()),
+                        treatmentCost(appointment.getTreatmentId()))));
+        return byDay.entrySet().stream()
+                .map(entry -> new WeekDay(entry.getKey(), List.copyOf(entry.getValue())))
+                .toList();
+    }
+
+    /** One day of a dentist's week: the date and its flagged appointments, possibly none. */
+    public record WeekDay(LocalDate date, List<DentistDay> appointments) {
     }
 
     /** One row of a dentist's day: the appointment, whether to warn about it, and the treatment cost. */

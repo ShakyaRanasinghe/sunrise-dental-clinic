@@ -17,4 +17,7 @@ public interface AppointmentRepository extends Repository<Appointment, String> {
     List<Appointment> findByDate(LocalDate date);
 
     List<Appointment> findByDateBetween(LocalDate from, LocalDate to);
+
+    /** One dentist's appointments across an inclusive range - the week-ahead view. */
+    List<Appointment> findByDentistIdAndDateBetween(String dentistId, LocalDate from, LocalDate to);
 }

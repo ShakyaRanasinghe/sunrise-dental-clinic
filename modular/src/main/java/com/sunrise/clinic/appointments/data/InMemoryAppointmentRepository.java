@@ -39,4 +39,16 @@ public class InMemoryAppointmentRepository
                         && !a.getDate().isBefore(from) && !a.getDate().isAfter(to))
                 .toList();
     }
+
+    @Override
+    public List<Appointment> findByDentistIdAndDateBetween(String dentistId, LocalDate from,
+                                                           LocalDate to) {
+        return store.values().stream()
+                .filter(a -> dentistId.equals(a.getDentistId())
+                        && a.getDate() != null
+                        && !a.getDate().isBefore(from) && !a.getDate().isAfter(to))
+                .sorted(java.util.Comparator.comparing(Appointment::getDate)
+                        .thenComparing(Appointment::getTime))
+                .toList();
+    }
 }

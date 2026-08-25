@@ -27,6 +27,13 @@ public class DentistScheduleServlet extends PageServlet {
             // Rows carrying a critical-notes flag, not bare appointments - FR-NOTE-08.
             request.setAttribute("appointments",
                     app().appointmentService().forDentistWithWarnings(currentUser(request), date));
+            // The week ahead above the picker: today and six more days, so a booking made
+            // for any day this week is visible without picking that day first - FR-DEN-15.
+            var week = app().appointmentService().forDentistWeekWithWarnings(
+                    currentUser(request), date, date.plusDays(6));
+            request.setAttribute("week", week);
+            request.setAttribute("hasWeekAppointments", week.stream()
+                    .anyMatch(day -> !day.appointments().isEmpty()));
             request.setAttribute("completed", field(request, "completed"));
             render(request, response, "appointments/dentist-schedule");
         });
