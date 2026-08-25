@@ -60,6 +60,7 @@ dentist without an account is bookable but cannot sign in.
 |---|---|---|
 | Sign in | `/login/dentist` | Authenticate |
 | My schedule | `/dentist/schedule` | Own appointments for a chosen day |
+| My availability | `/dentist/availability` | Published time windows reception created for the dentist, with open/booked slot counts |
 | Appointment detail | `/dentist/schedule` (expanded) | Record diagnosis, mark complete |
 | Help | `/help` | Step-by-step guidance |
 
@@ -119,7 +120,13 @@ order:
 | Complaint naming them | ✘ | ✘ | reads |
 | Their own reviews | **aggregate only** | ✘ | reads in full |
 
-### 4.4 Diagnosis
+### 4.4 Your availability
+
+| ID | Requirement | Status |
+|---|---|---|
+| **FR-DEN-18** | The dentist must be able to see the time windows that reception has published for them, with the number of open and booked slots in each, so they know what patients can book without asking reception | Built |
+
+### 4.5 Diagnosis
 
 | ID | Requirement | Status |
 |---|---|---|
@@ -129,7 +136,7 @@ order:
 | **FR-DEN-23** | An amended diagnosis must be recorded in the audit trail, since a clinical note that changes silently is worse than one that never changed | **Not applicable** — a diagnosis cannot be amended. `AppointmentStatus` refuses COMPLETED → COMPLETED, so there is no amendment to audit |
 | **FR-DEN-24** | The diagnosis field must accept at least 4,000 characters | Built — stored as `TEXT` |
 
-### 4.5 Completing a treatment
+### 4.6 Completing a treatment
 
 | ID | Requirement | Status |
 |---|---|---|
@@ -231,6 +238,7 @@ Gaps found during QA on the `develop` branch.
 | **GAP-DEN-02** | FR-DEN-15: dentist can only view one day at a time — no week-ahead view | Week-ahead section on the schedule: today + 6 days grouped by date, each appointment with time, patient, treatment, status and a critical-notes flag (`AppointmentService.forDentistWeekWithWarnings`, `findByDentistIdAndDateBetween`) | **Fixed** |
 | **GAP-DEN-03** | FR-DEN-46: note's last-updated date not shown on the appointment detail screen | Not yet addressed | **Open** |
 | **GAP-DEN-04** | FR-DEN-60: dentist has no screen showing their own mean rating and review count — the API endpoint exists but is not surfaced | Not yet addressed | **Open** |
+| **GAP-DEN-05** | FR-DEN-18: reception publishes availability for a dentist but the dentist has no screen showing what was published — they can only see already-booked appointments, not the open windows patients can still book | Availability screen at `/dentist/availability`: published sessions filtered to future dates, grouped by date, each with open/booked slot counts (`SlotService.publishedFor`, `SlotService.allSlots`) | **Fixed** |
 
 ---
 

@@ -270,6 +270,15 @@
         <url-pattern>/dentist/schedule</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>DentistAvailability</servlet-name>
+        <servlet-class>com.sunrise.clinic.appointments.web.DentistAvailabilityServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistAvailability</servlet-name>
+        <url-pattern>/dentist/availability</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->

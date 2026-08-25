@@ -1,5 +1,6 @@
 package com.sunrise.clinic.access.domain;
 
+import java.util.List;
 import java.util.Set;
 
 /** What a {@code DENTIST} may do. */
@@ -26,6 +27,13 @@ public final class DentistPolicy extends RolePolicy {
     @Override
     public String loginPath() {
         return "/login/dentist";
+    }
+
+    @Override
+    protected List<NavItem> ownNavigation() {
+        return List.of(
+                new NavItem("Schedule", "/dentist/schedule"),
+                new NavItem("Availability", "/dentist/availability"));
     }
 
     @Override
