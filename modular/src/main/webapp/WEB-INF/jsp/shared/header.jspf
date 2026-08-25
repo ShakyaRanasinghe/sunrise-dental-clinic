@@ -59,4 +59,26 @@
         </div>
     </header>
 </c:if>
+<%--
+    The same bar for a visitor without an account: the clinic's sections instead of
+    role screens, and the two doors that exist before you have an account. Every
+    public page picks it up, so "how do I sign in?" has one permanent answer.
+--%>
+<c:if test="${empty user}">
+    <header class="site-header">
+        <div class="bar">
+            <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
+            <nav class="site-nav">
+                <a href="${ctx}/#services">Services</a>
+                <a href="${ctx}/#dentists">Dentists</a>
+                <a href="${ctx}/#contact">Contact</a>
+                <a href="${ctx}/help">Help</a>
+            </nav>
+            <div class="who">
+                <a class="btn small secondary" href="${ctx}/login">Sign in</a>
+                <a class="btn small" href="${ctx}/register">Register</a>
+            </div>
+        </div>
+    </header>
+</c:if>
 <main>

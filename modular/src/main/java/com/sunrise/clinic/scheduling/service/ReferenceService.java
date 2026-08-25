@@ -47,6 +47,23 @@ public class ReferenceService {
     }
 
     /**
+     * Dentists currently practising, for the public landing page — anyone may read it.
+     *
+     * <p>The same list {@link #activeDentists} returns, minus the signed-in caller a
+     * booking screen happens to have. A visitor reading the clinic's front page has no
+     * account yet, so there is nobody to pass; the information itself (name,
+     * specialisation, fee) is exactly what the practice advertises.</p>
+     */
+    public List<DentistResponse> directoryDentists() {
+        return dentists.findActive().stream().map(DentistResponse::of).toList();
+    }
+
+    /** The treatment catalogue, for the public landing page — see {@link #directoryDentists}. */
+    public List<TreatmentResponse> directoryTreatments() {
+        return treatments.findActive().stream().map(TreatmentResponse::of).toList();
+    }
+
+    /**
      * One dentist.
      *
      * @throws ResourceNotFoundException if there is no such dentist - which is what
