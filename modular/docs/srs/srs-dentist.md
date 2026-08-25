@@ -72,7 +72,7 @@ dentist without an account is bookable but cannot sign in.
 | **FR-DEN-12** | Each entry must show time, appointment number, patient name, treatment type and status | Built |
 | **FR-DEN-13** | The schedule must show only the signed-in dentist's own appointments. The dentist identity must come from the session, never from a request parameter | Built |
 | **FR-DEN-14** | A day with nothing booked must say so plainly | Built |
-| **FR-DEN-15** | The dentist should be able to see the week ahead, not only one day at a time | **Specified** — one day at a time. A "should" |
+| **FR-DEN-15** | The dentist should be able to see the week ahead, not only one day at a time | **Built** — the schedule opens on a week-ahead section (today + six days, grouped per day, critical-notes flags carried over); the single-day picker remains below for any date beyond it |
 
 ### 4.2 What the patient has declared
 
@@ -228,7 +228,7 @@ Gaps found during QA on the `develop` branch.
 | Ref | Gap observed | Fix applied | Status |
 |---|---|---|---|
 | **GAP-DEN-01** | Dentist schedule showed treatment name only — the dentist had no visibility of what the patient was being charged for their treatment, which is relevant for explaining the visit to the patient | Treatment name now shown alongside its base cost on the schedule (`dentist-schedule.jsp`, `AppointmentService.DentistDay`) | **Fixed** |
-| **GAP-DEN-02** | FR-DEN-15: dentist can only view one day at a time — no week-ahead view | Not yet addressed | **Open** |
+| **GAP-DEN-02** | FR-DEN-15: dentist can only view one day at a time — no week-ahead view | Week-ahead section on the schedule: today + 6 days grouped by date, each appointment with time, patient, treatment, status and a critical-notes flag (`AppointmentService.forDentistWeekWithWarnings`, `findByDentistIdAndDateBetween`) | **Fixed** |
 | **GAP-DEN-03** | FR-DEN-46: note's last-updated date not shown on the appointment detail screen | Not yet addressed | **Open** |
 | **GAP-DEN-04** | FR-DEN-60: dentist has no screen showing their own mean rating and review count — the API endpoint exists but is not surfaced | Not yet addressed | **Open** |
 
