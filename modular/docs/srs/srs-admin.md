@@ -264,6 +264,7 @@ Gaps found during QA on the `develop` branch.
 | **GAP-ADM-03** | FR-ADM-04: failed administrator sign-in is written to the application log, not to the audit trail | Not yet addressed | **Open** |
 | **GAP-ADM-04** | FR-ADM-57: complaint volume per dentist exists in `ComplaintService.countByDentist` but is not shown on the reports screen | Not yet addressed | **Open** |
 | **GAP-ADM-05** | FR-ADM-60: mean rating and review count per dentist exists in `ReviewService.summaryFor` but is not shown on the reports screen | Not yet addressed | **Open** |
+| **GAP-ADM-06** | Clinic identity — name, phone, email, address — is stored only in `clinic.properties` with deploy-time defaults; no admin UI or database table exists to change them at runtime. An admin must edit the file and redeploy, or set environment variables and restart the container | Not yet addressed | **Open** |
 
 ---
 
