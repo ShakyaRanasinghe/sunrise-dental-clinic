@@ -90,3 +90,12 @@ UPDATE complaint
 --                                rating, comment, submitted_at)
 --         VALUES (UUID(), '...', 'd-silva', 'p-nimal', 4,
 --                 'Explained everything clearly.', NOW());
+
+-- --- Clinic identity ---------------------------------------------------
+--  Seed from the same defaults clinic.properties carries. The admin edits
+--  these at runtime via /admin/identity; reception may edit phone only.
+INSERT IGNORE INTO clinic_setting (setting_key, setting_value) VALUES
+    ('clinic.name',    'Sunrise Dental Clinic'),
+    ('clinic.phone',   '+94 11 234 5678'),
+    ('clinic.email',   'hello@sunrisedental.lk'),
+    ('clinic.address', '123 Galle Road, Colombo 03');

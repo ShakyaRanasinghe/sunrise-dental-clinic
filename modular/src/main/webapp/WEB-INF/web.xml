@@ -230,6 +230,15 @@
         <url-pattern>/reception/slip</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>ReceptionPhone</servlet-name>
+        <servlet-class>com.sunrise.clinic.reception.web.ReceptionPhoneServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceptionPhone</servlet-name>
+        <url-pattern>/reception/phone</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  appointments                                                -->
     <!-- ============================================================ -->
@@ -352,6 +361,15 @@
     <servlet-mapping>
         <servlet-name>TreatmentAdmin</servlet-name>
         <url-pattern>/admin/treatments</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ClinicIdentity</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.ClinicIdentityServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ClinicIdentity</servlet-name>
+        <url-pattern>/admin/clinic</url-pattern>
     </servlet-mapping>
 
     <servlet>

@@ -29,8 +29,8 @@ public class ReceiptServlet extends PageServlet {
             String appointmentNo = requiredField(request, "appointmentNo", "Appointment number");
             request.setAttribute("bill",
                     app().billingService().forAppointment(currentUser(request), appointmentNo));
-            request.setAttribute("clinicName", app().config().get("clinic.name", "Sunrise Dental Clinic"));
-            request.setAttribute("clinicPhone", app().config().get("clinic.phone", ""));
+            request.setAttribute("clinicName", app().clinicIdentity().get("clinic.name"));
+            request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
             render(request, response, "billing/receipt");
         });
     }

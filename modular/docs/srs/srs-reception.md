@@ -62,6 +62,7 @@ row concerned.
 | Availability | `/reception/availability` | Publish a dentist's session |
 | Billing | `/reception/billing` | Look up an appointment, issue and print its bill |
 | Book | `/patient/book` | Book on a patient's behalf |
+| Phone | `/reception/phone` | Edit the clinic phone number shown on receipts, slips and the landing page |
 | Help | `/help` | Step-by-step guidance |
 
 ### 4.1 The day view
@@ -117,6 +118,14 @@ row concerned.
 | **FR-REC-55** | A bill must only be issuable once the dentist has marked the appointment complete | Built |
 | **FR-REC-56** | A discount must be enterable and must be rejected if it exceeds the sum of fee and treatment cost | **Specified** — the discount column exists and every bill records 0.00. `StandardBillingStrategy` sets no discount and no screen offers one |
 
+### 4.6 Clinic phone
+
+| ID | Requirement | Status |
+|---|---|---|
+| **FR-REC-70** | The receptionist must be able to edit the clinic phone number without involving the administrator, since the reception desk is the first point of contact when a line changes | Built — `/reception/phone`, `ReceptionPhoneServlet`, `ClinicIdentityService.update` with `MANAGE_PHONE` |
+| **FR-REC-71** | Only the phone number is editable from this screen; clinic name, email and address require the administrator (`MANAGE_CLINIC_SETTINGS`) | Built — `ClinicIdentityService` checks the key against `RECEPTION_KEYS` |
+| **FR-REC-72** | The phone number must be required; an empty value must be rejected | Built |
+
 ---
 
 ## 5. Data access
@@ -134,6 +143,7 @@ row concerned.
 | `dentist` | all | — |
 | `treatment` | all | — |
 | `bill` | all | insert on issuing |
+| `clinic_setting` | all | phone only (`MANAGE_PHONE`) |
 | `audit_event` | — | written on every change |
 | `notification` | — | written on booking |
 

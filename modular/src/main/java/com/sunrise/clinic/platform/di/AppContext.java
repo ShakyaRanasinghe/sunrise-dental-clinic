@@ -10,6 +10,8 @@ import com.sunrise.clinic.platform.audit.AuditRepository;
 import com.sunrise.clinic.platform.config.AppConfig;
 import com.sunrise.clinic.platform.data.JdbcTransactionRunner;
 import com.sunrise.clinic.platform.data.TransactionRunner;
+import com.sunrise.clinic.platform.data.ClinicSettingDao;
+import com.sunrise.clinic.platform.data.ClinicSettingRepository;
 import com.sunrise.clinic.appointments.service.AppointmentTreatmentRelationship;
 import com.sunrise.clinic.patients.data.PatientDao;
 import com.sunrise.clinic.patients.data.PatientNoteDao;
@@ -117,6 +119,7 @@ public class AppContext implements AutoCloseable {
     private final ReportRepository reports;
     private final ComplaintRepository complaints;
     private final ReviewRepository reviews;
+    private final ClinicSettingRepository clinicSettings;
 
     // Services, which are what the presentation tier may reach.
     private final LoginAttemptService loginAttempts;
@@ -136,6 +139,7 @@ public class AppContext implements AutoCloseable {
     private final ReviewService reviewService;
     private final AccountAdminService accountAdminService;
     private final TreatmentAdminService treatmentAdminService;
+    private final com.sunrise.clinic.platform.service.ClinicIdentityService clinicIdentity;
 
     public AppContext() {
         this.config = new AppConfig();
@@ -156,6 +160,7 @@ public class AppContext implements AutoCloseable {
         this.reports = new JdbcReportDao(database, clinicZone());
         this.complaints = new ComplaintDao(database);
         this.reviews = new ReviewDao(database);
+        this.clinicSettings = new ClinicSettingDao(database);
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
@@ -201,6 +206,7 @@ public class AppContext implements AutoCloseable {
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
                 dentists, auditEvents);
         this.treatmentAdminService = new TreatmentAdminService(treatments);
+        this.clinicIdentity = new com.sunrise.clinic.platform.service.ClinicIdentityService(clinicSettings, config);
         this.complaintService = new ComplaintService(complaints, appointmentService, clinicAccess,
                 referenceService, auditEvents);
         // The clinic's zone again: the review window is measured in the clinic's days.
@@ -307,6 +313,11 @@ public class AppContext implements AutoCloseable {
     /** Adding, editing and deactivating treatments. */
     public TreatmentAdminService treatmentAdminService() {
         return treatmentAdminService;
+    }
+
+    /** Clinic identity — name, phone, email, address. */
+    public com.sunrise.clinic.platform.service.ClinicIdentityService clinicIdentity() {
+        return clinicIdentity;
     }
 
     /**

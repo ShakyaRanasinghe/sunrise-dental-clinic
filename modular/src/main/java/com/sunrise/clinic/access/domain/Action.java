@@ -61,6 +61,10 @@ public enum Action {
     MANAGE_ACCOUNTS,
     /** Add, edit pricing and deactivate treatments in the catalogue. */
     MANAGE_TREATMENTS,
+    /** Edit clinic identity — name, phone, email, address. Admin only. */
+    MANAGE_CLINIC_SETTINGS,
+    /** Edit the clinic phone number. Reception and admin. */
+    MANAGE_PHONE,
     /** Read the audit trail. */
     READ_AUDIT,
     /** Raise a concern about a dentist. */

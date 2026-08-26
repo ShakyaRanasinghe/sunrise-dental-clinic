@@ -25,9 +25,9 @@ public class AppointmentSlipServlet extends PageServlet {
             request.setAttribute("appointment",
                     app().appointmentService().findByNo(currentUser(request), appointmentNo));
             request.setAttribute("clinicPhone",
-                    app().config().get("clinic.phone", ""));
+                    app().clinicIdentity().get("clinic.phone"));
             request.setAttribute("clinicAddress",
-                    app().config().get("clinic.address", ""));
+                    app().clinicIdentity().get("clinic.address"));
             render(request, response, "appointments/slip");
         });
     }

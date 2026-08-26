@@ -33,10 +33,10 @@ public class HomeServlet extends PageServlet {
         }
         request.setAttribute("dentists", app().referenceService().directoryDentists());
         request.setAttribute("treatments", app().referenceService().directoryTreatments());
-        request.setAttribute("clinicName", app().config().get("clinic.name", "Sunrise Dental Clinic"));
-        request.setAttribute("clinicPhone", app().config().get("clinic.phone", ""));
-        request.setAttribute("clinicEmail", app().config().get("clinic.email", ""));
-        request.setAttribute("clinicAddress", app().config().get("clinic.address", ""));
+        request.setAttribute("clinicName", app().clinicIdentity().get("clinic.name"));
+        request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
+        request.setAttribute("clinicEmail", app().clinicIdentity().get("clinic.email"));
+        request.setAttribute("clinicAddress", app().clinicIdentity().get("clinic.address"));
         render(request, response, "access/home");
     }
 }

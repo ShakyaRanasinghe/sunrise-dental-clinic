@@ -17,9 +17,8 @@ public class HelpServlet extends PageServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("clinicPhone", app().config().get("clinic.phone", "+94 11 234 5678"));
-        request.setAttribute("clinicEmail",
-                app().config().get("clinic.email", "hello@sunrisedental.lk"));
+        request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
+        request.setAttribute("clinicEmail", app().clinicIdentity().get("clinic.email"));
         render(request, response, "shared/help");
     }
 }

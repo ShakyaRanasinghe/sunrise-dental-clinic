@@ -62,6 +62,7 @@ it.
 | Sign in | `/login/admin` | Authenticate |
 | Clinic reports | `/admin/reports` | Income, revenue split, earnings, footfall |
 | Staff accounts | `/admin/staff` | Create an account; unlock, deactivate | 
+| Clinic identity | `/admin/clinic` | Edit clinic name, phone, email, address |
 | Complaints | `/admin/complaints` | Read, review and resolve patient concerns |
 | Audit trail | `/admin/audit` | Who changed what, and when |
 | Help | `/help` | Step-by-step guidance |
@@ -160,7 +161,15 @@ is more honest than quietly widening the administrator's access.
 | **FR-ADM-32** | The trail must answer "who changed this appointment, and when" for any appointment number | Built |
 | **FR-ADM-33** | The trail must never expose a diagnosis, even where the audited action changed one. It records that a change happened, not its content | Built |
 
-### 4.5 Reference data
+### 4.5 Clinic identity
+
+| ID | Requirement | Status |
+|---|---|---|
+| **FR-ADM-70** | The administrator must be able to edit the clinic name, phone number, email and address — values that appear on the landing page, help page, receipts and appointment slips | Built — `/admin/clinic`, `ClinicIdentityService`, `clinic_setting` table |
+| **FR-ADM-71** | All four fields must be required; an empty value must be rejected with a clear message | Built |
+| **FR-ADM-72** | Changes must take effect immediately — no cache, no restart. A patient who refreshes the landing page after the admin saves must see the new details | Built — values read from the database on every request, no caching layer |
+
+### 4.6 Reference data
 
 | ID | Requirement | Status |
 |---|---|---|
@@ -264,7 +273,7 @@ Gaps found during QA on the `develop` branch.
 | **GAP-ADM-03** | FR-ADM-04: failed administrator sign-in is written to the application log, not to the audit trail | Not yet addressed | **Open** |
 | **GAP-ADM-04** | FR-ADM-57: complaint volume per dentist exists in `ComplaintService.countByDentist` but is not shown on the reports screen | Not yet addressed | **Open** |
 | **GAP-ADM-05** | FR-ADM-60: mean rating and review count per dentist exists in `ReviewService.summaryFor` but is not shown on the reports screen | Not yet addressed | **Open** |
-| **GAP-ADM-06** | Clinic identity — name, phone, email, address — is stored only in `clinic.properties` with deploy-time defaults; no admin UI or database table exists to change them at runtime. An admin must edit the file and redeploy, or set environment variables and restart the container | Not yet addressed | **Open** |
+| **GAP-ADM-06** | Clinic identity — name, phone, email, address — is stored only in `clinic.properties` with deploy-time defaults; no admin UI or database table exists to change them at runtime. An admin must edit the file and redeploy, or set environment variables and restart the container | `clinic_setting` table, `ClinicIdentityService`, `ClinicIdentityServlet` at `/admin/clinic`. Admin edits all four fields; reception edits phone only (`ReceptionPhoneServlet`, `MANAGE_PHONE`). Consumers (`HomeServlet`, `HelpServlet`, `ReceiptServlet`, `AppointmentSlipServlet`) now read from the database via `app().clinicIdentity()` | **Fixed** |
 
 ---
 

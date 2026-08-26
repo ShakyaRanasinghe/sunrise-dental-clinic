@@ -312,3 +312,14 @@ CREATE TABLE IF NOT EXISTS appointment_counter (
     counter_value INT NOT NULL DEFAULT 0,
     PRIMARY KEY (day_key)
 ) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- Clinic identity: name, phone, email, address — editable at runtime
+-- by the administrator (all fields) or receptionist (phone only).
+-- Falls back to clinic.properties defaults when the table is empty.
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS clinic_setting (
+    setting_key   VARCHAR(64)  NOT NULL,
+    setting_value VARCHAR(500) NOT NULL DEFAULT '',
+    PRIMARY KEY (setting_key)
+) ENGINE=InnoDB;

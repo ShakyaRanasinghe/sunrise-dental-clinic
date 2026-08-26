@@ -9,15 +9,14 @@ public final class AdminPolicy extends RolePolicy {
     private static final Set<Action> PERMITTED = Set.of(
             Action.SEARCH_PATIENTS,
             Action.READ_PATIENT_RECORD,
-            // The administrator already carries the front-desk actions below -
-            // CANCEL_ANY, ISSUE_BILL - so lacking this one was an inconsistency, not
-            // a boundary. docs/api/patients.md specifies reception OR admin.
             Action.REGISTER_PATIENT,
             Action.CANCEL_ANY,
             Action.ISSUE_BILL,
             Action.READ_REPORTS,
             Action.MANAGE_ACCOUNTS,
             Action.MANAGE_TREATMENTS,
+            Action.MANAGE_CLINIC_SETTINGS,
+            Action.MANAGE_PHONE,
             Action.READ_AUDIT,
             Action.REVIEW_CONCERNS,
             Action.READ_REVIEWS
@@ -60,6 +59,7 @@ public final class AdminPolicy extends RolePolicy {
                 new NavItem("Reports", "/admin/reports"),
                 new NavItem("Accounts", "/admin/accounts"),
                 new NavItem("Treatments", "/admin/treatments"),
+                new NavItem("Clinic", "/admin/clinic"),
                 new NavItem("Complaints", "/admin/complaints"),
                 new NavItem("Audit", "/admin/audit"));
     }
