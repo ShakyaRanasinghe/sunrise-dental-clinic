@@ -216,7 +216,7 @@ read another's record by editing a URL.
 | Email | Required, valid form, not already registered | "That email is already registered. Sign in instead?" |
 | Password | Required, minimum 8 characters | "Use at least 8 characters." |
 | Full name | Required, 2–255 characters | "Please enter your full name." |
-| Contact number | Required, Sri Lankan mobile or landline | "Enter a number like 0771234567." |
+| Contact number | Optional; if given, digits with `+` `(` `)` `-` and spaces allowed, **no letters**, at least 7 digits | "The contact number can contain digits with + ( ) and - only. No letters." |
 | Date of birth | Optional; if given, in the past | "Date of birth cannot be in the future." |
 | Address | Optional, at most 500 characters | "Address is too long." |
 | Dentist | Required, must be an active dentist | "Choose a dentist." |
@@ -309,6 +309,7 @@ the fix applied and the current status.
 | **GAP-PAT-07** | Booking page required dentist + date selection before showing any availability. Patients who wanted to browse ("when is Dr. Silva available?") had to guess dates one by one with no feedback. No overview of which dentists have open slots, or on which dates | Added availability overview section: shows each active dentist with their open-slot dates for the next 14 days above the booking form. Clicking a date pre-fills the dentist and date in the form. Uses existing `SlotService.openSlotsBetween()` | **Fixed** |
 | **GAP-PAT-08** | Patient dashboard (`/patient/home`) showed appointments but had no way to rate a dentist. The rating mechanism existed in the backend (`ReviewService.rate()`) but was only accessible via the API endpoint `POST /api/reviews`. Patients had no visible UI to leave or edit star ratings | Added inline star rating controls on the dashboard for COMPLETED/BILLED appointments. Existing ratings shown as filled stars. Editable within the 30-day window. Uses existing `ReviewService.rate()` and `ReviewService.own()` | **Fixed** |
 | **GAP-PAT-09** | Public landing page (`/`) listed dentists by name and specialisation but showed no ratings. `FR-RVW-11` deferred rating display, but the data has been accumulating since day one. Patients choosing a dentist had no quality signal | Added aggregate star ratings (mean + review count) to each dentist card on the landing page. Shown only when 5+ reviews exist (`FR-RVW-12`). Uses existing `ReviewRepository.summaryFor()` | **Fixed** |
+| **GAP-PAT-10** | Registration accepted anything in the contact number — a patient who typed letters ("o77 123 4567") had them stored verbatim and then could never be matched to the same person's digits-only record at the desk | `SelfRegistrationService` now validates the contact number server-side: digits with `+` `(` `)` `-` and spaces only, no letters, at least 7 digits (`register.jsp` carries a matching `pattern` for immediate feedback; `SelfRegistrationServiceTest` covers it) | **Fixed** |
 
 ---
 

@@ -52,7 +52,9 @@
                     Contact number <span class="page-subtitle">(optional)</span>
                 </label>
                 <input type="tel" id="contactNumber" name="contactNumber"
-                       value="<c:out value='${param.contactNumber}' />">
+                       value="<c:out value='${param.contactNumber}' />"
+                       pattern="[0-9+() -]+" maxlength="20"
+                       title="Digits, with + ( ) and - allowed — no letters.">
                 <div class="page-subtitle">So the clinic can reach you about an appointment.</div>
             </div>
             <div class="form-row">

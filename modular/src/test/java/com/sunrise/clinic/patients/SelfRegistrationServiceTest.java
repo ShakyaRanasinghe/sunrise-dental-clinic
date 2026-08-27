@@ -83,6 +83,31 @@ class SelfRegistrationServiceTest {
         assertEquals(LocalDate.of(1988, 4, 12), registered.patient().dob());
     }
 
+    // --- the contact number must be digits, not letters -----------------
+
+    @Test
+    void aContactNumberWithLettersIsRefused() {
+        assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
+                "Password123", "Password123", "o77 123 4567", null, null))
+                .contains("No letters"));
+    }
+
+    @Test
+    void aContactNumberWithFewerThanSevenDigitsIsRefused() {
+        assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
+                "Password123", "Password123", "123", null, null))
+                .contains("7 digits"));
+    }
+
+    @Test
+    void formattedDigitsAreAcceptedAndStoredAsGiven() {
+        Registered registered = service.register(new Registration(
+                "Nimal Perera", "nimal@example.lk", "Password123", "Password123",
+                "+94 77 123 4567", null, null));
+
+        assertEquals("+94 77 123 4567", registered.patient().contactNumber());
+    }
+
     // --- the defect: both rows, linked ----------------------------------
 
     @Test
