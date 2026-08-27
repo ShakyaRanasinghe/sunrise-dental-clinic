@@ -228,6 +228,14 @@ public class AppointmentService {
             throw new AccessControl.AccessDeniedException(
                     "That appointment is not yours to treat.");
         }
+        // GAP-DEN-06: a future visit cannot be completed today. No diagnosis may be
+        // written for a consultation that has not happened, and a completed-but-unborn
+        // appointment would be billable by reception before the patient has sat down.
+        if (appointment.getDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException(
+                    appointmentNo + " is scheduled for " + appointment.getDate()
+                            + ". Treatment can only be recorded on the day of the appointment.");
+        }
 
         // Refuses an illegal move - a cancelled or already-billed appointment.
         appointment.complete(diagnosis);

@@ -130,6 +130,15 @@
                 </div>
 
                 <c:choose>
+                    <c:when test="${a.status() eq 'CONFIRMED' and a.date() gt today}">
+                        <%-- GAP-DEN-06: a visit that has not happened yet cannot be
+                             completed. The service refuses it too; this simply does
+                             not offer a button that would fail. --%>
+                        <p class="page-subtitle">
+                            Scheduled for ${a.date()}. Treatment is recorded on the day
+                            of the appointment.
+                        </p>
+                    </c:when>
                     <c:when test="${a.status() eq 'CONFIRMED'}">
                         <form method="post" action="${ctx}/dentist/schedule">
                             <input type="hidden" name="appointmentNo" value="${a.appointmentNo()}">

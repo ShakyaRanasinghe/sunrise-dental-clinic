@@ -13,6 +13,7 @@ import com.sunrise.clinic.scheduling.domain.SlotStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -223,6 +224,21 @@ class AppointmentServiceTest {
                 () -> fixture.service.complete(AppointmentTestFixture.reception(), no, "x"));
         assertThrows(AccessControl.AccessDeniedException.class,
                 () -> fixture.service.complete(AppointmentTestFixture.admin(), no, "x"));
+    }
+
+    @Test
+    void futureAppointmentCannotBeCompleted() {
+        // GAP-DEN-06: patients may book into the future, but treatment cannot be
+        // recorded before the visit. A completed-but-unborn appointment would be
+        // billable by reception before the patient has sat down.
+        fixture.addSlot("sfuture", "d-silva", LocalDate.now().plusDays(1), LocalTime.of(10, 0));
+        String no = fixture.service.book(nimal, "sfuture", "t-checkup", null).appointmentNo();
+
+        assertThrows(IllegalStateException.class,
+                () -> fixture.service.complete(AppointmentTestFixture.silva(), no, "Too soon"));
+
+        assertEquals(AppointmentStatus.CONFIRMED, fixture.service.require(no).getStatus());
+        assertNull(fixture.service.require(no).getDiagnosis());
     }
 
     // --- cancelling: whose appointment --------------------------------

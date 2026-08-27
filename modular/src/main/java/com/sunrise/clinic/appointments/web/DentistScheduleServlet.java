@@ -24,6 +24,7 @@ public class DentistScheduleServlet extends PageServlet {
         page(request, response, () -> {
             LocalDate date = dateField(request, "date", LocalDate.now());
             request.setAttribute("date", date);
+            request.setAttribute("today", LocalDate.now());
             // Rows carrying a critical-notes flag, not bare appointments - FR-NOTE-08.
             request.setAttribute("appointments",
                     app().appointmentService().forDentistWithWarnings(currentUser(request), date));
