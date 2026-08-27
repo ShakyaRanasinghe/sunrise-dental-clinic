@@ -86,6 +86,7 @@ this path is a constant in the code, never a value from the form.
 | ID | Requirement | Status |
 |---|---|---|
 | **FR-PAT-10** | The patient must choose a dentist and a date, then be shown only the slots still open for that pairing | Built |
+| **FR-PAT-17** | On initial load the booking page must show an availability overview: each active dentist with the dates they have open slots in the next 14 days (from today), grouped by dentist then date, with open-slot counts. Clicking a date pre-selects that dentist and date in the booking form | **Built** |
 | **FR-PAT-11** | Slots already booked must not be offered, not merely marked as unavailable | Built |
 | **FR-PAT-12** | The patient must choose a treatment type from the clinic's catalogue, so the eventual bill is calculable | Built |
 | **FR-PAT-13** | On confirmation the appointment number must be shown immediately, since it is what identifies the visit at the front desk | Built |
@@ -304,6 +305,7 @@ the fix applied and the current status.
 | **GAP-PAT-04** | FR-PAT-33: cancellation takes effect on one click with no confirmation. Specified but not built | Not yet addressed | **Open** |
 | **GAP-PAT-05** | FR-PAT-65: patient is not told that their dentist sees only an aggregate rating, never their individual comment | Not yet addressed | **Open** |
 | **GAP-PAT-06** | FR-PAT-06: walk-in registration does not look for an existing patient with the same email or contact number before creating a new row | Not yet addressed | **Open** |
+| **GAP-PAT-07** | Booking page required dentist + date selection before showing any availability. Patients who wanted to browse ("when is Dr. Silva available?") had to guess dates one by one with no feedback. No overview of which dentists have open slots, or on which dates | Added availability overview section: shows each active dentist with their open-slot dates for the next 14 days above the booking form. Clicking a date pre-fills the dentist and date in the form. Uses existing `SlotService.openSlotsBetween()` | **Fixed** |
 
 ---
 

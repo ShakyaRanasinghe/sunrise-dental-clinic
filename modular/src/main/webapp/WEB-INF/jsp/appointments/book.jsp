@@ -14,6 +14,40 @@
 <h1 class="page-title">Book an appointment</h1>
 <p class="page-subtitle">Choose a dentist and a date, then pick a time that suits you.</p>
 
+<%--
+    FR-PAT-17: Availability overview. Shown on initial load (no dentist selected yet)
+    so the patient can browse which dentists have open dates before picking one.
+    Each dentist card shows their dates with open slots. Clicking a date pre-selects
+    that dentist and date in the booking form below.
+--%>
+<c:if test="${not empty availabilityOverview}">
+    <div class="card">
+        <h2>Availability this fortnight</h2>
+        <p class="page-subtitle">Click a date to jump to that dentist's available times below.</p>
+        <c:forEach var="dentist" items="${availabilityOverview}">
+            <div class="card" style="margin-top:1rem;">
+                <h3>
+                    <c:out value="${dentist.dentistName()}" />
+                    <c:if test="${not empty dentist.specialization()}">
+                        <span class="page-subtitle"> &mdash; <c:out value="${dentist.specialization()}" /></span>
+                    </c:if>
+                </h3>
+                <div class="slots">
+                    <c:forEach var="dateAvail" items="${dentist.dates()}">
+                        <div class="slot">
+                            <a href="${ctx}/patient/book?dentistId=${dentist.dentistId()}&date=${dateAvail.date()}">
+                                <c:out value="${dateAvail.date()}" />
+                                <br>
+                                <span class="page-subtitle">${dateAvail.openSlotCount()} slots</span>
+                            </a>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </c:forEach>
+    </div>
+</c:if>
+
 <div class="card">
     <h2>1. Dentist and date</h2>
     <form method="get" action="${ctx}/patient/book">
