@@ -1,0 +1,157 @@
+%% Sunrise Dental Clinic - class design: 3-access
+%% Source of truth: modular/docs/class-diagram.md
+
+classDiagram
+    direction TB
+
+    namespace platform_web {
+        class BaseServlet {
+            <<abstract>>
+            #app() AppContext
+            #currentUser(req) ClinicPrincipal
+            #handle(res, endpoint) void
+        }
+        class PageServlet {
+            <<abstract>>
+            #render(req, res, view) void
+        }
+    }
+
+    namespace access_web {
+        class AbstractLoginServlet {
+            <<abstract>>
+            +doGet(req, res) void
+            +doPost(req, res) void
+            #acceptedRole()* Role
+            #viewName()* String
+            #allowsSelfRegistration() boolean
+            #auditFailedAttempts() boolean
+        }
+        class PatientLoginServlet {
+            #acceptedRole() Role
+            #viewName() String
+            #allowsSelfRegistration() boolean
+        }
+        class ReceptionLoginServlet {
+            #acceptedRole() Role
+            #viewName() String
+        }
+        class DentistLoginServlet {
+            #acceptedRole() Role
+            #viewName() String
+        }
+        class AdminLoginServlet {
+            #acceptedRole() Role
+            #viewName() String
+            #auditFailedAttempts() boolean
+        }
+        class PortalChooserServlet {
+            +doGet(req, res) void
+        }
+        class AuthenticationFilter {
+            -PUBLIC_PREFIXES : List~String~$
+            +doFilter(req, res, chain) void
+            +establishSession(req, principal)$ void
+            +clearSession(req)$ void
+        }
+    }
+
+    namespace access_service {
+        class AuthService {
+            -users : UserRepository
+            -hasher : PasswordHasher
+            -attempts : LoginAttemptService
+            +login(email, password) LoginResult
+            +unlock(email) void
+        }
+        class UserAccountFactory {
+            -users : UserRepository
+            -patients : PatientRepository
+            -dentists : DentistRepository
+            +create(role, details) UserAccount
+        }
+        class PasswordHasher {
+            -ITERATIONS : int$
+            +hash(password)$ String
+            +matches(password, stored)$ boolean
+        }
+        class LoginAttemptService {
+            -MAX_ATTEMPTS : int$
+            +recordFailure(email) LockStatus
+            +status(email) LockStatus
+        }
+        class AccessControl {
+            +require(user, action)$ void
+        }
+    }
+
+    namespace access_domain {
+        class RolePolicy {
+            <<abstract>>
+            +role()* Role
+            +homePath()* String
+            +loginPath()* String
+            +permits(action)* boolean
+        }
+        class PatientPolicy
+        class ReceptionPolicy
+        class DentistPolicy
+        class AdminPolicy
+        class Action {
+            <<enumeration>>
+            BOOK_OWN
+            BOOK_FOR
+            CANCEL_OWN
+            REGISTER_PATIENT
+            PUBLISH_AVAILABILITY
+            RECORD_DIAGNOSIS
+            ISSUE_BILL
+            READ_REPORTS
+            MANAGE_ACCOUNTS
+            READ_AUDIT
+        }
+        class ClinicPrincipal {
+            <<record>>
+            +uid : String
+            +displayName : String
+            +role : Role
+            +policy() RolePolicy
+        }
+    }
+
+    namespace access_data {
+        class UserRepository {
+            <<interface>>
+            +findByEmail(email) Optional~UserAccount~
+            +findStaff() List~UserAccount~
+        }
+        class UserDao {
+            -db : Database
+            +save(user) UserAccount
+            +findByEmail(email) Optional~UserAccount~
+        }
+    }
+
+    BaseServlet <|-- PageServlet
+    PageServlet <|-- AbstractLoginServlet
+    AbstractLoginServlet <|-- PatientLoginServlet
+    AbstractLoginServlet <|-- ReceptionLoginServlet
+    AbstractLoginServlet <|-- DentistLoginServlet
+    AbstractLoginServlet <|-- AdminLoginServlet
+    PageServlet <|-- PortalChooserServlet
+
+    RolePolicy <|-- PatientPolicy
+    RolePolicy <|-- ReceptionPolicy
+    RolePolicy <|-- DentistPolicy
+    RolePolicy <|-- AdminPolicy
+    RolePolicy ..> Action : evaluates
+
+    AbstractLoginServlet --> "1" AuthService : authenticates with
+    AbstractLoginServlet ..> RolePolicy : redirects by
+    AuthService --> "1" UserRepository
+    AuthService --> "1" PasswordHasher
+    AuthService --> "1" LoginAttemptService
+    UserRepository <|.. UserDao : implements
+    UserAccountFactory ..> UserRepository
+    AccessControl ..> RolePolicy : delegates to
+    ClinicPrincipal --> "1" RolePolicy

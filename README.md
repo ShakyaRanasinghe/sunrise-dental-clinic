@@ -1,11 +1,16 @@
 # Sunrise Dental Clinic — Appointment & Patient Management System
 
-A distributed, cloud-backed appointment and patient-management system for a private
-dental clinic. It replaces a paper-based process — eliminating double bookings, lost
-records, long waits, and billing errors — with a role-based web application.
+A role-based web application for a private dental clinic. It replaces a paper-and-
+spreadsheet process — eliminating double bookings, lost records, long waits and billing
+errors — with one shared, reliable source of information.
 
-> **Stack:** React (SPA) · Spring Boot (Java 17, REST) · Firebase (Firestore + Auth + Cloud Functions)
-> **Architecture:** 3-tier, distributed · **Patterns:** Singleton, Strategy, Factory, Observer, Repository/DAO, DTO, Facade, MVC
+> **Stack:** Core Java 17 · Jakarta Servlets & JSP · JDBC · MySQL 8 · HTML/CSS
+> **Architecture:** 3 tiers × 8 feature modules · **Patterns:** Template Method, Strategy,
+> Factory Method, Observer, Repository (DAO), DTO, MVC, Builder, Singleton
+
+**No application framework is used.** Dependency wiring, request routing, transactions,
+JSON, password hashing and access control are all implemented in this project rather
+than delegated to a framework. See [What we wrote ourselves](#-what-we-wrote-ourselves).
 
 ---
 
@@ -13,133 +18,193 @@ records, long waits, and billing errors — with a role-based web application.
 
 | Role | Capabilities |
 |------|--------------|
-| **Patient** | Register · view dentist availability (today / this week) · **book / cancel appointments** · view & download bill · AI symptom-triage chat |
-| **Receptionist** | **Publish dentist availability (slots)** · register walk-in appointments · search & update · **generate bills** · manage patient records |
-| **Dentist** | View own schedule · record **diagnosis (confidential)** · mark treatments completed |
-| **Administrator** | Manage staff & roles (RBAC) · manage treatment catalogue & pricing · **income & footfall reports** · **runtime AI-model configuration** · audit log |
+| **Patient** | Register · browse availability · **book / cancel appointments** · declare **medical notes** · raise a **complaint** · rate a visit · view receipts |
+| **Receptionist** | **Publish dentist availability (slots)** · register walk-ins · search patient records · **generate bills** |
+| **Dentist** | View own schedule · read the patient's **declared medical notes** · record **diagnosis (confidential)** · mark treatments completed |
+| **Administrator** | **Income & footfall reports** · revenue split · no-show rate · CSV export · create and unlock accounts · review complaints · read the audit trail |
 
 **Highlights**
 
-- 🦷 **Self-service booking** into receptionist-published slots — with an **atomic booking
-  guard** that makes double-booking impossible.
-- 💳 **Billing with a 3-way revenue split** (dentist / clinic / receptionist), printable PDF receipt.
-- 🔒 **Field-level confidentiality** — a patient's clinical diagnosis is visible only to the
-  treating dentist and the patient, never to admin or reception.
-- 🤖 **AI symptom triage** (grounded, always disclaimed) with an **admin-configurable model at runtime**.
-- 📊 **Decision-support reports** — daily footfall by dentist/receptionist, income by
-  date/range/month, per-doctor and per-receptionist earnings.
-- 📧 **Email/SMS confirmations** via a Cloud Function trigger + an Observer pipeline.
-- 🌐 **Tri-lingual UI** (English / Sinhala / Tamil).
+- 🦷 **Self-service booking** into receptionist-published slots, with a **real double-booking
+  guard**: a `SELECT … FOR UPDATE` row lock inside a transaction, plus a `UNIQUE` key on
+  `slot.appointment_no` as the database-level backstop.
+- 💳 **Billing with a three-way revenue split** (dentist / clinic / receptionist), printable receipt.
+- 🔒 **Field-level confidentiality** — a patient's diagnosis is visible only to the treating
+  dentist and the patient, never to reception or admin. Enforced by serving a different
+  DTO, so the field cannot leak by accident.
+- 🔐 **PBKDF2 password hashing** (120,000 iterations, per-user salt, constant-time compare)
+  and **account lock-out** after five failed attempts.
+- 📊 **Decision-support reports** — income by period, earnings per dentist and per
+  receptionist, daily takings and footfall, exportable as CSV.
 
 ---
 
 ## 🏛️ Architecture
 
 ```
-┌── Presentation ──────────┐   HTTPS/JSON   ┌── Business ────────────┐   ┌── Data ─────────┐
-│  React SPA               │ ─────────────▶ │  Spring Boot REST API  │ ▶ │ Firestore (prod)│
-│  role dashboards, charts │ ◀───────────── │  Controller→Service→   │   │ In-memory (test)│
-│  booking, AI chat        │                │  Repository, patterns  │   │ Firebase Auth   │
-└──────────────────────────┘                └───────────┬────────────┘   └─────────────────┘
-        │                                                │ writes
-   Firebase Hosting                              Firestore onCreate
-   (dev / qa / prod channels)                 ┌──────────▼──────────┐
-                                              │ Cloud Functions      │
-                                              │ • confirmation (trig)│
-                                              │ • reminder (schedule)│
-                                              └──────────────────────┘
+┌── Presentation ──────────┐                ┌── Business ────────────┐   ┌── Data ─────────┐
+│  JSP + JSTL views        │                │  Servlets              │   │                 │
+│  HTML / CSS / vanilla JS │ ─── forward ─▶ │    ↓ Services          │ ▶ │  MySQL 8        │
+│  (server-rendered)       │                │    ↓ Repositories      │   │  (plain JDBC)   │
+│                          │ ◀── JSON ───── │  + design patterns     │   │                 │
+└──────────────────────────┘                └────────────────────────┘   └─────────────────┘
+        pages under /WEB-INF/jsp                 com.sunrise.clinic          schema.sql
+        (unreachable except via a servlet)
 ```
 
-A genuinely **distributed** system: the browser, the REST server, the cloud database, and
-serverless functions are separate, independently-deployable tiers.
+Requests pass through `AuthenticationFilter`, which establishes the caller's identity from
+the session. Page servlets render JSP; API servlets under `/api/**` return JSON for the
+same operations.
 
-### Design patterns
+### Packages
 
-| Pattern | Where | Why |
-|---------|-------|-----|
-| **Singleton** | `AppointmentNumberGenerator` | one atomic source of unique numbers (`APT-YYYYMMDD-####`) |
-| **Strategy** | `BillingStrategy`, `RevenueSplitStrategy` | swap pricing / commission policy without code changes |
-| **Factory Method** | `NotificationChannelFactory` | create Email/SMS channels; add a channel with zero caller changes |
-| **Observer** | `AppointmentEventPublisher` | on booking → send confirmation + write audit, decoupled |
-| **Repository / DAO** | `*Repository` (in-memory + Firestore) | swap storage; run & test with no cloud account |
-| **DTO** | `AppointmentResponse` / `AppointmentClinicalResponse` | field-level access control by construction |
-| **MVC + Dependency Injection** | Spring | layered, testable |
+| Package | Responsibility |
+|---------|----------------|
+| `app` | `AppContext` — builds the object graph; `ClinicServletContext` — start-up/shutdown |
+| `web` | Servlets: page controllers and the JSON API |
+| `service` | Business logic: booking, availability, billing, reports |
+| `repository` | Persistence interfaces + in-memory implementations (tests) |
+| `dao` | JDBC/MySQL implementations of those interfaces |
+| `db` | Connection pool and transaction management |
+| `domain` | Entities and enumerations |
+| `pattern` | Singleton, Strategy (billing), Factory Method (notification channels), Observer |
+| `security` | Password hashing, authentication, role checks, lock-out |
+| `json` | Hand-written JSON reader/writer |
+| `dto` / `mapper` | Response shapes and the mapping to them |
 
 ---
 
-## 📁 Project structure
+## 🔧 What we wrote ourselves
 
-```
-sunrise-dental-clinic/
-├── backend/            Spring Boot REST API (Java 17, Maven)
-│   └── src/main/java/com/sunrise/clinic/
-│       ├── domain/         entities + enums
-│       ├── pattern/        Singleton, Strategy (billing), Factory (notifications)
-│       ├── repository/     Repository interface + in-memory & Firestore adapters
-│       ├── service/        business logic (booking, billing, availability) + Observer
-│       ├── controller/     REST endpoints
-│       └── config/         security, OpenAPI
-├── frontend/           React SPA (Vite)
-├── functions/          Firebase Cloud Functions (triggers, reminders)
-├── UML/                Use case, class & sequence diagrams
-└── .github/workflows/  CI/CD (dev → qa → prod)
-```
+Every capability below would normally come from a framework. The brief does not allow one,
+so each is implemented here — which is the substance of the project.
+
+| Normally provided by a framework | Our implementation |
+|---|---|
+| Dependency injection | `app/AppContext` — explicit constructor wiring, no scanning or reflection |
+| Declarative transactions | `db/Database.inTransaction` + `repository/TransactionRunner` |
+| ORM / repositories | `dao/*` — hand-written SQL on `PreparedStatement` |
+| Connection pooling | `db/Database` + `db/PooledConnection` (JDK dynamic proxy) |
+| JSON serialisation | `json/Json` — records serialised via `getRecordComponents()` |
+| Request routing | Servlet mappings in `web.xml` + explicit sub-path dispatch |
+| Exception → HTTP mapping | `web/BaseServlet.handle`, `web/PageServlet.page` |
+| Authentication & sessions | `security/AuthenticationFilter`, `security/AuthService` |
+| Password hashing | `security/PasswordHasher` — PBKDF2 via `javax.crypto` |
+| Method-level authorization | `security/AccessControl.require(...)` |
+| Configuration binding | `config/AppConfig` — properties + environment overrides |
+| Boilerplate generation | Hand-written constructors, accessors and builders |
 
 ---
 
-## 🚀 Getting started
+## 📁 Two folders, one of which ships
 
-### Backend
+| Folder | What it is |
+|---|---|
+| **`modular/`** | **The application.** Everything is built, run, tested and deployed here |
+| `layered/` | The earlier layered arrangement, kept as the source the restructure copied from and as the git history. **Not run, not maintained, not deployable** |
+
+`modular/` arranges the same three tiers as a grid: eight feature modules —
+`platform`, `access`, `patients`, `scheduling`, `appointments`, `billing`, `reporting`,
+`feedback` — each holding its own `web/ service/ data/ domain/`. Every class has exactly one
+cell, so "where does this go" and "what breaks if I change this" have answers you can read off
+the directory tree. The reasoning, and the eight alternatives considered against it, is in
+[`modular/docs/architecture/`](modular/docs/architecture/).
+
+CI builds `modular/` only, and enforces the tier boundaries as a build step.
+
+| Documentation | |
+|---|---|
+| [Run it locally](modular/docs/local-setup.md) | One command, and what to check when it does not work |
+| [Manual test scenarios](modular/docs/testing/scenarios.md) | 50 walkthroughs in plain language — the fastest way to see what it does |
+| [Deployment](modular/docs/deploy/) | Architecture, environments, runbook |
+| [Architecture](modular/docs/architecture/) | Why the code is arranged this way, and the alternatives |
+| [Requirements](modular/docs/srs/) | The SRS, with the verified status of every requirement |
+| [API](modular/docs/api/) | Every JSON endpoint, with worked examples |
+
+---
+
+## 🚀 Running it
+
+**Prerequisites:** JDK 17, Maven 3.8+, Docker. No local MySQL or Tomcat needed.
 
 ```bash
-cd backend
-mvn test          # run the test suite (no cloud account needed — uses the in-memory adapter)
-mvn spring-boot:run
-# API docs at http://localhost:8080/swagger-ui.html
+./scripts/dev-up.sh          # database, schema, demo data, build, deploy
+./scripts/smoke.sh           # 53 end-to-end checks against the running instance
 ```
 
-The app runs fully **offline** against an in-memory data adapter. To use Firestore, set the
-`firestore` Spring profile and provide Firebase credentials (see `docs/`).
+That is the whole thing: <http://localhost:8080>. It is idempotent — re-run it after any
+change. See [`modular/docs/local-setup.md`](modular/docs/local-setup.md) for what it does and
+why MySQL is published on 3308.
 
-### Frontend
+<details>
+<summary>Without Docker</summary>
 
 ```bash
-cd frontend
-npm install
-npm run dev
+# 1. Create the schema and load the demo data. --default-character-set=utf8mb4 is
+#    not optional: the client defaults to latin1 and will double-encode every
+#    non-ASCII character in the seed data.
+for f in schema procedures demo-data; do
+  mysql --default-character-set=utf8mb4 -u root -p < "modular/src/main/resources/$f.sql"
+done
+
+# 2. Point the application at your database (or edit clinic.properties)
+export DB_URL="jdbc:mysql://localhost:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+export DB_USER=root
+export DB_PASSWORD=yourpassword
+
+# 3. Build and deploy
+cd modular && mvn package
+cp target/clinic.war "$CATALINA_HOME/webapps/ROOT.war"
 ```
+</details>
+
+Any setting in `clinic.properties` can be overridden by an environment variable named
+after it — upper-cased, dots to underscores — so the same WAR runs in every environment
+without a rebuild.
+
+### Demo accounts
+
+All use the password `Password123`.
+
+| Role | Email |
+|------|-------|
+| Administrator | `admin@sunrisedental.lk` |
+| Receptionist | `reception@sunrisedental.lk` |
+| Dentist | `silva@sunrisedental.lk` |
+| Patient | `nimal@example.lk` |
 
 ---
 
 ## ✅ Testing
 
-Unit + integration tests run against the in-memory repository, so the whole suite is green
-with no external services:
+Two suites, deliberately different in kind.
 
 ```bash
-cd backend && mvn test
+cd modular && mvn test      # 266 JUnit 5 tests, no database required
+./scripts/smoke.sh          # 53 checks against a running instance
 ```
 
-Design patterns, the atomic booking guard (incl. a 500-thread uniqueness test), and the
-billing + revenue-split maths are all covered. See `docs/traceability.md` for the
-requirement → test mapping.
+**The unit tests** sit below the web tier and run against in-memory repositories, so they are
+fast and precise. They cover the booking workflow — including a **concurrency test** that
+releases twelve simultaneous bookings at one slot on a latch and asserts exactly one wins —
+the appointment and complaint status machines, the revenue split invariant across 49
+combinations of its two dials, every confidentiality gate, password hashing and lock-out.
+
+**The smoke test** assembles the whole application and drives it over HTTP as the four roles.
+It exists because the unit tests cannot see a servlet mapping, a JSP that will not compile, a
+JDBC statement a trigger refuses, a timezone or a charset — and every defect found late in
+this project was one of those. It would have caught all of them.
 
 ---
 
-## 🌱 Environments & deployment
+## 📝 Changes
 
-Three environments as Firebase Hosting channels on one project, promoted through Git:
-
-```
-feature/* → develop (dev) → qa → main (prod)     tags: v0.1.0 … v1.0.0
-```
-
-GitHub Actions builds & tests every PR, deploys `develop` to **dev**, runs the full suite on
-**qa**, and deploys tagged releases to **prod**. Production deploys require an approval
-(GitHub Environments protection rule).
+Additions and fixes made during development and QA are tracked in [`CHANGES.md`](CHANGES.md).
 
 ---
 
-## 📄 Licence
+## 📐 Design
 
-Coursework project — for educational assessment.
+UML sources and rendered diagrams are in [`UML/`](UML/): use case diagrams (patient portal
+and staff back-office), the domain class diagram, and sequence diagrams for login, booking,
+billing and triage.

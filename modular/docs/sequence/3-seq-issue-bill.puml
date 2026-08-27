@@ -1,0 +1,114 @@
+@startuml seq_issue_bill
+' Sunrise Dental Clinic - Sequence: Issue Bill
+' Source of truth: modular/docs/sequence-diagrams.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 220
+skinparam ParticipantPadding 12
+skinparam BoxPadding 12
+skinparam sequence {
+  ArrowColor #52606D
+  LifeLineBorderColor #C2571A
+  LifeLineBackgroundColor #FDF3EC
+  ParticipantBorderColor #C2571A
+  ParticipantBackgroundColor #FDF3EC
+  ActorBorderColor #52606D
+}
+
+actor "Receptionist" as U
+
+box "Presentation tier" #FBFCFD
+  participant "BillingPageServlet" as SV
+end box
+box "Business tier" #FFFFFF
+  participant "billing\n: BillingService" as BS
+  participant "pricing\n: StandardBillingStrategy" as PS
+  participant "split\n: DefaultRevenueSplitStrategy" as RS
+end box
+box "Data tier" #FBFCFD
+  participant "appts\n: AppointmentRepository" as AR
+  participant "dentists\n: DentistRepository" as DR
+  participant "treatments\n: TreatmentRepository" as TR
+  participant "bills\n: BillRepository" as BR
+  database "MySQL" as DB
+end box
+
+U -> SV : POST /reception/billing\n(appointmentNo)
+activate SV
+
+SV -> BS : generateBill(appointmentNo,\nissuedByUid)
+activate BS
+
+BS -> BR : findByAppointmentNo(no)
+activate BR
+BR -> DB : SELECT ... FROM bill\nWHERE appointment_no = ?
+DB --> BR : empty
+BR --> BS : Optional.empty()
+deactivate BR
+
+alt no bill exists yet
+  BS -> AR : findById(no)
+  activate AR
+  AR --> BS : Appointment
+  deactivate AR
+
+  alt appointment.status == COMPLETED
+    BS -> DR : findById(dentistId)
+    activate DR
+    DR --> BS : Dentist (consultationFee 1500)
+    deactivate DR
+
+    BS -> TR : findById(treatmentId)
+    activate TR
+    TR --> BS : Treatment (baseCost 3500)
+    deactivate TR
+
+    BS -> PS : calculate(1500, 3500, 200)
+    activate PS
+    PS --> BS : BillBreakdown(total 5200)
+    deactivate PS
+    note right of PS
+      Strategy, so a pricing change is a
+      new class rather than an edit to
+      BillingService  (FR-BIL-06)
+    end note
+
+    BS -> RS : split(breakdown)
+    activate RS
+    RS --> BS : RevenueSplit(dentist,\nclinic, reception)
+    deactivate RS
+
+    BS -> BR : save(bill)
+    activate BR
+    BR -> DB : INSERT INTO bill ...
+    BR --> BS : Bill
+    deactivate BR
+
+    BS -> AR : save(status = BILLED)
+    BS --> SV : Bill
+    SV --> U : 201 - printable receipt
+
+  else not yet completed
+    BS --> SV : IllegalStateException
+    SV --> U : 400 - "The dentist must mark this\nappointment complete first."
+  end
+
+else already billed
+  note over BS
+    Today this path is missing: a second
+    call builds a new Bill and BillDao
+    upserts, so the API answers 201 with
+    an id that was never persisted.
+    FR-BIL-04 is therefore Partial.
+  end note
+  BS --> SV : AlreadyBilledException
+  SV --> U : 409 - existing receipt shown\nfor reprint
+end
+
+deactivate BS
+deactivate SV
+
+@enduml

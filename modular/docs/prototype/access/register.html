@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">PUBLIC</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /register</span>
+  <span>&rarr; access/register.jsp</span>
+</div>
+
+<div class="narrow">
+  <div class="brand-block">
+    <div class="name">Sunrise Dental Clinic</div>
+    <div class="tagline">Create a patient account</div>
+  </div>
+  <div class="card">
+    <div class="notice info">Only patients create their own account. Reception, dentist and
+      administrator accounts are issued by the clinic administrator.</div>
+    <form method="post" action="#">
+      <div class="field"><label>Full name</label><input type="text"></div>
+      <div class="form-row">
+        <div class="field"><label>Email</label><input type="email"></div>
+        <div class="field"><label>Contact number</label><input type="tel" placeholder="0771234567"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Address <span class="page-subtitle">(optional)</span></label><input type="text"></div>
+        <div class="field"><label>Date of birth <span class="page-subtitle">(optional)</span></label><input type="date"></div>
+      </div>
+      <div class="field"><label>Password</label><input type="password">
+        <div class="page-subtitle">At least 8 characters.</div></div>
+      <div class="notice">Nothing medical is asked here. You can add allergies and
+        medications from your profile once you have signed in.</div>
+      <div class="form-actions"><button class="btn" style="width:100%">Create account</button></div>
+    </form>
+  </div>
+  <div class="alt">Already registered? <a href="login-patient.html">Sign in</a></div>
+</div>
+
+</body>
+</html>

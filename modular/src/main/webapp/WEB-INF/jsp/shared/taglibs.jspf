@@ -1,0 +1,18 @@
+<%--
+    Page directive and tag libraries, included FIRST by every view.
+
+    A taglib prefix must be declared before it is used. Setting pageTitle with
+    <c:set> at the top of a view and only then including header.jspf - which
+    declared the taglib - put the use before the directive, and Jasper refused
+    every page with:
+
+        The prefix [c] specified in this tag directive has been previously used
+        by an action in file [...]
+
+    Declaring them here and including this first removes the ordering hazard for
+    every view at once, rather than each remembering to repeat three lines.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>

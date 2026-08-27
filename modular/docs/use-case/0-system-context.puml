@@ -1,0 +1,87 @@
+@startuml use_case_context
+' Sunrise Dental Clinic - Use Case Diagram: system context
+' Source of truth: modular/docs/use-case-diagram.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 16
+skinparam ranksep 70
+skinparam usecase {
+  BackgroundColor #FDF3EC
+  BorderColor #C2571A
+  ArrowColor #52606D
+}
+
+left to right direction
+' invisible title: reserves top margin so an actor at the
+' upper edge is not clipped by the render bounds
+title <color:#FFFFFF>.\n.</color>
+
+actor "Clinic User" as USER
+actor "Patient"      as PT
+actor "Receptionist" as RC
+actor "Dentist"      as DN
+actor "Administrator" as AD
+
+actor "SMTP Server"  as SMTP <<system>>
+actor "SMS Gateway"  as SMS  <<system>>
+
+USER <|-- PT
+USER <|-- RC
+USER <|-- DN
+USER <|-- AD
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Sign In" as UC_LOGIN
+  usecase "Sign Out" as UC_LOGOUT
+  usecase "View Help" as UC_HELP
+
+  usecase "Manage Appointments" as UC_APT
+  usecase "Manage Patient Register" as UC_REG
+  usecase "Manage Availability" as UC_AVAIL
+  usecase "Manage Billing" as UC_BILL
+  usecase "Record Treatment" as UC_TREAT
+  usecase "Declare Medical Notes" as UC_NOTES
+  usecase "Raise Concern" as UC_CMP
+  usecase "Rate Visit" as UC_RVW
+  usecase "Review Clinic Reports" as UC_REP
+  usecase "Manage Accounts" as UC_ACC
+  usecase "Review Concerns" as UC_CMPREV
+  usecase "Notify Patient" as UC_NOTIFY
+}
+
+USER --> UC_LOGIN
+USER --> UC_LOGOUT
+USER --> UC_HELP
+
+PT --> UC_APT
+PT --> UC_NOTES
+PT --> UC_CMP
+PT --> UC_RVW
+
+RC --> UC_APT
+RC --> UC_REG
+RC --> UC_AVAIL
+RC --> UC_BILL
+
+DN --> UC_TREAT
+
+AD --> UC_REP
+AD --> UC_ACC
+AD --> UC_CMPREV
+
+UC_NOTIFY --> SMTP
+UC_NOTIFY --> SMS
+
+note right of USER
+  Sign in, sign out and help are
+  inherited by all four roles, so they
+  are drawn once against the
+  generalised actor rather than
+  four times.
+end note
+
+@enduml
