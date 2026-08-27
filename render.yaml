@@ -1,0 +1,41 @@
+# Sunrise Dental Clinic — Render Blueprint.
+#
+# Deploy in the Render dashboard: New > Blueprint > connect this repository.
+# Two services: the web app (Tomcat) and a private MySQL reachable only from
+# other services in the workspace at "sunrise-mysql:3306".
+#
+# The app reads DB_URL / DB_USER / DB_PASSWORD as environment variables and
+# overrides the clinic.properties defaults with them — no rebuild required.
+# Passwords must be set at first deploy; change them in the dashboard.
+services:
+  - type: web
+    name: sunrise-clinic
+    runtime: docker
+    dockerfilePath: ./deploy/app/Dockerfile
+    healthCheckPath: /help
+    autoDeploy: true
+    envVars:
+      - key: DB_URL
+        value: jdbc:mysql://sunrise-mysql:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - key: DB_USER
+        value: clinic
+      - key: DB_PASSWORD
+        sync: false
+
+  - type: private
+    name: sunrise-mysql
+    runtime: docker
+    dockerfilePath: ./deploy/mysql/Dockerfile
+    disk:
+      name: data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: sunrise_dental
+      - key: MYSQL_USER
+        value: clinic
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
