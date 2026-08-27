@@ -20,8 +20,9 @@
 #      Do NOT load demo-data.sql into a live deployment — every seeded
 #      account shares the published password Password123. Create real
 #      accounts instead (schema.sql is accounts-free).
-#   3. Replace the DB_URL / DB_USER placeholders below with the values from
-#      the Aiven console, and enter the password at first deploy.
+#   3. Set the values at first deploy — the Blueprint creation form prompts
+#      for DB_URL and DB_PASSWORD; they never appear in git. DB_USER is
+#      avnadmin for every Aiven service by default.
 services:
   - type: web
     name: sunrise-clinic
@@ -31,7 +32,7 @@ services:
     autoDeploy: true
     envVars:
       - key: DB_URL
-        value: jdbc:mysql://<aiven-host>:<aiven-port>/defaultdb?sslMode=REQUIRED&serverTimezone=UTC
+        sync: false
       - key: DB_USER
         value: avnadmin
       - key: DB_PASSWORD
