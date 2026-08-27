@@ -49,6 +49,27 @@
         <div class="card">
             <h2><c:out value="${d.name()}" /></h2>
             <p><c:out value="${d.specialization()}" /></p>
+            <%-- FR-RVW-11: aggregate rating, shown only when 5+ reviews exist (FR-RVW-12) --%>
+            <c:set var="rating" value="${ratings[d.id()]}" />
+            <c:if test="${not empty rating and rating.isPublishable()}">
+                <p style="margin:0;">
+                    <span class="stars">
+                        <c:forEach begin="1" end="5" var="i">
+                            <c:choose>
+                                <c:when test="${i <= rating.mean().intValue()}">&#9733;</c:when>
+                                <c:otherwise>&#9734;</c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                    </span>
+                    <fmt:formatNumber value="${rating.mean()}" minFractionDigits="1" maxFractionDigits="1" />
+                    <span class="page-subtitle">(${rating.reviews()} review${rating.reviews() != 1 ? 's' : ''})</span>
+                </p>
+            </c:if>
+            <c:if test="${not empty rating and not rating.isPublishable() and rating.reviews() > 0}">
+                <p style="margin:0;">
+                    <span class="page-subtitle">${rating.reviewsUntilPublishable()} more review${rating.reviewsUntilPublishable() != 1 ? 's' : ''} needed to show rating</span>
+                </p>
+            </c:if>
         </div>
     </c:forEach>
 </div>

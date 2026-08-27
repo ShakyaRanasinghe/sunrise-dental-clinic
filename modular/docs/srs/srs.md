@@ -429,7 +429,7 @@ patients will give, a complaint is an exception most will never file.
 | **FR-RVW-08** | The dentist must see **only their own aggregate** — mean and count — never an individual review, its comment, or who wrote it | Derived | Built |
 | **FR-RVW-09** | The administrator must be able to read individual reviews with their comments, for every dentist | Derived | Built |
 | **FR-RVW-10** | A receptionist must never see any review or aggregate | Derived | Built |
-| **FR-RVW-11** | No rating or aggregate may be shown to patients in this release. The data is collected now and displayed later, if at all | Derived | **Deferred by decision** |
+| **FR-RVW-11** | Ratings are now shown to patients on the public landing page. Each dentist card displays the aggregate mean and review count when 5+ reviews exist (**FR-RVW-12**). Individual reviews and comments are never shown | Derived | **Built** |
 | **FR-RVW-12** | An aggregate must not be published where fewer than five reviews exist, so one bad visit cannot define a dentist | Derived | Built |
 
 **Reviews and complaints are separate on purpose.** They could have been one table with a
@@ -453,10 +453,9 @@ appointments a day, identifies its author by date alone — which turns feedback
 patient must weigh against their next visit. The aggregate is useful; the comment is
 identifying. FR-RVW-12's floor of five exists for the same reason.
 
-**Deferred, and recorded as such.** FR-RVW-11 is not an omission. The clinic wants the data
-accumulating from day one so that any future decision about showing ratings has history behind
-it. Building the display now would mean guessing at a presentation nobody has asked for; storing
-the data now costs one table and cannot be recovered retrospectively if skipped.
+**Now implemented.** FR-RVW-11 was deferred to accumulate data before displaying it. The data
+has been collected since the review feature launched. Ratings are now shown on the public
+landing page (mean + count, when 5+ reviews exist) and patients can rate from their dashboard.
 
 ### 4.10 Audit
 

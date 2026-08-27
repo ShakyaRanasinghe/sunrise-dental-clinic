@@ -20,6 +20,9 @@
 <c:if test="${not empty cancelled}">
     <div class="notice">Cancelled <strong><c:out value="${cancelled}" /></strong>.</div>
 </c:if>
+<c:if test="${not empty rated}">
+    <div class="notice">Thank you. Your rating has been recorded.</div>
+</c:if>
 
 <div class="card">
     <h2>Upcoming and past <span class="count">${fn:length(appointments)}</span></h2>
@@ -35,7 +38,7 @@
                     <thead>
                         <tr>
                             <th>Number</th><th>Date</th><th>Time</th>
-                            <th>Dentist</th><th>Treatment</th><th>Status</th><th></th>
+                            <th>Dentist</th><th>Treatment</th><th>Status</th><th></th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,6 +65,60 @@
                                                    value="${a.appointmentNo()}">
                                             <button type="submit" class="btn small secondary">Cancel</button>
                                         </form>
+                                    </c:if>
+                                </td>
+                                <%-- FR-PAT-70: star rating for COMPLETED/BILLED appointments --%>
+                                <td>
+                                    <c:if test="${a.status() eq 'COMPLETED' or a.status() eq 'BILLED'}">
+                                        <c:set var="existingReview" value="${existingReviews[a.appointmentNo()]}" />
+                                        <c:choose>
+                                            <c:when test="${not empty existingReview}">
+                                                <span class="stars" title="${existingReview.rating()} of 5 stars">
+                                                    <c:forEach begin="1" end="5" var="i">
+                                                        <c:choose>
+                                                            <c:when test="${i <= existingReview.rating()}">&#9733;</c:when>
+                                                            <c:otherwise>&#9734;</c:otherwise>
+                                                        </c:choose>
+                                                    </c:forEach>
+                                                </span>
+                                                <c:if test="${existingReview.editable()}">
+                                                    <form method="post" action="${ctx}/patient/home"
+                                                          style="display:inline">
+                                                        <input type="hidden" name="action" value="rate">
+                                                        <input type="hidden" name="appointmentNo"
+                                                               value="${a.appointmentNo()}">
+                                                        <select name="rating" style="font-size:0.85em;">
+                                                            <c:forEach begin="1" end="5" var="i">
+                                                                <option value="${i}" <c:if test="${i == existingReview.rating()}">selected</c:if>>${i} star${i > 1 ? 's' : ''}</option>
+                                                            </c:forEach>
+                                                        </select>
+                                                        <input type="text" name="comment" placeholder="Comment (optional)"
+                                                               value="<c:out value='${existingReview.comment()}' />"
+                                                               style="font-size:0.85em; width:120px;">
+                                                        <button type="submit" class="btn small">Update</button>
+                                                    </form>
+                                                </c:if>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <form method="post" action="${ctx}/patient/home"
+                                                      style="display:inline">
+                                                    <input type="hidden" name="action" value="rate">
+                                                    <input type="hidden" name="appointmentNo"
+                                                           value="${a.appointmentNo()}">
+                                                    <select name="rating" required style="font-size:0.85em;">
+                                                        <option value="">Rate&hellip;</option>
+                                                        <option value="1">&#9733;</option>
+                                                        <option value="2">&#9733;&#9733;</option>
+                                                        <option value="3">&#9733;&#9733;&#9733;</option>
+                                                        <option value="4">&#9733;&#9733;&#9733;&#9733;</option>
+                                                        <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733;</option>
+                                                    </select>
+                                                    <input type="text" name="comment" placeholder="Comment (optional)"
+                                                           style="font-size:0.85em; width:120px;">
+                                                    <button type="submit" class="btn small">Rate</button>
+                                                </form>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:if>
                                 </td>
                             </tr>

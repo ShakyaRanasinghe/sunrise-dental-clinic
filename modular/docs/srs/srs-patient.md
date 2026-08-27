@@ -159,7 +159,8 @@ Ordinary feedback, offered after the visit has happened. Distinct from raising a
 | **FR-PAT-64** | One rating per appointment. A second visit to the same dentist is a second rating | Built |
 | **FR-PAT-65** | The patient must be told that the dentist sees only an average, never the individual rating or comment | **Specified** — true of the system, but the screen does not say so |
 | **FR-PAT-66** | Cancelled and future appointments must not offer a rating | Built |
-| **FR-PAT-67** | In this release the patient must not be shown any dentist's rating when choosing one (**FR-RVW-11**) | Deferred by decision |
+| **FR-PAT-67** | In this release the patient must not be shown any dentist's rating when choosing one (**FR-RVW-11**) | **Fixed** — ratings now shown on the public landing page when 5+ reviews exist |
+| **FR-PAT-70** | The patient dashboard must show star rating controls next to each `COMPLETED` or `BILLED` appointment. Existing ratings must be displayed as filled stars and be editable within the 30-day window | **Built** |
 
 **What the patient is told beside the stars** (FR-PAT-65):
 
@@ -306,6 +307,8 @@ the fix applied and the current status.
 | **GAP-PAT-05** | FR-PAT-65: patient is not told that their dentist sees only an aggregate rating, never their individual comment | Not yet addressed | **Open** |
 | **GAP-PAT-06** | FR-PAT-06: walk-in registration does not look for an existing patient with the same email or contact number before creating a new row | Not yet addressed | **Open** |
 | **GAP-PAT-07** | Booking page required dentist + date selection before showing any availability. Patients who wanted to browse ("when is Dr. Silva available?") had to guess dates one by one with no feedback. No overview of which dentists have open slots, or on which dates | Added availability overview section: shows each active dentist with their open-slot dates for the next 14 days above the booking form. Clicking a date pre-fills the dentist and date in the form. Uses existing `SlotService.openSlotsBetween()` | **Fixed** |
+| **GAP-PAT-08** | Patient dashboard (`/patient/home`) showed appointments but had no way to rate a dentist. The rating mechanism existed in the backend (`ReviewService.rate()`) but was only accessible via the API endpoint `POST /api/reviews`. Patients had no visible UI to leave or edit star ratings | Added inline star rating controls on the dashboard for COMPLETED/BILLED appointments. Existing ratings shown as filled stars. Editable within the 30-day window. Uses existing `ReviewService.rate()` and `ReviewService.own()` | **Fixed** |
+| **GAP-PAT-09** | Public landing page (`/`) listed dentists by name and specialisation but showed no ratings. `FR-RVW-11` deferred rating display, but the data has been accumulating since day one. Patients choosing a dentist had no quality signal | Added aggregate star ratings (mean + review count) to each dentist card on the landing page. Shown only when 5+ reviews exist (`FR-RVW-12`). Uses existing `ReviewRepository.summaryFor()` | **Fixed** |
 
 ---
 

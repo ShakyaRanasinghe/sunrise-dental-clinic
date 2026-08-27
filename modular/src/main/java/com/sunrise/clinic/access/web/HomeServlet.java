@@ -1,13 +1,17 @@
 package com.sunrise.clinic.access.web;
 
 import com.sunrise.clinic.access.domain.ClinicPrincipal;
+import com.sunrise.clinic.feedback.domain.RatingSummary;
 import com.sunrise.clinic.platform.web.PageServlet;
+import com.sunrise.clinic.scheduling.domain.DentistResponse;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The front door — and, for anyone not signed in, the clinic's public face.
@@ -31,12 +35,21 @@ public class HomeServlet extends PageServlet {
             redirect(request, response, AuthenticationFilter.homeFor(user.role()));
             return;
         }
-        request.setAttribute("dentists", app().referenceService().directoryDentists());
+        var dentists = app().referenceService().directoryDentists();
+        request.setAttribute("dentists", dentists);
         request.setAttribute("treatments", app().referenceService().directoryTreatments());
         request.setAttribute("clinicName", app().clinicIdentity().get("clinic.name"));
         request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
         request.setAttribute("clinicEmail", app().clinicIdentity().get("clinic.email"));
         request.setAttribute("clinicAddress", app().clinicIdentity().get("clinic.address"));
+
+        // FR-RVW-11: aggregate ratings per dentist for the public landing page.
+        Map<String, RatingSummary> ratings = dentists.stream()
+                .collect(Collectors.toMap(
+                        DentistResponse::id,
+                        d -> app().reviewService().summaryFor(d.id())));
+        request.setAttribute("ratings", ratings);
+
         render(request, response, "access/home");
     }
 }

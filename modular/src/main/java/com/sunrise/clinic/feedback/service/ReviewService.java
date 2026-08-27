@@ -190,6 +190,14 @@ public class ReviewService {
         return reviews.summaryFor(dentistId);
     }
 
+    /**
+     * Public aggregate for one dentist - no auth required.
+     * Used by the landing page to show star ratings (FR-RVW-11).
+     */
+    public RatingSummary summaryFor(String dentistId) {
+        return reviews.summaryFor(dentistId);
+    }
+
     // --- the rules ----------------------------------------------------
 
     /**
