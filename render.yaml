@@ -1,12 +1,27 @@
-# Sunrise Dental Clinic — Render Blueprint.
+# Sunrise Dental Clinic — Render Blueprint (no-card, free-tier variant).
 #
 # Deploy in the Render dashboard: New > Blueprint > connect this repository.
-# Two services: the web app (Tomcat) and a private MySQL reachable only from
-# other services in the workspace at "sunrise-mysql:3306".
+# One service: the web app (Tomcat). The database is external — Aiven for
+# MySQL free tier — reached over TLS, so no private service, no disk, and
+# no payment method is required on either platform.
 #
 # The app reads DB_URL / DB_USER / DB_PASSWORD as environment variables and
 # overrides the clinic.properties defaults with them — no rebuild required.
-# Passwords must be set at first deploy; change them in the dashboard.
+#
+# Before deploying:
+#   1. Create the Aiven for MySQL service (free tier) and note the host,
+#      port, database name, user and password from the Aiven console.
+#   2. Load the schema once by hand (Aiven does not run init scripts):
+#        mysql --default-character-set=utf8mb4 \
+#          --host=<aiven-host> --port=<aiven-port> \
+#          --user=avnadmin --password=<pw> --ssl-mode=REQUIRED \
+#          defaultdb < modular/src/main/resources/schema.sql
+#      Then repeat for modular/src/main/resources/procedures.sql.
+#      Do NOT load demo-data.sql into a live deployment — every seeded
+#      account shares the published password Password123. Create real
+#      accounts instead (schema.sql is accounts-free).
+#   3. Replace the DB_URL / DB_USER placeholders below with the values from
+#      the Aiven console, and enter the password at first deploy.
 services:
   - type: web
     name: sunrise-clinic
@@ -16,26 +31,12 @@ services:
     autoDeploy: true
     envVars:
       - key: DB_URL
-        value: jdbc:mysql://sunrise-mysql:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+        value: jdbc:mysql://<aiven-host>:<aiven-port>/defaultdb?sslMode=REQUIRED&serverTimezone=UTC
       - key: DB_USER
-        value: clinic
+        value: avnadmin
       - key: DB_PASSWORD
         sync: false
-
-  - type: private
-    name: sunrise-mysql
-    runtime: docker
-    dockerfilePath: ./deploy/mysql/Dockerfile
-    disk:
-      name: data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-    envVars:
-      - key: MYSQL_DATABASE
-        value: sunrise_dental
-      - key: MYSQL_USER
-        value: clinic
-      - key: MYSQL_PASSWORD
-        sync: false
-      - key: MYSQL_ROOT_PASSWORD
-        sync: false
+      - key: DB_POOL_SIZE
+        value: "8"
+      - key: CLINIC_TIMEZONE
+        value: Asia/Colombo
