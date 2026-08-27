@@ -18,4 +18,15 @@ COPY --from=build /app/target/clinic.war /usr/local/tomcat/webapps/ROOT.war
 # shutdown scripts are not used inside a container.
 RUN sed -i 's/<Server port="8005" shutdown="SHUTDOWN">/<Server port="-1" shutdown="SHUTDOWN">/' \
     /usr/local/tomcat/conf/server.xml
+# mysql client so the entrypoint can seed the database at container start.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends default-mysql-client \
+    && rm -rf /var/lib/apt/lists/*
+COPY modular/src/main/resources/schema.sql /opt/app-db/schema.sql
+COPY modular/src/main/resources/procedures.sql /opt/app-db/procedures.sql
+COPY modular/src/main/resources/demo-data.sql /opt/app-db/demo-data.sql
+COPY deploy/app/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["catalina.sh", "run"]
 EXPOSE 8080
