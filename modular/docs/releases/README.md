@@ -31,11 +31,12 @@ that passed QA is reproducible forever. There are three kinds of tag:
 
 ### How production releases get their code
 
-`prod` must stay code-only. When a `qa_vX.Y.Z` candidate passes QA, its code is
-merged into `prod` (documentation excluded), the `vX.Y.Z` tag is placed on that
-code-only commit, and the tag is pushed. The `Release` workflow
+`prod` must stay code-only. A `qa_vX.Y.Z` candidate passes QA, its code is
+verified identical to what `prod` already ships, the `vX.Y.Z` tag is placed on
+the code-only `prod` tree, and the tag is pushed. The `Release` workflow
 (`.github/workflows/release.yml`) reacts to any `v*` tag: it builds the WAR and
-attaches it to the GitHub release with generated notes.
+attaches it to the GitHub release with generated notes. `prod` is never merged
+from `qa`/`dev` — see Step 4.
 
 ## Cutting a release — manual runbook
 
@@ -110,32 +111,32 @@ Version numbers on `dev`/`qa` tags are iteration counters, not release numbers:
 bump the patch number **every time** a candidate moves to QA, whether or not the
 previous one passed. Only when one of them is **green** do you cut the release.
 
-### Step 4 — merge the passing candidate into `prod`, code-only
+### Step 4 — verify prod carries the passing candidate, then release
 
-`prod` must stay code-only. After the green QA run, merge the passing candidate
-and then remove everything that is not part of the shipped product (docs and
-dev-only artifacts — they never go to `prod`). The removal list below is
-verified against the current repository layout; update it only if the layout
-changes.
+`prod` must stay code-only and is **never merged from `qa`/`dev`** — a merge only
+produces modify/delete conflicts on the files prod intentionally does not carry
+(workflows and documentation), and prod's deployable code is already identical to
+the candidate. Instead, verify that identity, then tag prod as it is.
 
 ```bash
 git checkout prod
 git pull --ff-only origin prod
-git merge --no-ff -m "Release vX.Y.Z: candidate qa_vX.Y.Z" qa_vX.Y.Z
-git rm -rq --ignore-unmatch \
-  docs frontend layered scripts UML .github \
-  README.md CHANGES.md CONTRIBUTING.md version.json \
-  .firebaserc firebase.json firestore.indexes.json firestore.rules \
-  modular/docs
-git commit -m "release(vX.Y.Z): keep prod code-only (drop docs and dev artifacts)"
+# prod must contain exactly: .gitignore, deploy, modular (incl. src/test), render.yaml
+git ls-tree --name-only HEAD
 ```
 
-Sanity-check that `prod` still holds exactly its shipped surface:
+Then check that every file prod ships is byte-identical to the passing candidate:
 
 ```bash
-git ls-tree --name-only HEAD        # expect: .gitignore, deploy, modular, render.yaml
-git ls-tree --name-only HEAD modular        # expect: pom.xml, src (incl. src/test)
+for f in $(git ls-tree -r HEAD --name-only); do
+  git diff --quiet qa_vX.Y.Z^{} HEAD -- "$f" || echo "DIFFERS: $f"
+done
+# no "DIFFERS" lines means prod === the passed candidate, code-wise
+git diff --quiet qa_vX.Y.Z^{} HEAD -- modular/src && echo "modular/src identical"
 ```
+
+If anything differs, stop and reconcile it on `dev` before releasing — never tag
+`prod` with code that did not pass QA.
 
 ### Step 5 — tag the production release and push
 
@@ -146,8 +147,9 @@ git push origin prod vX.Y.Z
 
 Pushing the tag runs the **Release** workflow (`.github/workflows/release.yml`):
 it builds `modular/`, runs the tests, and attaches `clinic.war` to the GitHub
-release with auto-generated notes. Pushing the branch deploys to Render
-automatically.
+release with auto-generated notes. Pushing a branch deploys to Render
+automatically (a plain `git push origin prod` when the code changed) — after a
+tag-only release the already-deployed code is unchanged, so no new deploy fires.
 
 ### Step 6 — record the release in the docs
 
