@@ -43,6 +43,8 @@ public class SelfRegistrationService {
 
     private static final int MIN_PASSWORD = 8;
     private static final String EMAIL_PATTERN = "[^@\\s]+@[^@\\s]+\\.[^@\\s]+";
+    private static final int MIN_PHONE_DIGITS = 7;
+    private static final String PHONE_PATTERN = "[0-9+()\\- ]+";
 
     private final UserAccountFactory accounts;
     private final PatientRepository patients;
@@ -84,7 +86,7 @@ public class SelfRegistrationService {
         String name = required(form.name(), "Your name");
         String email = validEmail(form.email());
         String password = requirePassword(form.password(), form.confirmPassword());
-        String contactNumber = trimToNull(form.contactNumber());
+        String contact = contactNumber(form.contactNumber());
         String address = trimToNull(form.address());
         LocalDate dob = parseDob(form.dob());
 
@@ -100,7 +102,7 @@ public class SelfRegistrationService {
                     .userUid(account.getUid())
                     .name(name)
                     .email(email)
-                    .contactNumber(contactNumber)
+                    .contactNumber(contact)
                     .address(address)
                     .dob(dob)
                     .build();
@@ -131,6 +133,22 @@ public class SelfRegistrationService {
         String trimmed = required(email, "Your email address").toLowerCase();
         if (!trimmed.matches(EMAIL_PATTERN)) {
             throw new IllegalArgumentException("That does not look like an email address.");
+        }
+        return trimmed;
+    }
+
+    private static String contactNumber(String value) {
+        String trimmed = trimToNull(value);
+        if (trimmed == null) {
+            return null;
+        }
+        if (!trimmed.matches(PHONE_PATTERN)) {
+            throw new IllegalArgumentException(
+                    "The contact number can contain digits with + ( ) and - only. No letters.");
+        }
+        if (trimmed.replaceAll("[^0-9]", "").length() < MIN_PHONE_DIGITS) {
+            throw new IllegalArgumentException(
+                    "The contact number needs at least " + MIN_PHONE_DIGITS + " digits.");
         }
         return trimmed;
     }

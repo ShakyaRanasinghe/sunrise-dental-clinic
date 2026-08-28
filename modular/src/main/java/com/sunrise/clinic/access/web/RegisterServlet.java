@@ -34,23 +34,39 @@ public class RegisterServlet extends PageServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         page(request, response, () -> {
-            SelfRegistrationService.Registered registered = app().selfRegistrationService()
-                    .register(new SelfRegistrationService.Registration(
-                            field(request, "name"),
-                            field(request, "email"),
-                            field(request, "password"),
-                            field(request, "confirmPassword"),
-                            // Optional, all three. The service says why.
-                            field(request, "contactNumber"),
-                            field(request, "address"),
-                            field(request, "dob")));
-
-            // Sign them straight in — asking somebody to log in immediately after typing their
-            // password is friction with no security benefit.
-            UserAccount account = registered.account();
-            AuthenticationFilter.establishSession(request, new ClinicPrincipal(
-                    account.getUid(), account.getDisplayName(), account.getRole()));
-            redirect(request, response, AuthenticationFilter.homeFor(account.getRole()));
+            try {
+                registerAndSignIn(request, response);
+            } catch (IllegalArgumentException problem) {
+                // Something the person can fix by retyping. Re-render the form
+                // with the reason above the fields and everything they already
+                // typed still in place — the view re-reads the submitted request
+                // parameters — so a correction is one change, not a full retype,
+                // and a request with invalid values is never accepted. Any other
+                // failure keeps page()'s ordinary handling below.
+                request.setAttribute("error", problem.getMessage());
+                render(request, response, "access/register");
+            }
         });
+    }
+
+    private void registerAndSignIn(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        SelfRegistrationService.Registered registered = app().selfRegistrationService()
+                .register(new SelfRegistrationService.Registration(
+                        field(request, "name"),
+                        field(request, "email"),
+                        field(request, "password"),
+                        field(request, "confirmPassword"),
+                        // Optional, all three. The service says why.
+                        field(request, "contactNumber"),
+                        field(request, "address"),
+                        field(request, "dob")));
+
+        // Sign them straight in — asking somebody to log in immediately after typing
+        // their password is friction with no security benefit.
+        UserAccount account = registered.account();
+        AuthenticationFilter.establishSession(request, new ClinicPrincipal(
+                account.getUid(), account.getDisplayName(), account.getRole()));
+        redirect(request, response, AuthenticationFilter.homeFor(account.getRole()));
     }
 }

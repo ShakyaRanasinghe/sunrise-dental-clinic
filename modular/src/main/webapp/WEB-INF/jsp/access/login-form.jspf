@@ -23,7 +23,27 @@
     </div>
     <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" autocomplete="off">
+        <div class="pw-wrap">
+            <input type="password" id="password" name="password" autocomplete="off"
+                   class="pw-field">
+            <button type="button" class="pw-toggle" data-password-toggle data-for="password"
+                    aria-controls="password" aria-pressed="false"
+                    aria-label="Show password" title="Show password">
+                <svg class="eye-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+            </button>
+        </div>
     </div>
     <div class="form-actions">
         <button type="submit" class="btn" style="width:100%">Sign in</button>
@@ -33,3 +53,30 @@
 <c:if test="${allowsSelfRegistration}">
     <div class="alt">New patient? <a href="${ctx}/register">Create an account</a></div>
 </c:if>
+
+<%--
+    Same eye-icon toggle as the registration form (register.jsp). Kept next to
+    the field it governs on the two screens where a password is typed for
+    re-use. It only flips input[type] and the icon; a browser with no
+    JavaScript keeps the field as password, the secure default.
+--%>
+<script>
+(function () {
+    var toggles = document.querySelectorAll('[data-password-toggle]');
+    toggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            var field = document.getElementById(toggle.getAttribute('data-for'));
+            if (!field) {
+                return;
+            }
+            var showing = field.type === 'text';
+            field.type = showing ? 'password' : 'text';
+            toggle.classList.toggle('is-visible', !showing);
+            toggle.setAttribute('aria-pressed', showing ? 'false' : 'true');
+            toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+            toggle.setAttribute('title', showing ? 'Show password' : 'Hide password');
+            field.focus();
+        });
+    });
+})();
+</script>

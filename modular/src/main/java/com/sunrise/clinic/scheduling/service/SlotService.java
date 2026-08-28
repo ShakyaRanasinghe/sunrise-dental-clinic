@@ -210,6 +210,62 @@ public class SlotService {
     }
 
     /**
+     * Patient-facing availability overview: each active dentist with the dates they have
+     * open slots in the next {@code days} days, grouped by dentist then date.
+     *
+     * <p>Used by the booking page so a patient can browse "when is Dr. Silva available"
+     * without guessing dates one by one. Clicking a date pre-selects that dentist and
+     * date in the booking form.</p>
+     *
+     * @param days how many days ahead to look (default 14)
+     */
+    public List<DentistAvailabilitySummary> patientAvailabilityOverview(int days) {
+        LocalDate from = LocalDate.now();
+        LocalDate to = from.plusDays(days);
+        List<SlotResponse> open = openSlotsBetween(from, to);
+
+        // Group by dentist
+        Map<String, List<SlotResponse>> byDentist = open.stream()
+                .collect(Collectors.groupingBy(SlotResponse::dentistId));
+
+        List<DentistAvailabilitySummary> result = new ArrayList<>();
+        for (Map.Entry<String, List<SlotResponse>> entry : byDentist.entrySet()) {
+            String dentistId = entry.getKey();
+            List<SlotResponse> dentistSlots = entry.getValue();
+            String dentistName = dentistSlots.get(0).dentistName();
+            Dentist dentist = reference.requireDentist(dentistId);
+
+            // Group by date
+            Map<LocalDate, List<SlotResponse>> byDate = dentistSlots.stream()
+                    .collect(Collectors.groupingBy(SlotResponse::date));
+
+            List<DateAvailability> dates = byDate.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(e -> new DateAvailability(e.getKey(), e.getValue().size()))
+                    .toList();
+
+            result.add(new DentistAvailabilitySummary(
+                    dentistId, dentistName, dentist.getSpecialization(),
+                    dentist.getConsultationFee(), dates));
+        }
+
+        return result;
+    }
+
+    /** One dentist's availability in the overview: who they are, and which dates have open slots. */
+    public record DentistAvailabilitySummary(
+            String dentistId,
+            String dentistName,
+            String specialization,
+            java.math.BigDecimal consultationFee,
+            List<DateAvailability> dates) {
+    }
+
+    /** A single date in the overview: the date and how many open slots remain. */
+    public record DateAvailability(LocalDate date, int openSlotCount) {
+    }
+
+    /**
      * All published sessions from today onwards, with dentist names resolved.
      * Used by the availability overview so reception sees the full diary at a glance.
      */

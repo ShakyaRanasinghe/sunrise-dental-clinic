@@ -75,7 +75,7 @@
                 <a href="${ctx}/help">Help</a>
             </nav>
             <div class="who">
-                <a class="btn small secondary" href="${ctx}/login">Sign in</a>
+                <a class="btn small secondary" href="${ctx}/login/patient">Sign in</a>
                 <a class="btn small" href="${ctx}/register">Register</a>
             </div>
         </div>

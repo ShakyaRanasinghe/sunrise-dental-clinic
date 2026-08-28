@@ -21,20 +21,64 @@
         <form method="post" action="${ctx}/register">
             <div class="field">
                 <label for="name">Full name</label>
-                <input type="text" id="name" name="name" value="<c:out value='${param.name}' />" autofocus>
+                <input type="text" id="name" name="name" value="<c:out value='${param.name}' />"
+                       required minlength="2" maxlength="255" autofocus>
             </div>
             <div class="field">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<c:out value='${param.email}' />">
+                <input type="email" id="email" name="email" value="<c:out value='${param.email}' />"
+                       required>
             </div>
             <div class="field">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password">
+                <div class="pw-wrap">
+                    <input type="password" id="password" name="password"
+                           class="pw-field" autocomplete="new-password"
+                           required minlength="8">
+                    <button type="button" class="pw-toggle" data-password-toggle data-for="password"
+                            aria-controls="password" aria-pressed="false"
+                            aria-label="Show password" title="Show password">
+                        <svg class="eye-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="page-subtitle">At least 8 characters.</div>
             </div>
             <div class="field">
                 <label for="confirmPassword">Confirm password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword">
+                <div class="pw-wrap">
+                    <input type="password" id="confirmPassword" name="confirmPassword"
+                           class="pw-field" autocomplete="new-password" required>
+                    <button type="button" class="pw-toggle" data-password-toggle
+                            data-for="confirmPassword"
+                            aria-controls="confirmPassword" aria-pressed="false"
+                            aria-label="Show password" title="Show password">
+                        <svg class="eye-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <%--
@@ -52,7 +96,9 @@
                     Contact number <span class="page-subtitle">(optional)</span>
                 </label>
                 <input type="tel" id="contactNumber" name="contactNumber"
-                       value="<c:out value='${param.contactNumber}' />">
+                       value="<c:out value='${param.contactNumber}' />"
+                       pattern="[0-9+() -]+" maxlength="20"
+                       title="Digits, with + ( ) and - allowed — no letters.">
                 <div class="page-subtitle">So the clinic can reach you about an appointment.</div>
             </div>
             <div class="form-row">
@@ -79,4 +125,51 @@
 
     <div class="alt">Already registered? <a href="${ctx}/login/patient">Sign in</a></div>
 </div>
+
+<%--
+    Eye-icon toggle inside each password field. The app is otherwise
+    server-rendered with no script of its own; this is the one place a
+    form gains an in-page behaviour, kept tiny and safe: it only flips
+    input[type] and swaps which eye icon is shown, it never touches the
+    values, and a browser with no JavaScript simply keeps the fields as
+    password type, which is the secure default.
+--%>
+<script>
+(function () {
+    var toggles = document.querySelectorAll('[data-password-toggle]');
+    toggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            var field = document.getElementById(toggle.getAttribute('data-for'));
+            if (!field) {
+                return;
+            }
+            var showing = field.type === 'text';
+            field.type = showing ? 'password' : 'text';
+            toggle.classList.toggle('is-visible', !showing);
+            toggle.setAttribute('aria-pressed', showing ? 'false' : 'true');
+            toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+            toggle.setAttribute('title', showing ? 'Show password' : 'Hide password');
+            field.focus();
+        });
+    });
+
+    // The one rule HTML5 cannot express natively: the confirmation must equal
+    // the password. Reported on the confirm field, before any submit, so the
+    // browser blocks and points at the right control. Server-side still enforces
+    // the same rule - this only saves the round trip.
+    var password = document.getElementById('password');
+    var confirm = document.getElementById('confirmPassword');
+    var checkMatch = function () {
+        if (confirm && password && confirm.value && confirm.value !== password.value) {
+            confirm.setCustomValidity('The two passwords do not match.');
+        } else if (confirm) {
+            confirm.setCustomValidity('');
+        }
+    };
+    if (password && confirm) {
+        password.addEventListener('input', checkMatch);
+        confirm.addEventListener('input', checkMatch);
+    }
+})();
+</script>
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>

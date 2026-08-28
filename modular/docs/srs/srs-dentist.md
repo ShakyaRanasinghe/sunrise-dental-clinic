@@ -145,6 +145,7 @@ order:
 | **FR-DEN-32** | Completion must be what makes an appointment billable by reception (FR-REC-55) | Built |
 | **FR-DEN-33** | Completion must record actor, role and time in the audit trail | Built |
 | **FR-DEN-34** | Completion should be possible without a diagnosis, since some visits produce none — but the dentist must be warned before proceeding | **Specified** — the form requires a diagnosis. A "should", and arguably wrong to relax: an appointment marked treated with nothing recorded is what the no-show derivation reads as an absence |
+| **FR-DEN-35** | Only an appointment whose date has arrived (today or earlier) may be completed. A future appointment must refuse completion whatever its status, since no treatment has happened and billing must not run ahead of the visit | **Built** — `AppointmentService.complete` refuses when `appointment.date` is after today; the schedule no longer offers "Record and complete" for a future appointment (GAP-DEN-06) |
 
 ---
 
@@ -190,6 +191,7 @@ compromised account exposes.
 | Date | Required, valid date | "Choose a date." |
 | Diagnosis | Optional, at most 4,000 characters | "The note is too long — please shorten it." |
 | Appointment | Must exist and belong to the signed-in dentist | "That appointment is not on your schedule." |
+| Appointment date | Completion refused for a future date (FR-DEN-35) | "…is scheduled for <date>. Treatment can only be recorded on the day of the appointment." |
 | Status change | Target must be reachable from the current status | "This appointment has already been completed." |
 
 ---
@@ -223,6 +225,7 @@ patient id, but the service rejects any patient the caller is not treating.
 | Patient has declared no notes | Explicit "nothing declared" line, never an empty panel (**FR-DEN-43**) |
 | Account has role `DENTIST` but no `dentist` profile row | Clear message naming the configuration fault, not an empty schedule |
 | Appointment already completed | Refused, stating the current status |
+| Appointment scheduled for a future date | Refused — treatment can only be recorded on the day of the appointment (**FR-DEN-35**) |
 | Diagnosis submitted after the session expired | Redirect to `/login/dentist`; the note is **not** saved, which FR-DEN-24-length notes make costly — a draft-preserving redirect is worth specifying |
 | Database unavailable | Plain apology page; no stack trace, no SQL text |
 
@@ -239,6 +242,8 @@ Gaps found during QA on the `develop` branch.
 | **GAP-DEN-03** | FR-DEN-46: note's last-updated date not shown on the appointment detail screen | Not yet addressed | **Open** |
 | **GAP-DEN-04** | FR-DEN-60: dentist has no screen showing their own mean rating and review count — the API endpoint exists but is not surfaced | Not yet addressed | **Open** |
 | **GAP-DEN-05** | FR-DEN-18: reception publishes availability for a dentist but the dentist has no screen showing what was published — they can only see already-booked appointments, not the open windows patients can still book | Availability screen at `/dentist/availability`: published sessions filtered to future dates, grouped by date, each with open/booked slot counts (`SlotService.publishedFor`, `SlotService.allSlots`) | **Fixed** |
+| **GAP-DEN-06** | FR-DEN-35: patients may book future dates, but nothing stopped a dentist completing such an appointment early. A completed-but-unborn appointment became billable before the visit — a diagnosis written for a consultation that never happened, and a day's billing screen that could show a charge before the patient had sat down | `AppointmentService.complete` refuses when `appointment.date` is after today; the schedule shows "Scheduled for <date>…" instead of offering "Record and complete" for a future appointment (`dentist-schedule.jsp`, rule covered by `futureAppointmentCannotBeCompleted` test) | **Fixed** |
+| **GAP-DEN-07** | A dentist has no profile at all. The role's only screens are Schedule, Availability and Help — there is no `/dentist/profile`, so a dentist cannot set a photo (nor manage how their name and specialisation appear). Paired with GAP-PAT-13: the "Our dentists" cards have nothing to show because nothing can be uploaded | **Specified — not yet built.** Plan: a `/dentist/profile` page (noted in `DentistPolicy.ownNavigation()`) with a multipart photo upload on `@MultipartConfig`. The bytes are validated and re-encoded server-side — content type must be `image/jpeg|png|webp`, size capped, and the image centre-cropped to a fixed square (256×256) with `javax.imageio` before storing — then saved with `avatar MEDIUMBLOB` + `avatar_type` columns on the `dentist` table (added to `schema.sql` and an idempotent `ALTER` in the container seeder for existing databases). Storage is in MySQL, not on disk: Render's free filesystem is ephemeral and would lose photos on every redeploy. The same byte row feeds GAP-PAT-13's `/api/dentists/{id}/photo` endpoint | **Open** |
 
 ---
 
