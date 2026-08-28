@@ -1,0 +1,55 @@
+@startuml use_case_reception_register
+' Sunrise Dental Clinic - Use Case Diagram: Receptionist - register and availability
+' Source of truth: modular/docs/use-case-diagram.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 18
+skinparam ranksep 70
+skinparam usecase {
+  BackgroundColor #FDF3EC
+  BorderColor #C2571A
+  ArrowColor #52606D
+}
+
+left to right direction
+' invisible title: reserves top margin so an actor at the
+' upper edge is not clipped by the render bounds
+title <color:#FFFFFF>.\n.</color>
+
+actor "Receptionist" as RC
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Sign In" as UC_LOGIN
+  usecase "Authenticate\nCredentials" as UC_AUTH
+  usecase "Search Patient\nRegister" as UC_SEARCH
+  usecase "Register Walk-In" as UC_WALKIN
+  usecase "Validate Patient\nDetails" as UC_VPAT
+  usecase "Warn On Duplicate\nContact Number" as UC_DUP
+  usecase "Correct Patient\nDetails" as UC_FIX
+  usecase "Publish Availability" as UC_PUB
+  usecase "Generate Slots" as UC_GEN
+  usecase "Reject Overlapping\nSession" as UC_OVER
+}
+
+RC --> UC_LOGIN
+RC --> UC_SEARCH
+RC --> UC_WALKIN
+RC --> UC_FIX
+RC --> UC_PUB
+
+UC_LOGIN  ..> UC_AUTH : <<include>>
+UC_WALKIN ..> UC_VPAT : <<include>>
+UC_WALKIN ..> UC_DUP  : <<include>>
+UC_PUB    ..> UC_GEN  : <<include>>
+UC_PUB    ..> UC_OVER : <<include>>
+
+note bottom of UC_WALKIN
+  Creates a patient record, not
+  an account. The patient may
+  register for a login themselves.
+end note
+@enduml

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Complaints — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">PATIENT SCREEN</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /patient/complaints</span>
+  <span>&rarr; complaints/patient-complaints.jsp</span>
+</div>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="home.html">Sunrise <span>Dental</span></a>
+    <nav class="site-nav">
+        <a href="home.html">My appointments</a>
+        <a href="book.html">Book</a>
+        <a href="profile.html">My profile</a>
+        <a href="complaints.html" class="active">Concerns</a>
+        <a href="../shared/help.html">Help</a>
+    </nav>
+    <div class="who">
+      Nimal Perera <span class="role-tag">PATIENT</span>
+      <a class="btn small secondary"
+         href="../access/portal-chooser.html">Sign out</a>
+    </div>
+  </div>
+</header>
+<main>
+
+<h1 class="page-title">Raise a concern</h1>
+<p class="page-subtitle">Tell the clinic about a problem with your care.</p>
+
+<div class="card">
+  <h2>New concern</h2>
+  <div class="notice info">This goes to the clinic administrator. The dentist you name will
+    not see it, and it will not affect your appointments or your care. Tell us what happened,
+    with dates if you remember them.</div>
+  <div class="form-row">
+    <div class="field"><label>Which dentist?</label>
+      <select>
+        <option>Dr. Ranil Silva &mdash; treated you 1 Sep 2026</option>
+        <option>Dr. Ranil Silva &mdash; treated you 14 Jul 2026</option>
+      </select>
+      <div class="page-subtitle">Only dentists who have treated you are listed.</div>
+    </div>
+    <div class="field"><label>What is this about?</label>
+      <select>
+        <option>Conduct</option>
+        <option>A concern about my treatment</option>
+        <option>Waiting time</option>
+        <option>A charge on my bill</option>
+        <option>Something else</option>
+      </select></div>
+  </div>
+  <div class="field"><label>Which appointment? <span class="page-subtitle">(optional)</span></label>
+    <select>
+      <option>Not about a specific appointment</option>
+      <option>APT-20260901-0001 &mdash; 1 Sep 2026, 09:00</option>
+      <option>APT-20260714-0003 &mdash; 14 Jul 2026, 10:30</option>
+    </select></div>
+  <div class="field"><label>What happened?</label>
+    <textarea rows="5" placeholder="Please describe what happened&hellip;"></textarea>
+    <div class="page-subtitle">At least a couple of sentences, so the clinic can look into it.</div></div>
+  <div class="form-actions"><button class="btn">Submit concern</button></div>
+</div>
+
+<div class="card">
+  <h2>Concerns you have raised <span class="count">2</span></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Raised</th><th>About</th><th>Dentist</th><th>State</th></tr></thead>
+      <tbody>
+        <tr><td>2 Sep 2026</td><td>Conduct</td><td>Dr. Ranil Silva</td>
+            <td><span class="pill review">Under review</span></td></tr>
+        <tr><td>18 Jul 2026</td><td>Waiting time</td><td>Dr. Malini Jayasuriya</td>
+            <td><span class="pill resolved">Resolved</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notice success"><strong>Resolved 22 Jul 2026.</strong> Afternoon clinics have
+    been re-scheduled with longer gaps. Thank you for telling us.</div>
+  <p class="page-subtitle">A concern cannot be changed or withdrawn once submitted.</p>
+</div>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>

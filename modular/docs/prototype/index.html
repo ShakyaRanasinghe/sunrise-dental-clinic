@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI prototype — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">INDEX</span>
+  <a href="index.html">All screens</a>
+  <span>prototype</span>
+  <span>&rarr; contact sheet</span>
+</div>
+<main>
+  <h1 class="page-title">UI prototype</h1>
+  <p class="page-subtitle">Eighteen static screens, grouped by whose dashboard they are.
+    Same stylesheet the application uses, so a screen here is what a JSP will render.
+    Nothing is wired up &mdash; forms do not submit and no data is real.</p>
+
+  <div class="card">
+    <h2>access/ &mdash; everyone <span class="count">6</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Sign-in, shared by all four roles</p>
+    <div class="sheet">
+      <a href="access/portal-chooser.html"><div class="route">GET /login</div><div class="desc">The four doors</div></a>
+      <a href="access/login-patient.html"><div class="route">GET /login/patient</div><div class="desc">Patient portal</div></a>
+      <a href="access/login-reception.html"><div class="route">GET /login/reception</div><div class="desc">Reception portal</div></a>
+      <a href="access/login-dentist.html"><div class="route">GET /login/dentist</div><div class="desc">Dentist portal</div></a>
+      <a href="access/login-admin.html"><div class="route">GET /login/admin</div><div class="desc">Administrator portal — not linked publicly</div></a>
+      <a href="access/register.html"><div class="route">GET /register</div><div class="desc">Patient self-registration</div></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>patient/ &mdash; the patient's dashboard <span class="count">4</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Nimal Perera · role PATIENT</p>
+    <div class="sheet">
+      <a href="patient/home.html"><div class="route">GET /patient/home</div><div class="desc">My appointments and past visits</div></a>
+      <a href="patient/book.html"><div class="route">GET /patient/book</div><div class="desc">Three-step booking</div></a>
+      <a href="patient/profile.html"><div class="route">GET /patient/profile</div><div class="desc">Contact details and medical notes</div></a>
+      <a href="patient/complaints.html"><div class="route">GET /patient/complaints</div><div class="desc">Raise a concern about a dentist</div></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>reception/ &mdash; the front desk <span class="count">4</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Kumari Silva · role RECEPTIONIST</p>
+    <div class="sheet">
+      <a href="reception/day.html"><div class="route">GET /reception/home</div><div class="desc">The day's appointments</div></a>
+      <a href="reception/patients.html"><div class="route">GET /reception/patients</div><div class="desc">Register: search and walk-in</div></a>
+      <a href="reception/availability.html"><div class="route">GET /reception/availability</div><div class="desc">Publish a dentist's session</div></a>
+      <a href="reception/billing.html"><div class="route">GET /reception/billing</div><div class="desc">Look up, issue, print</div></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>dentist/ &mdash; the treating clinician <span class="count">1</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Dr. Ranil Silva · role DENTIST</p>
+    <div class="sheet">
+      <a href="dentist/schedule.html"><div class="route">GET /dentist/schedule</div><div class="desc">Own schedule, patient notes, diagnosis</div></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>admin/ &mdash; clinic management <span class="count">3</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Anoma Fernando · role ADMIN</p>
+    <div class="sheet">
+      <a href="admin/reports.html"><div class="route">GET /admin/reports</div><div class="desc">Income, split, footfall</div></a>
+      <a href="admin/accounts.html"><div class="route">GET /admin/accounts</div><div class="desc">Create staff; unlock or deactivate anyone</div></a>
+      <a href="admin/complaints.html"><div class="route">GET /admin/complaints</div><div class="desc">Review and resolve concerns</div></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>shared/ &mdash; no sign-in <span class="count">1</span></h2>
+    <p class="page-subtitle" style="margin-top:-6px">Reachable by anyone</p>
+    <div class="sheet">
+      <a href="shared/help.html"><div class="route">GET /help</div><div class="desc">Step-by-step guidance</div></a>
+    </div>
+  </div>
+</main>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>

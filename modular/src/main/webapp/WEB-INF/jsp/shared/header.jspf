@@ -1,0 +1,84 @@
+<%--
+    Shared page header: brand, role-appropriate navigation, signed-in user.
+    Included by every page, so the navigation is defined once.
+
+    Every value written out uses <c:out>, which escapes HTML. A patient whose
+    name contained a tag would otherwise have it interpreted as markup - the
+    classic stored cross-site scripting hole.
+--%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="user" value="${requestScope.currentUser}" />
+<%--
+    The doctype must be the very first thing the browser receives. Without it
+    every page renders in quirks mode, where the box model differs and the
+    stylesheet's widths and paddings are computed against the wrong rules.
+    trimDirectiveWhitespaces in web.xml is what keeps it on line 1 - directives
+    and comments each leave their trailing newline in the output otherwise, and
+    nine blank lines preceded this tag.
+--%>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><c:out value="${empty pageTitle ? 'Sunrise Dental Clinic' : pageTitle}" /> &mdash; Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="${ctx}/css/app.css">
+</head>
+<body>
+<c:if test="${not empty user}">
+    <header class="site-header">
+        <div class="bar">
+            <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
+            <%--
+                The role declares its own navigation - see RolePolicy.navigation().
+                The alternative is a chain of role tests here, which is a switch on
+                role written in the least testable file in the project, edited every
+                time any module adds a screen.
+            --%>
+            <%--
+                NavItem is a record, and Jakarta EL 5.0 resolves a property by looking
+                for getPath(); it does not understand a record's path(). Calling the
+                accessor as a method works and needs no getter boilerplate on every
+                response record - the same syntax user.policy() already uses.
+            --%>
+            <c:set var="here" value="${pageContext.request.requestURI}" />
+            <nav class="site-nav">
+                <c:forEach var="item" items="${user.policy().navigation()}">
+                    <a href="${ctx}${item.path()}"
+                       <c:if test="${here eq ctx.concat(item.path())}">class="active"</c:if>><c:out
+                       value="${item.label()}" /></a>
+                </c:forEach>
+            </nav>
+            <div class="who">
+                <c:out value="${user.displayName}" />
+                <span class="role-tag"><c:out value="${user.role}" /></span>
+                <form method="post" action="${ctx}/logout" style="display:inline">
+                    <button type="submit" class="btn small secondary">Sign out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+</c:if>
+<%--
+    The same bar for a visitor without an account: the clinic's sections instead of
+    role screens, and the two doors that exist before you have an account. Every
+    public page picks it up, so "how do I sign in?" has one permanent answer.
+--%>
+<c:if test="${empty user}">
+    <header class="site-header">
+        <div class="bar">
+            <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
+            <nav class="site-nav">
+                <a href="${ctx}/#services">Services</a>
+                <a href="${ctx}/#dentists">Dentists</a>
+                <a href="${ctx}/#contact">Contact</a>
+                <a href="${ctx}/help">Help</a>
+            </nav>
+            <div class="who">
+                <a class="btn small secondary" href="${ctx}/login/patient">Sign in</a>
+                <a class="btn small" href="${ctx}/register">Register</a>
+            </div>
+        </div>
+    </header>
+</c:if>
+<main>

@@ -1,0 +1,71 @@
+%% Sunrise Dental Clinic - class design: 5-billing-notifications
+%% Source of truth: modular/docs/class-diagram.md
+
+classDiagram
+    direction TB
+
+    namespace billing_service {
+        class BillingService {
+            -bills : BillRepository
+            -appointments : AppointmentRepository
+            -pricing : BillingStrategy
+            -split : RevenueSplitStrategy
+            -serviceCharge : double
+            +generateBill(no, issuedByUid) Bill
+            +findForAppointment(no) Optional~Bill~
+        }
+        class BillingStrategy {
+            <<interface>>
+            +calculate(fee, cost, charge)* BillBreakdown
+        }
+        class StandardBillingStrategy {
+            +calculate(fee, cost, charge) BillBreakdown
+        }
+        class RevenueSplitStrategy {
+            <<interface>>
+            +split(breakdown)* RevenueSplit
+        }
+        class DefaultRevenueSplitStrategy {
+            -dentistShare : double
+            +split(breakdown) RevenueSplit
+        }
+    }
+
+    namespace notifications_service {
+        class NotificationObserver {
+            -factory : NotificationChannelFactory
+            -notifications : NotificationRepository
+            +onAppointmentEvent(event) void
+        }
+        class NotificationChannelFactory {
+            +channelFor(type) NotificationChannel
+        }
+        class NotificationChannel {
+            <<interface>>
+            +send(recipient, subject, body)* DispatchResult
+        }
+        class EmailChannel {
+            -from : String
+            +send(recipient, subject, body) DispatchResult
+        }
+        class SmsChannel {
+            -gatewayUrl : String
+            +send(recipient, subject, body) DispatchResult
+        }
+        class DispatchResult {
+            <<record>>
+            +status : NotificationStatus
+            +detail : String
+        }
+    }
+
+    BillingService --> "1" BillingStrategy : prices with
+    BillingService --> "1" RevenueSplitStrategy : divides with
+    BillingStrategy <|.. StandardBillingStrategy
+    RevenueSplitStrategy <|.. DefaultRevenueSplitStrategy
+
+    NotificationObserver --> "1" NotificationChannelFactory
+    NotificationChannelFactory ..> NotificationChannel : creates
+    NotificationChannel <|.. EmailChannel
+    NotificationChannel <|.. SmsChannel
+    NotificationChannel ..> DispatchResult

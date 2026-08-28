@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reports — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">ADMIN SCREEN</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /admin/reports</span>
+  <span>&rarr; reporting/reports.jsp</span>
+</div>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="reports.html">Sunrise <span>Dental</span></a>
+    <nav class="site-nav">
+        <a href="reports.html" class="active">Reports</a>
+        <a href="accounts.html">Accounts</a>
+        <a href="complaints.html">Complaints</a>
+        <a href="../shared/help.html">Help</a>
+    </nav>
+    <div class="who">
+      Anoma Fernando <span class="role-tag">ADMIN</span>
+      <a class="btn small secondary"
+         href="../access/portal-chooser.html">Sign out</a>
+    </div>
+  </div>
+</header>
+<main>
+
+<h1 class="page-title">Clinic reports</h1>
+<p class="page-subtitle">Income, revenue split and footfall for the selected period.</p>
+
+<div class="card">
+  <div class="form-row">
+    <div class="field"><label>From</label><input type="date" value="2026-08-01"></div>
+    <div class="field"><label>To</label><input type="date" value="2026-08-31"></div>
+    <div class="field" style="align-self:end">
+      <button class="btn">Apply</button>
+      <button class="btn secondary">Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid stats">
+  <div class="stat"><div class="label">Gross takings</div><div class="value money">184,600.00</div></div>
+  <div class="stat"><div class="label">Bills issued</div><div class="value">37</div></div>
+  <div class="stat"><div class="label">Patients seen</div><div class="value">31</div></div>
+  <div class="stat"><div class="label">No-show rate</div><div class="value">8%</div></div>
+</div>
+
+<div class="card">
+  <h2>Where the money went</h2>
+  <div class="grid stats">
+    <div class="stat"><div class="label">Dentists</div><div class="value money">102,300.00</div></div>
+    <div class="stat"><div class="label">Clinic</div><div class="value money">74,900.00</div></div>
+    <div class="stat"><div class="label">Reception</div><div class="value money">7,400.00</div></div>
+  </div>
+  <p class="page-subtitle"><strong>Supports:</strong> fee negotiation and how much the clinic
+    retains for materials and facilities.</p>
+</div>
+
+<div class="grid two">
+  <div class="card">
+    <h2>Earnings by dentist</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dentist</th><th>Appointments</th><th>Earned</th><th>Rating</th><th>Concerns</th></tr></thead>
+        <tbody>
+          <tr><td>Dr. Ranil Silva</td><td>23</td><td>Rs 61,400.00</td><td>4.4 <span class="page-subtitle">(37)</span></td><td>1</td></tr>
+          <tr><td>Dr. Malini Jayasuriya</td><td>14</td><td>Rs 40,900.00</td><td>3.9 <span class="page-subtitle">(21)</span></td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="page-subtitle"><strong>Supports:</strong> rostering, retention, and spotting a
+      dentist earning well on a falling rating. The Concerns column is a count only &mdash; read
+      them under <a href="complaints.html">Complaints</a>. Dentists see their own rating average
+      but never an individual review.</p>
+  </div>
+  <div class="card">
+    <h2>Footfall</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Week</th><th>Attended</th><th>No-shows</th></tr></thead>
+        <tbody>
+          <tr><td>3&ndash;9 Aug</td><td>9</td><td>1</td></tr>
+          <tr><td>10&ndash;16 Aug</td><td>11</td><td>0</td></tr>
+          <tr><td>17&ndash;23 Aug</td><td>7</td><td>2</td></tr>
+          <tr><td>24&ndash;31 Aug</td><td>4</td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="page-subtitle"><strong>Supports:</strong> staffing levels and opening hours.</p>
+  </div>
+</div>
+
+<div class="notice">Account locking and deactivation are on the
+  <a href="accounts.html">Accounts</a> screen, not here.</div>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>

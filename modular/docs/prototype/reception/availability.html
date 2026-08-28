@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Availability — Sunrise Dental Clinic</title>
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span class="tag">RECEPTION SCREEN</span>
+  <a href="../index.html">All screens</a>
+  <span>GET /reception/availability</span>
+  <span>&rarr; scheduling/availability.jsp</span>
+</div>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="day.html">Sunrise <span>Dental</span></a>
+    <nav class="site-nav">
+        <a href="day.html">Today</a>
+        <a href="../patient/book.html">Book</a>
+        <a href="availability.html" class="active">Availability</a>
+        <a href="patients.html">Patients</a>
+        <a href="billing.html">Billing</a>
+        <a href="../shared/help.html">Help</a>
+    </nav>
+    <div class="who">
+      Kumari Silva <span class="role-tag">RECEPTIONIST</span>
+      <a class="btn small secondary"
+         href="../access/portal-chooser.html">Sign out</a>
+    </div>
+  </div>
+</header>
+<main>
+
+<h1 class="page-title">Publish availability</h1>
+<p class="page-subtitle">Set the hours a dentist works; the bookable times are generated for you.</p>
+
+<div class="card">
+  <h2>New session</h2>
+  <div class="form-row">
+    <div class="field"><label>Dentist</label>
+      <select><option>Dr. Ranil Silva</option><option>Dr. Malini Jayasuriya</option></select></div>
+    <div class="field"><label>Date</label><input type="date" value="2026-09-02"></div>
+  </div>
+  <div class="form-row">
+    <div class="field"><label>From</label><input type="time" value="09:00"></div>
+    <div class="field"><label>To</label><input type="time" value="12:00"></div>
+    <div class="field"><label>Each appointment</label>
+      <select><option>30 minutes</option><option>20 minutes</option><option>45 minutes</option></select></div>
+  </div>
+  <div class="notice info">09:00 to 12:00 in 30-minute appointments will create
+    <strong>6 bookable times</strong>.</div>
+  <div class="form-actions"><button class="btn">Publish</button></div>
+</div>
+
+<div class="card">
+  <h2>Published <span class="count">Dr. Silva, 2 Sep 2026</span></h2>
+  <div class="slots">
+    <div class="slot"><input type="checkbox" id="p1" checked disabled><label for="p1">09:00</label></div>
+    <div class="slot"><input type="checkbox" id="p2" checked disabled><label for="p2">09:30</label></div>
+    <div class="slot"><input type="checkbox" id="p3" disabled><label for="p3">10:00</label></div>
+    <div class="slot"><input type="checkbox" id="p4" disabled><label for="p4">10:30</label></div>
+    <div class="slot"><input type="checkbox" id="p5" disabled><label for="p5">11:00</label></div>
+    <div class="slot"><input type="checkbox" id="p6" disabled><label for="p6">11:30</label></div>
+  </div>
+  <p class="page-subtitle">Ticked times are already booked.</p>
+</div>
+</main>
+<footer class="site-footer">
+  Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+</footer>
+</body>
+</html>

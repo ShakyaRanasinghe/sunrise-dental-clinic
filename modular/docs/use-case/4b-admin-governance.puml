@@ -1,0 +1,49 @@
+@startuml use_case_admin_governance
+' Sunrise Dental Clinic - Use Case Diagram: Administrator - concerns and reviews
+' Source of truth: modular/docs/use-case-diagram.md
+!pragma layout smetana
+skinparam dpi 150
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 18
+skinparam ranksep 70
+skinparam usecase {
+  BackgroundColor #FDF3EC
+  BorderColor #C2571A
+  ArrowColor #52606D
+}
+
+left to right direction
+' invisible title: reserves top margin so an actor at the
+' upper edge is not clipped by the render bounds
+title <color:#FFFFFF>.\n.</color>
+
+actor "Administrator" as AD
+
+rectangle "Sunrise Dental Clinic System" {
+  usecase "Review Concern" as UC_CMP
+  usecase "Read Complaint" as UC_READ
+  usecase "Write Audit Event" as UC_AUDIT
+  usecase "Resolve Concern" as UC_RES
+  usecase "Record Resolution" as UC_RESNOTE
+  usecase "Dismiss Concern" as UC_DIS
+  usecase "Read Dentist\nReviews" as UC_RVW
+}
+
+AD --> UC_CMP
+AD --> UC_RES
+AD --> UC_RVW
+
+UC_CMP ..> UC_READ    : <<include>>
+UC_CMP ..> UC_AUDIT   : <<include>>
+UC_RES ..> UC_RESNOTE : <<include>>
+UC_DIS ..> UC_CMP     : <<extend>>
+
+note bottom of UC_CMP
+  Cannot read a diagnosis or any
+  patient medical note, even when
+  the concern is clinical.
+end note
+@enduml

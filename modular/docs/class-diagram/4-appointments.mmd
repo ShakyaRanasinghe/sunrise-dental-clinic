@@ -1,0 +1,124 @@
+%% Sunrise Dental Clinic - class design: 4-appointments
+%% Source of truth: modular/docs/class-diagram.md
+
+classDiagram
+    direction TB
+
+    namespace appointments_web {
+        class BookAppointmentServlet {
+            -service : AppointmentService
+            +doGet(req, res) void
+            +doPost(req, res) void
+        }
+        class PatientHomeServlet {
+            +doGet(req, res) void
+        }
+        class ReceptionDayServlet {
+            +doGet(req, res) void
+        }
+        class DentistScheduleServlet {
+            +doGet(req, res) void
+        }
+        class AppointmentApiServlet {
+            +doGet(req, res) void
+            +doPost(req, res) void
+        }
+    }
+
+    namespace appointments_service {
+        class AppointmentService {
+            -appointments : AppointmentRepository
+            -slots : SlotRepository
+            -numbers : AppointmentNumberGenerator
+            -publisher : AppointmentEventPublisher
+            -tx : TransactionRunner
+            +book(patientId, slotId, treatmentId, actor) Appointment
+            +findByNo(no) Appointment
+            +findForPatient(patientId) List~Appointment~
+            +findForDentist(dentistId, date) List~Appointment~
+            +complete(no, diagnosis, dentistId) Appointment
+            +cancel(no, actor) Appointment
+        }
+        class AppointmentNumberGenerator {
+            -counters : CounterRepository
+            +nextFor(date) String
+        }
+        class AppointmentEventPublisher {
+            -observers : List~AppointmentObserver~
+            +register(observer) void
+            +publish(event) void
+        }
+        class AppointmentObserver {
+            <<interface>>
+            +onAppointmentEvent(event) void
+        }
+        class AppointmentEvent {
+            <<record>>
+            +type : EventType
+            +appointment : Appointment
+            +actorUid : String
+        }
+        class ClinicAccess {
+            +canViewClinical(appointment, user) boolean
+            +canViewPatientNotes(patientId, user) boolean
+        }
+    }
+
+    namespace appointments_data {
+        class AppointmentRepository {
+            <<interface>>
+            +findByPatientId(id) List~Appointment~
+            +findByDentistId(id) List~Appointment~
+            +findByDate(date) List~Appointment~
+        }
+        class AppointmentDao {
+            -db : Database
+            +save(appointment) Appointment
+            +findById(no) Optional~Appointment~
+        }
+        class InMemoryAppointmentRepository {
+            -store : Map~String, Appointment~
+        }
+    }
+
+    namespace appointments_domain {
+        class Appointment {
+            -status : AppointmentStatus
+            -diagnosis : String
+            +canTransitionTo(status) boolean
+            +complete(diagnosis) void
+            +cancel() void
+        }
+        class AppointmentResponse {
+            <<record>>
+            +appointmentNo : String
+            +date : LocalDate
+            +status : AppointmentStatus
+        }
+        class AppointmentDetailResponse {
+            <<record>>
+            +appointmentNo : String
+            +diagnosis : String
+            +patientNotes : List~PatientNoteResponse~
+        }
+    }
+
+    BookAppointmentServlet --> "1" AppointmentService
+    PatientHomeServlet --> "1" AppointmentService
+    ReceptionDayServlet --> "1" AppointmentService
+    DentistScheduleServlet --> "1" AppointmentService
+    AppointmentApiServlet --> "1" AppointmentService
+    AppointmentApiServlet ..> ClinicAccess : chooses response by
+
+    AppointmentService --> "1" AppointmentRepository
+    AppointmentService --> "1" AppointmentNumberGenerator
+    AppointmentService --> "1" AppointmentEventPublisher
+    AppointmentService ..> Appointment : creates
+
+    AppointmentRepository <|.. AppointmentDao : implements
+    AppointmentRepository <|.. InMemoryAppointmentRepository : implements
+
+    AppointmentEventPublisher o-- "0..*" AppointmentObserver : notifies
+    AppointmentEventPublisher ..> AppointmentEvent
+    ClinicAccess ..> AppointmentDetailResponse : permits
+    ClinicAccess ..> AppointmentResponse : otherwise

@@ -1,0 +1,618 @@
+/* =====================================================================
+   Sunrise Dental Clinic — stylesheet
+
+   Plain CSS, no framework and no web fonts: everything the pages need is
+   here, so the application renders identically offline and on a marker's
+   machine with no network access.
+   ===================================================================== */
+
+:root {
+    --sunrise:        #c2571a;
+    --sunrise-dark:   #9c4514;
+    --sunrise-light:  #fdf3ec;
+    --ink:            #1f2933;
+    --ink-soft:       #52606d;
+    --ink-faint:      #7b8794;
+    --line:           #e1e6eb;
+    --surface:        #ffffff;
+    --canvas:         #f6f7f9;
+    --good:           #0f7b4f;
+    --good-light:     #e8f5ef;
+    --warn:           #a35a00;
+    --warn-light:     #fdf4e3;
+    --bad:            #b3261e;
+    --bad-light:      #fdecea;
+    --radius:         8px;
+    --shadow:         0 1px 3px rgba(31, 41, 51, .08), 0 1px 2px rgba(31, 41, 51, .06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+/* --- Header ------------------------------------------------------- */
+
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow);
+}
+
+.site-header .bar {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--sunrise);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.brand span { color: var(--ink); font-weight: 600; }
+
+.site-nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.site-nav a {
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.site-nav a:hover { background: var(--sunrise-light); color: var(--sunrise-dark); }
+.site-nav a.active { background: var(--sunrise-light); color: var(--sunrise-dark); }
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.role-tag {
+    background: var(--sunrise-light);
+    color: var(--sunrise-dark);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+/* --- Layout ------------------------------------------------------- */
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+}
+
+/* --- Homepage hero: full-width banner image with the call-to-actions
+       overlaid at the bottom. ---------------------------------- */
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    aspect-ratio: 3238 / 1312;
+    min-height: 300px;
+    margin-bottom: 28px;
+    padding: 24px 20px;
+    border-radius: var(--radius);
+    background-color: var(--sunrise-light);
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.hero .btn {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, .28);
+}
+
+.page-title {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 650;
+    letter-spacing: -.01em;
+}
+
+.page-subtitle {
+    margin: 0 0 24px;
+    color: var(--ink-faint);
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 650;
+}
+
+.card h2 .count {
+    color: var(--ink-faint);
+    font-weight: 400;
+    font-size: 13px;
+    margin-left: 6px;
+}
+
+.grid { display: grid; gap: 20px; }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.grid.stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+
+/* --- Statistics --------------------------------------------------- */
+
+.stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+}
+
+.stat .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink-faint);
+    font-weight: 600;
+}
+
+.stat .value {
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -.02em;
+    margin-top: 4px;
+}
+
+.stat .value.money::before { content: "Rs "; font-size: 15px; color: var(--ink-faint); }
+
+/* --- Forms -------------------------------------------------------- */
+
+.field { margin-bottom: 14px; }
+
+.field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+}
+
+input[type=text], input[type=email], input[type=password], input[type=date],
+input[type=time], input[type=number], input[type=search], select, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--sunrise);
+    box-shadow: 0 0 0 3px rgba(194, 87, 26, .12);
+}
+
+textarea { min-height: 80px; resize: vertical; }
+
+.field .hint { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
+
+/* --- Password show/hide eye, inside the field ------------------------- */
+
+.pw-wrap { position: relative; }
+
+.pw-wrap .pw-field { padding-right: 42px; }
+
+.pw-toggle {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 5px;
+    border: none;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    line-height: 0;
+}
+
+.pw-toggle:hover { color: var(--ink-soft); background: var(--canvas); }
+
+.pw-toggle svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.pw-toggle .eye-off { display: none; }
+
+.pw-toggle.is-visible .eye-on { display: none; }
+
+.pw-toggle.is-visible .eye-off { display: block; }
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.form-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
+
+/* --- Buttons ------------------------------------------------------ */
+
+.btn {
+    display: inline-block;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: var(--sunrise);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn:hover { background: var(--sunrise-dark); }
+
+.btn.secondary {
+    background: var(--surface);
+    color: var(--ink-soft);
+    border-color: var(--line);
+}
+
+.btn.secondary:hover { background: var(--canvas); color: var(--ink); }
+
+.btn.danger { background: var(--surface); color: var(--bad); border-color: #f0c9c6; }
+.btn.danger:hover { background: var(--bad-light); }
+
+.btn.small { padding: 5px 11px; font-size: 13px; }
+
+/* --- Tables ------------------------------------------------------- */
+
+.table-wrap { overflow-x: auto; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--canvas); }
+
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+
+/* --- Status pills ------------------------------------------------- */
+
+.pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.pill.confirmed { background: var(--sunrise-light); color: var(--sunrise-dark); }
+.pill.completed { background: var(--good-light);    color: var(--good); }
+.pill.billed    { background: #eef2f7;              color: var(--ink-soft); }
+.pill.cancelled { background: var(--bad-light);     color: var(--bad); }
+.pill.open      { background: var(--good-light);    color: var(--good); }
+.pill.booked    { background: #eef2f7;              color: var(--ink-soft); }
+
+/* --- Messages ----------------------------------------------------- */
+
+.notice {
+    padding: 11px 15px;
+    border-radius: var(--radius);
+    margin-bottom: 18px;
+    border: 1px solid;
+}
+
+.notice.success { background: var(--good-light); border-color: #bfe3d2; color: var(--good); }
+.notice.error   { background: var(--bad-light);  border-color: #f2c7c3; color: var(--bad); }
+.notice.warning { background: var(--warn-light); border-color: #ecd9b0; color: var(--warn); }
+.notice.info    { background: var(--sunrise-light); border-color: #f0d8c6; color: var(--sunrise-dark); }
+
+.empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--ink-faint);
+}
+
+.empty p { margin: 0 0 14px; }
+
+/* --- Slot picker -------------------------------------------------- */
+
+.slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 9px;
+}
+
+.slot input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.slot label {
+    display: block;
+    text-align: center;
+    padding: 11px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.slot label:hover { border-color: var(--sunrise); background: var(--sunrise-light); }
+
+.slot input:checked + label {
+    background: var(--sunrise);
+    border-color: var(--sunrise);
+    color: #fff;
+}
+
+.slot input:focus-visible + label { box-shadow: 0 0 0 3px rgba(194, 87, 26, .25); }
+
+/* --- Bar chart (plain divs — no charting library) ------------------ */
+
+.bars { display: flex; flex-direction: column; gap: 8px; }
+
+.bars .row { display: grid; grid-template-columns: 130px 1fr 90px; gap: 12px; align-items: center; }
+.bars .name { font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bars .track { background: var(--canvas); border-radius: 4px; height: 22px; overflow: hidden; }
+.bars .fill { background: var(--sunrise); height: 100%; border-radius: 4px; min-width: 2px; }
+.bars .amount { text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* --- Receipt ------------------------------------------------------ */
+
+.receipt { max-width: 420px; }
+.receipt .line { display: flex; justify-content: space-between; padding: 7px 0; }
+.receipt .line + .line { border-top: 1px dashed var(--line); }
+.receipt .line.total {
+    border-top: 2px solid var(--ink);
+    margin-top: 6px;
+    padding-top: 11px;
+    font-weight: 700;
+    font-size: 17px;
+}
+.receipt .line .amount { font-variant-numeric: tabular-nums; }
+
+/* --- Sign-in / register screens ----------------------------------- */
+
+.narrow { max-width: 420px; margin: 56px auto; }
+.narrow .card { padding: 28px; }
+.narrow .brand-block { text-align: center; margin-bottom: 24px; }
+.narrow .brand-block .name { font-size: 22px; font-weight: 700; color: var(--sunrise); }
+.narrow .brand-block .tagline { color: var(--ink-faint); font-size: 14px; }
+.narrow .alt { text-align: center; margin-top: 18px; font-size: 14px; color: var(--ink-faint); }
+
+a { color: var(--sunrise-dark); }
+
+/* --- Footer ------------------------------------------------------- */
+
+.site-footer {
+    border-top: 1px solid var(--line);
+    padding: 20px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+}
+
+@media print {
+    .site-header, .site-footer, .btn, .no-print { display: none !important; }
+    body { background: #fff; }
+    .card { border: none; box-shadow: none; padding: 0; }
+}
+
+/* =====================================================================
+   Additions for the modular prototype
+   Components the four-portal design needs and the existing stylesheet
+   does not yet have. Everything above this line is unchanged.
+   ===================================================================== */
+
+/* --- Portal chooser: the four doors at /login --------------------- */
+.portals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin-top: 4px;
+}
+.portal {
+    display: block;
+    padding: 20px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .12s, box-shadow .12s;
+}
+.portal:hover {
+    border-color: var(--sunrise);
+    box-shadow: var(--shadow);
+}
+.portal .name {
+    font-weight: 600;
+    color: var(--sunrise);
+    margin-bottom: 4px;
+}
+.portal .what {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+}
+
+/* --- Login pages: portal label only; .brand-block and .alt already
+       exist under .narrow in the base stylesheet above. ------------- */
+.portal-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--sunrise-dark);
+    background: var(--sunrise-light);
+    padding: 3px 9px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+.alt { text-align: center; font-size: 13.5px; color: var(--ink-soft); margin-top: 14px; }
+.alt a { color: var(--sunrise-dark); }
+
+/* --- Diagnosis block, dentist only -------------------------------- */
+.clinical {
+    border-left: 3px solid var(--sunrise);
+    background: var(--sunrise-light);
+    padding: 12px 14px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-top: 12px;
+}
+.clinical .label {
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--sunrise-dark);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.clinical textarea {
+    width: 100%;
+    min-height: 90px;
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    resize: vertical;
+}
+
+/* --- Complaint states + note categories -------------------------- */
+.pill.submitted { background: var(--warn-light);   color: var(--warn); }
+.pill.review    { background: var(--sunrise-light);color: var(--sunrise-dark); }
+.pill.resolved  { background: var(--good-light);   color: var(--good); }
+.pill.dismissed { background: var(--canvas);       color: var(--ink-faint); }
+
+.note-cat {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--canvas);
+    color: var(--ink-soft);
+    margin-right: 8px;
+}
+.note-cat.allergy { background: var(--bad-light); color: var(--bad); }
+.note-cat.medication { background: var(--warn-light); color: var(--warn); }
+
+.note-list { display: flex; flex-direction: column; gap: 10px; }
+.note-item {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+}
+.note-item.critical { border-left: 3px solid var(--bad); background: var(--bad-light); }
+.note-item .meta { font-size: 12px; color: var(--ink-faint); margin-top: 5px; }
+.note-item .actions { margin-top: 8px; display: flex; gap: 8px; }
+
+/* ---------------------------------------------------------------------
+   Receipt, and printing it — FR-REC-52.
+
+   The receipt is a page with a print stylesheet rather than a generated
+   PDF: the browser already produces a document, and a PDF library would
+   be a dependency bought for nothing.
+   --------------------------------------------------------------------- */
+.receipt { max-width: 40rem; }
+.receipt-head { text-align: center; margin-bottom: 1.5rem; }
+.receipt-head h2 { margin-bottom: 0.25rem; }
+.receipt .right { text-align: right; font-variant-numeric: tabular-nums; }
+.receipt tr.total th,
+.receipt tr.total td { border-top: 2px solid #d8d2cb; font-size: 1.05rem; }
+.receipt-foot { margin-top: 1.5rem; text-align: center; }
+
+@media print {
+    /* Everything that is chrome rather than document. */
+    .site-header, .site-footer, .no-print { display: none !important; }
+    body { background: #fff; }
+    .card { border: none; box-shadow: none; padding: 0; }
+    .receipt { max-width: none; }
+    /* A receipt that breaks across two pages is a receipt nobody trusts. */
+    .receipt, .receipt table { page-break-inside: avoid; }
+}
+
+/* ---------------------------------------------------------------------
+   Report bars.
+
+   Divs sized as a percentage of the period's peak. The server knows the
+   peak, so the width is arithmetic in EL — no chart library, and no
+   client-side script.
+   --------------------------------------------------------------------- */
+.bar-col { width: 40%; }
+.bar-track { background: #efeae4; border-radius: 3px; height: 0.75rem; overflow: hidden; }
+.bar-fill { background: #a8552a; height: 100%; min-width: 2px; }
+.right { text-align: right; font-variant-numeric: tabular-nums; }
+tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
+.otp { font-size: 1.25rem; letter-spacing: 0.08em; }
