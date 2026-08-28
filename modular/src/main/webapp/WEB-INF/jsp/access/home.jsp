@@ -9,7 +9,7 @@
     user wants is one click away in the bar above.
 --%>
 
-<div class="hero" style="background-image: url('${ctx}/img/hero-banner.jpg');">
+<div class="hero" style="background-image: url('${ctx}/images/hero-banner.jpg');">
     <a class="btn" href="${ctx}/register">Book an appointment</a>
     <a class="btn secondary" href="${ctx}/login/patient">I already have an account</a>
 </div>
