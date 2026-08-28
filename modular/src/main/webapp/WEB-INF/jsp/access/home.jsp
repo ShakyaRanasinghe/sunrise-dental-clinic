@@ -9,17 +9,9 @@
     user wants is one click away in the bar above.
 --%>
 
-<div class="brand-block" style="text-align:center; margin: 40px 0 28px;">
-    <div class="name" style="font-size: 30px; font-weight:700; color: var(--sunrise);">
-        <c:out value="${clinicName}" />
-    </div>
-    <div class="tagline" style="color: var(--ink-faint); margin-top: 6px;">
-        Appointments &amp; patient records &mdash; book online, walk in with confidence.
-    </div>
-    <p style="margin: 18px auto 0;">
-        <a class="btn" href="${ctx}/register">Book an appointment</a>
-        <a class="btn secondary" href="${ctx}/login/patient">I already have an account</a>
-    </p>
+<div class="hero" style="background-image: url('${ctx}/img/hero-banner.jpg');">
+    <a class="btn" href="${ctx}/register">Book an appointment</a>
+    <a class="btn secondary" href="${ctx}/login/patient">I already have an account</a>
 </div>
 
 <h2 id="services" class="page-title">Services</h2>
