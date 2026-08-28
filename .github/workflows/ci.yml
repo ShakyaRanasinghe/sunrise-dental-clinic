@@ -12,6 +12,7 @@ on:
     branches: [main, qa, develop]
   push:
     branches: [main, qa, develop]
+  workflow_dispatch:
 
 jobs:
   build:
