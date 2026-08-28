@@ -8,11 +8,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * The four doors at {@code /login}.
+ * The doors at {@code /login}.
  *
- * <p>Lists three of them. {@code /login/admin} works and is deliberately not
- * linked, because no member of the public has business there (FR-ADM-03) — it is
- * reachable by anyone who is told the address, which is the point.</p>
+ * <p>Lists one of them. The patient portal is the only door a member of the
+ * public signs straight into; the others — {@code /login/reception},
+ * {@code /login/dentist} and {@code /login/admin} — all work and are
+ * deliberately not linked, because no member of the public has business there
+ * and a patient should not even learn that the staff doors exist (FR-ADM-03,
+ * GAP-PAT-14). Each is reachable by anyone who is told the address, which is
+ * the point.</p>
  */
 public class PortalChooserServlet extends PageServlet {
 

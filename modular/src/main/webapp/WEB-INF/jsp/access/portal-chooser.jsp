@@ -11,20 +11,14 @@
     <div class="card">
         <h2>Sign in</h2>
         <p class="page-subtitle">Choose how you use the clinic.</p>
-        <%-- Three doors, not four. /login/admin works and is deliberately
-             unlisted: no member of the public has business there (FR-ADM-03). --%>
+        <%-- One door, not four. /login/reception, /login/dentist and
+             /login/admin all work and are deliberately unlisted: no member of
+             the public has business there, and a patient should not even learn
+             that the staff doors exist (FR-ADM-03, GAP-PAT-14). --%>
         <div class="portals">
             <a class="portal" href="${ctx}/login/patient">
                 <div class="name">I am a patient</div>
                 <div class="what">Book, view or cancel your own appointments and see your receipts.</div>
-            </a>
-            <a class="portal" href="${ctx}/login/reception">
-                <div class="name">Reception</div>
-                <div class="what">Register patients, book on their behalf, publish availability, issue bills.</div>
-            </a>
-            <a class="portal" href="${ctx}/login/dentist">
-                <div class="name">Dentist</div>
-                <div class="what">Your own schedule, and recording what you treated.</div>
             </a>
         </div>
     </div>
