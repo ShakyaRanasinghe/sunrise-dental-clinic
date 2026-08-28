@@ -121,7 +121,8 @@ the candidate. Instead, verify that identity, then tag prod as it is.
 ```bash
 git checkout prod
 git pull --ff-only origin prod
-# prod must contain exactly: .gitignore, deploy, modular (incl. src/test), render.yaml
+# prod must contain exactly: .gitignore, .github/workflows/release.yml,
+# deploy, modular (incl. src/test), render.yaml
 git ls-tree --name-only HEAD
 ```
 
@@ -145,8 +146,12 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin prod vX.Y.Z
 ```
 
-Pushing the tag runs the **Release** workflow (`.github/workflows/release.yml`):
-it builds `modular/`, runs the tests, and attaches `clinic.war` to the GitHub
+Pushing the tag runs the **Release** workflow (`.github/workflows/release.yml`,
+which **also lives on `prod`** — GitHub resolves the workflow from the tagged
+commit itself, so it must be present at the commit `vX.Y.Z` points at). The
+workflow first verifies that every file prod ships is byte-identical to the
+latest `qa_v*` tag (docs/dev-only files absent from prod are ignored), then
+builds `modular/`, runs the tests, and attaches `clinic.war` to the GitHub
 release with auto-generated notes. Pushing a branch deploys to Render
 automatically (a plain `git push origin prod` when the code changed) — after a
 tag-only release the already-deployed code is unchanged, so no new deploy fires.
