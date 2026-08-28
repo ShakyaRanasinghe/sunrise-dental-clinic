@@ -1,4 +1,4 @@
-name: CI
+name: QA
 
 # Quality gate: build, test and package on every PR and on pushes to the long-lived
 # branches.
@@ -31,6 +31,28 @@ jobs:
       - name: Build, test and package the WAR
         working-directory: modular
         run: mvn -B --no-transfer-progress package
+
+      - name: Report test totals on the run summary
+        working-directory: modular
+        run: |
+          total=0; failures=0; errors=0; skipped=0
+          for f in target/surefire-reports/*.txt; do
+            [ -e "$f" ] || continue
+            line=$(grep -h "Tests run:" "$f" | head -1)
+            [ -n "$line" ] || continue
+            total=$(( total + $(echo "$line" | sed -nE 's/.*Tests run: ([0-9]+).*/\1/p') ))
+            failures=$(( failures + $(echo "$line" | sed -nE 's/.*Failures: ([0-9]+).*/\1/p') ))
+            errors=$(( errors + $(echo "$line" | sed -nE 's/.*Errors: ([0-9]+).*/\1/p') ))
+            skipped=$(( skipped + $(echo "$line" | sed -nE 's/.*Skipped: ([0-9]+).*/\1/p') ))
+          done
+          {
+            echo "### Test totals"
+            echo ""
+            echo "| Tests run | Failures | Errors | Skipped | Passed |"
+            echo "|---|---|---|---|---|"
+            echo "| $total | $failures | $errors | $skipped | $(( total - failures - errors )) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Tests run: $total, Failures: $failures, Errors: $errors, Skipped: $skipped"
 
       - name: Upload the deployable WAR
         uses: actions/upload-artifact@v4
