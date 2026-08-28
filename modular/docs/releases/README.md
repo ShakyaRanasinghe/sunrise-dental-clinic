@@ -37,26 +37,146 @@ code-only commit, and the tag is pushed. The `Release` workflow
 (`.github/workflows/release.yml`) reacts to any `v*` tag: it builds the WAR and
 attaches it to the GitHub release with generated notes.
 
-## Cutting a release (checklist)
+## Cutting a release — manual runbook
 
-1. On `dev`, make sure the working tree is clean and the branch is pushed.
-2. Tag the candidate: `git tag -a dev_vX.Y.Z -m "Candidate deployment"` and
-   `git push origin dev_vX.Y.Z`.
-3. Bring `qa` up to the candidate (fast-forward or merge from `dev`), push `qa` —
-   pushing `qa` triggers the **QA workflow** (build, tests, module boundaries,
-   smoke test) automatically.
-4. Tag the same commit on `qa`: `git tag -a qa_vX.Y.Z` and push the tag.
-5. Open GitHub → Actions → the QA workflow and **confirm the run is green** on
-   `qa` at that exact commit. If it is red: fix on `dev`, bump the number, and
-   repeat from step 2.
-6. Only when QA is green: merge `qa` into `prod`, but **exclude
-   documentation** (docs never go to `prod`). Tag the code-only commit `vX.Y.Z`,
-   push the tag — the Release workflow builds and attaches `clinic.war` to the
-   GitHub release.
-7. Write `vX.Y.Z.md` in this folder listing the features in the release, and add
-   a row to the release table on this page. Commit and push on `dev` (and carry
-   to `main`).
-8. Deploy goes live on Render automatically when `prod` is pushed.
+Run these commands in a fresh clone, or after `git fetch origin` on an existing
+one. Replace `X.Y.Z` with the candidate number on steps 1–4 and with the
+production number on steps 5–6 (they only coincide on the very first release).
+
+### Step 0 — preconditions
+
+```bash
+git fetch origin
+git status --short        # must print nothing — working tree clean
+```
+
+### Step 1 — tag the candidate on `dev`
+
+`dev` carries the full tree (code **and** docs), so the dev tag is the release
+candidate in full.
+
+```bash
+git checkout dev
+git pull --ff-only origin dev
+git tag   -a dev_vX.Y.Z -m "Release candidate dev_vX.Y.Z (code + docs)"
+git push origin dev_vX.Y.Z
+```
+
+Verify it points at the dev tip:
+
+```bash
+git rev-parse dev_vX.Y.Z^{}    # should equal: git rev-parse origin/dev
+```
+
+### Step 2 — promote the same candidate to `qa`
+
+Bring `qa` up to the candidate, then push the branch. **Pushing `qa` triggers
+the QA workflow** (build + tests + module boundaries + smoke test). The
+branch-off may not fast-forward if `qa` has its own merge commits — a normal
+merge is fine.
+
+```bash
+git checkout qa
+git pull --ff-only origin qa
+git merge --no-ff -m "Promote candidate dev_vX.Y.Z to qa" dev_vX.Y.Z
+git push origin qa                         # starts the QA workflow
+```
+
+Confirm `qa` now has exactly the candidate's content, then tag it:
+
+```bash
+git rev-parse -q --verify qa^{tree} && git rev-parse dev_vX.Y.Z^{}^{tree}
+# the two hashes above must be IDENTICAL before you tag
+git tag -a qa_vX.Y.Z -m "QA candidate qa_vX.Y.Z — awaiting workflow result"
+git push origin qa_vX.Y.Z
+```
+
+### Step 3 — wait for QA and act on the result
+
+Open **GitHub → Actions → QA** and inspect the run for the commit `qa_vX.Y.Z`
+(there is also a **Run workflow** button to re-trigger by hand). Green = proceed
+to Step 4. Red = the candidate is rejected:
+
+```bash
+git checkout dev
+# ... make the fix and commit it ...
+git push origin dev
+git tag -a dev_v1.0.1 -m "Release candidate dev_v1.0.1 (fix after failed QA)"
+git push origin dev_v1.0.1
+# return to Step 2 with X.Y.Z = 1.0.1
+```
+
+Version numbers on `dev`/`qa` tags are iteration counters, not release numbers:
+bump the patch number **every time** a candidate moves to QA, whether or not the
+previous one passed. Only when one of them is **green** do you cut the release.
+
+### Step 4 — merge the passing candidate into `prod`, code-only
+
+`prod` must stay code-only. After the green QA run, merge the passing candidate
+and then remove everything that is not part of the shipped product (docs and
+dev-only artifacts — they never go to `prod`). The removal list below is
+verified against the current repository layout; update it only if the layout
+changes.
+
+```bash
+git checkout prod
+git pull --ff-only origin prod
+git merge --no-ff -m "Release vX.Y.Z: candidate qa_vX.Y.Z" qa_vX.Y.Z
+git rm -rq --ignore-unmatch \
+  docs frontend layered scripts UML .github \
+  README.md CHANGES.md CONTRIBUTING.md version.json \
+  .firebaserc firebase.json firestore.indexes.json firestore.rules \
+  modular/docs
+git commit -m "release(vX.Y.Z): keep prod code-only (drop docs and dev artifacts)"
+```
+
+Sanity-check that `prod` still holds exactly its shipped surface:
+
+```bash
+git ls-tree --name-only HEAD        # expect: .gitignore, deploy, modular, render.yaml
+git ls-tree --name-only HEAD modular        # expect: pom.xml, src (incl. src/test)
+```
+
+### Step 5 — tag the production release and push
+
+```bash
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin prod vX.Y.Z
+```
+
+Pushing the tag runs the **Release** workflow (`.github/workflows/release.yml`):
+it builds `modular/`, runs the tests, and attaches `clinic.war` to the GitHub
+release with auto-generated notes. Pushing the branch deploys to Render
+automatically.
+
+### Step 6 — record the release in the docs
+
+Releases are documented on `dev` (and carried to `main`), never on `prod`:
+
+1. Write `vX.Y.Z.md` in this folder (copy an older one and update the header
+   fields) listing the features in the release.
+2. Add a row to the Releases table below: `| vX.Y.Z | <date> | qa_<candidate> | See vX.Y.Z.md |`.
+3. Commit and push, then carry the folder to `main`:
+
+```bash
+git checkout dev
+# edit vX.Y.Z.md and the Releases table, then:
+git add modular/docs/releases && git commit -m "docs(releases): record vX.Y.Z"
+git push origin dev
+git checkout main
+git pull --ff-only origin main
+git merge --no-ff -m "docs(releases): record vX.Y.Z" dev
+git push origin main
+git checkout dev
+```
+
+### Summary of the tag names
+
+| Step | Branch | Tag | When |
+|------|--------|-----|------|
+| 1 | `dev` | `dev_vX.Y.Z` | candidate staged (code + docs) |
+| 2 | `qa` | `qa_vX.Y.Z` | same candidate, QA running |
+| 4–5 | `prod` | `vX.Y.Z` | **after QA green**, code-only |
 
 ## Releases
 
