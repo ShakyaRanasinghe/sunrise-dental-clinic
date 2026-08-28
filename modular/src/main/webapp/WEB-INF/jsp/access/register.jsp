@@ -29,12 +29,19 @@
             </div>
             <div class="field">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password">
+                <input type="password" id="password" name="password" autocomplete="new-password">
                 <div class="page-subtitle">At least 8 characters.</div>
+                <button type="button" class="btn small secondary show-pass"
+                        data-password-toggle data-for="password"
+                        aria-controls="password" aria-pressed="false">Show password</button>
             </div>
             <div class="field">
                 <label for="confirmPassword">Confirm password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword">
+                <input type="password" id="confirmPassword" name="confirmPassword"
+                       autocomplete="new-password">
+                <button type="button" class="btn small secondary show-pass"
+                        data-password-toggle data-for="confirmPassword"
+                        aria-controls="confirmPassword" aria-pressed="false">Show password</button>
             </div>
 
             <%--
@@ -52,7 +59,9 @@
                     Contact number <span class="page-subtitle">(optional)</span>
                 </label>
                 <input type="tel" id="contactNumber" name="contactNumber"
-                       value="<c:out value='${param.contactNumber}' />">
+                       value="<c:out value='${param.contactNumber}' />"
+                       pattern="[0-9+() -]+" maxlength="20"
+                       title="Digits, with + ( ) and - allowed — no letters.">
                 <div class="page-subtitle">So the clinic can reach you about an appointment.</div>
             </div>
             <div class="form-row">
@@ -79,4 +88,31 @@
 
     <div class="alt">Already registered? <a href="${ctx}/login/patient">Sign in</a></div>
 </div>
+
+<%--
+    Show/hide toggle for the two password fields. The app is otherwise
+    server-rendered with no script of its own; this is the one place a
+    form gains an in-page behaviour, kept tiny and safe: it only flips
+    input[type], it never touches the values, and the toggle is a plain
+    button so a browser with no JavaScript simply has no Show button at
+    all - the fields stay password type, which is the secure default.
+--%>
+<script>
+(function () {
+    var toggles = document.querySelectorAll('[data-password-toggle]');
+    toggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            var field = document.getElementById(toggle.getAttribute('data-for'));
+            if (!field) {
+                return;
+            }
+            var showing = field.type === 'text';
+            field.type = showing ? 'password' : 'text';
+            toggle.textContent = showing ? 'Show password' : 'Hide password';
+            toggle.setAttribute('aria-pressed', showing ? 'false' : 'true');
+            field.focus();
+        });
+    });
+})();
+</script>
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>
