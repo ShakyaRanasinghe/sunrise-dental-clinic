@@ -21,17 +21,20 @@
         <form method="post" action="${ctx}/register">
             <div class="field">
                 <label for="name">Full name</label>
-                <input type="text" id="name" name="name" value="<c:out value='${param.name}' />" autofocus>
+                <input type="text" id="name" name="name" value="<c:out value='${param.name}' />"
+                       required minlength="2" maxlength="255" autofocus>
             </div>
             <div class="field">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<c:out value='${param.email}' />">
+                <input type="email" id="email" name="email" value="<c:out value='${param.email}' />"
+                       required>
             </div>
             <div class="field">
                 <label for="password">Password</label>
                 <div class="pw-wrap">
                     <input type="password" id="password" name="password"
-                           class="pw-field" autocomplete="new-password">
+                           class="pw-field" autocomplete="new-password"
+                           required minlength="8">
                     <button type="button" class="pw-toggle" data-password-toggle data-for="password"
                             aria-controls="password" aria-pressed="false"
                             aria-label="Show password" title="Show password">
@@ -56,7 +59,7 @@
                 <label for="confirmPassword">Confirm password</label>
                 <div class="pw-wrap">
                     <input type="password" id="confirmPassword" name="confirmPassword"
-                           class="pw-field" autocomplete="new-password">
+                           class="pw-field" autocomplete="new-password" required>
                     <button type="button" class="pw-toggle" data-password-toggle
                             data-for="confirmPassword"
                             aria-controls="confirmPassword" aria-pressed="false"
@@ -149,6 +152,24 @@
             field.focus();
         });
     });
+
+    // The one rule HTML5 cannot express natively: the confirmation must equal
+    // the password. Reported on the confirm field, before any submit, so the
+    // browser blocks and points at the right control. Server-side still enforces
+    // the same rule - this only saves the round trip.
+    var password = document.getElementById('password');
+    var confirm = document.getElementById('confirmPassword');
+    var checkMatch = function () {
+        if (confirm && password && confirm.value && confirm.value !== password.value) {
+            confirm.setCustomValidity('The two passwords do not match.');
+        } else if (confirm) {
+            confirm.setCustomValidity('');
+        }
+    };
+    if (password && confirm) {
+        password.addEventListener('input', checkMatch);
+        confirm.addEventListener('input', checkMatch);
+    }
 })();
 </script>
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>
