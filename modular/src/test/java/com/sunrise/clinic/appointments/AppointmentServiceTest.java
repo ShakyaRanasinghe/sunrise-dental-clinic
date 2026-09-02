@@ -350,6 +350,22 @@ class AppointmentServiceTest {
     }
 
     @Test
+    void aPatientSeesTheirOwnDiagnosisButNotAnothers() {
+        // GAP-DEN-09: the patient dashboard must show the dentist's comment on their
+        // own finished visits, and nothing for a visit belonging to someone else.
+        String mine = fixture.service.book(nimal, "s1", "t-checkup", null).appointmentNo();
+        String other = fixture.service.book(kamala, "s2", "t-checkup", null).appointmentNo();
+        fixture.service.complete(AppointmentTestFixture.silva(), mine, "Scaling, no decay");
+        fixture.service.complete(AppointmentTestFixture.silva(), other, "Root canal done");
+
+        List<AppointmentDetailResponse> mineDetails = fixture.service.forSelfDetail(nimal);
+
+        assertEquals(List.of("Scaling, no decay"),
+                mineDetails.stream().map(AppointmentDetailResponse::diagnosis).toList());
+        assertTrue(mineDetails.stream().noneMatch(d -> d.diagnosis().contains("Root canal")));
+    }
+
+    @Test
     void aDentistSeesOnlyTheirOwnDay() {
         fixture.addSlot("s3", "d-jaya", AppointmentTestFixture.DAY, LocalTime.of(17, 0));
         fixture.service.book(nimal, "s1", "t-checkup", null);

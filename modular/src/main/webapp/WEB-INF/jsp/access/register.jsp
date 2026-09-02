@@ -82,22 +82,16 @@
             </div>
 
             <%--
-                Optional, all three, and labelled as such.
-
-                The contact number used to be required by the servlet and absent from this
-                form, so registration refused everybody with "Contact number is required" —
-                a field nobody could fill in. It is offered now rather than demanded: the
-                column is nullable, reception can add it at the desk, and asking for a
-                telephone number at sign-up turns away somebody who would otherwise have
-                become a patient.
+                Required since GAP-PAT-20: the clinic needs a number to reach the patient and
+                to match them to a later record. The field carries `required` plus the shared
+                Sri Lankan pattern for immediate feedback; SelfRegistrationService enforces it
+                again as the final gate.
             --%>
             <div class="field">
-                <label for="contactNumber">
-                    Contact number <span class="page-subtitle">(optional)</span>
-                </label>
+                <label for="contactNumber">Contact number</label>
                 <input type="tel" id="contactNumber" name="contactNumber"
                        value="<c:out value='${param.contactNumber}' />"
-                       pattern="[0-9+() -]{10,20}"
+                       required pattern="[0-9+() -]{10,20}"
                        title="A Sri Lankan number: 10 digits starting with 0, or +94 international.">
                 <div class="page-subtitle">So the clinic can reach you about an appointment (e.g. 077 123 4567).</div>
             </div>

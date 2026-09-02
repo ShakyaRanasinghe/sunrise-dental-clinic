@@ -36,6 +36,18 @@ public final class DentistPolicy extends RolePolicy {
                 new NavItem("Availability", "/dentist/availability"));
     }
 
+    /**
+     * No "Home" tab: it pointed at the same {@code /dentist/schedule} as the
+     * Schedule tab and duplicated the Sunrise logo (GAP-DEN-10, matching the
+     * reception cleanup GAP-REC-07). The logo is the sole landing control.
+     */
+    @Override
+    public List<NavItem> navigation() {
+        List<NavItem> items = new java.util.ArrayList<>();
+        items.addAll(ownNavigation());
+        return List.copyOf(items);
+    }
+
     @Override
     protected Set<Action> permitted() {
         return PERMITTED;

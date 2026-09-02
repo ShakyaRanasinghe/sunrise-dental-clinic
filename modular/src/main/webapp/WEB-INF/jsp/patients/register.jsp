@@ -131,13 +131,14 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Name</th><th>Contact</th><th>Email</th>
+                            <th>Patient ID</th><th>Name</th><th>Contact</th><th>Email</th>
                             <th>Date of birth</th><th>Portal account</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="p" items="${patients}">
                             <tr>
+                                <td class="mono"><c:out value="${p.patientNumber()}" /></td>
                                 <td><c:out value="${p.name()}" /></td>
                                 <td><c:out value="${p.contactNumber()}" /></td>
                                 <td><c:out value="${p.email()}" /></td>

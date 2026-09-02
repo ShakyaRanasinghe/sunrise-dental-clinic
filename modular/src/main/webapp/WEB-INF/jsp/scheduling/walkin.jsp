@@ -26,11 +26,12 @@
             <div class="table-wrap" style="margin-top:1rem;">
                 <table>
                     <thead>
-                        <tr><th>Name</th><th>Contact</th><th></th></tr>
+                        <tr><th>Patient ID</th><th>Name</th><th>Contact</th><th></th></tr>
                     </thead>
                     <tbody>
                         <c:forEach var="p" items="${results}">
                             <tr>
+                                <td class="mono"><c:out value="${p.patientNumber()}" /></td>
                                 <td><c:out value="${p.name()}" /></td>
                                 <td><c:out value="${p.contactNumber()}" /></td>
                                 <td>

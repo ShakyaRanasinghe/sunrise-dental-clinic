@@ -715,6 +715,18 @@ textarea { min-height: 80px; resize: vertical; }
 
 .btn.small { padding: 5px 11px; font-size: 13px; }
 
+/* --- Inline cancel confirmation (GAP-PAT-21, no script) ------------ */
+.confirm-cancel { position: relative; display: inline-block; }
+.confirm-cancel > summary { list-style: none; cursor: pointer; }
+.confirm-cancel > summary::-webkit-details-marker { display: none; }
+.confirm-cancel .confirm-cancel__panel {
+    position: absolute; z-index: 5; left: 0; top: calc(100% + 4px);
+    min-width: 220px; padding: 10px 12px;
+    background: var(--surface); border: 1px solid #d5d9e0;
+    border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.confirm-cancel .confirm-cancel__panel p { margin: 0 0 8px; }
+
 /* --- Tables ------------------------------------------------------- */
 
 .table-wrap { overflow-x: auto; }

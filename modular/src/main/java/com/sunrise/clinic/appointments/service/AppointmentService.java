@@ -207,6 +207,25 @@ public class AppointmentService {
         return describeAll(appointments.findByPatientId(patient.getId()));
     }
 
+    /**
+     * The signed-in patient's own appointments, with the dentist's comment if recorded.
+     *
+     * <p>Patients may see their own diagnosis ({@link ClinicAccess#canViewClinical}),
+     * so this returns the full {@link AppointmentDetailResponse} for every appointment
+     * rather than the diagnosis-free {@link AppointmentResponse}. The patient dashboard
+     * ({@code patient-home.jsp}) uses this so the dentist's comment is visible once
+     * recorded (GAP-DEN-09).</p>
+     */
+    public List<AppointmentDetailResponse> forSelfDetail(ClinicPrincipal caller) {
+        Patient patient = clinicAccess.patientFor(caller).orElseThrow(() ->
+                new ResourceNotFoundException("No patient record for " + describeCaller(caller)));
+        return appointments.findByPatientId(patient.getId()).stream()
+                .sorted(Comparator.comparing(Appointment::getDate)
+                        .thenComparing(Appointment::getTime))
+                .map(a -> detailWithNotes(caller, a))
+                .toList();
+    }
+
     // --- changing state -----------------------------------------------
 
     /**

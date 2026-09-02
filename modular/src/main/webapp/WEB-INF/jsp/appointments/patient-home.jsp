@@ -38,7 +38,8 @@
                     <thead>
                         <tr>
                             <th>Number</th><th>Date</th><th>Time</th>
-                            <th>Dentist</th><th>Treatment</th><th>Status</th><th></th><th></th>
+                            <th>Dentist</th><th>Treatment</th><th>Status</th>
+                            <th>Dentist's comment</th><th></th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,15 +57,34 @@
                                     </c:choose>">${a.status()}</span>
                                 </td>
                                 <td>
+                                    <%-- GAP-DEN-09: the treating dentist's comment, visible
+                                         only to the patient (ClinicAccess gates the diagnosis
+                                         field on AppointmentDetailResponse). Shown once
+                                         recorded; left blank while the visit is still ahead. --%>
+                                    <c:if test="${not empty a.diagnosis()}">
+                                        <span class="page-subtitle"><c:out value="${a.diagnosis()}" /></span>
+                                    </c:if>
+                                </td>
+                                <td>
                                     <%-- Shown only when the status machine permits it, so the
-                                         page never offers a move the service would refuse. --%>
+                                         page never offers a move the service would refuse.
+                                         GAP-PAT-21: cancelling must not commit on one click.
+                                         The <details>/<summary> pair (no script, per the stack
+                                         rule) makes the desk-style "Cancel" open a second,
+                                         explicit "Yes, cancel" submit — a stray click can no
+                                         longer drop a confirmed slot. --%>
                                     <c:if test="${a.isCancellable()}">
-                                        <form method="post" action="${ctx}/patient/home"
-                                              style="display:inline">
-                                            <input type="hidden" name="appointmentNo"
-                                                   value="${a.appointmentNo()}">
-                                            <button type="submit" class="btn small secondary">Cancel</button>
-                                        </form>
+                                        <details class="confirm-cancel">
+                                            <summary class="btn small secondary">Cancel</summary>
+                                            <div class="confirm-cancel__panel">
+                                                <p class="page-subtitle">Cancel appointment ${a.appointmentNo()}? This releases the slot.</p>
+                                                <form method="post" action="${ctx}/patient/home">
+                                                    <input type="hidden" name="appointmentNo"
+                                                           value="${a.appointmentNo()}">
+                                                    <button type="submit" class="btn small">Yes, cancel it</button>
+                                                </form>
+                                            </div>
+                                        </details>
                                     </c:if>
                                 </td>
                                 <%-- FR-PAT-70: star rating for COMPLETED/BILLED appointments --%>

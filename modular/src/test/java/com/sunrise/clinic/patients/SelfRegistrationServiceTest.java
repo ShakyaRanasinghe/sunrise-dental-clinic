@@ -48,26 +48,28 @@ class SelfRegistrationServiceTest {
     }
 
     private static Registration minimal() {
+        // The contact number is required since GAP-PAT-20, so the baseline fixture carries one.
         return new Registration("Nimal Perera", "nimal@example.lk",
-                "Password123", "Password123", null, null, null);
+                "Password123", "Password123", "0771234567", null, null);
     }
 
-    // --- the defect: a phone number is not required ---------------------
+    // --- the defect: a phone number is required -------------------------
 
     @Test
-    void registeringNeedsNoContactNumber() {
-        Registered registered = service.register(minimal());
-
-        assertNotNull(registered.account());
-        assertNull(registered.patient().contactNumber());
+    void registeringNeedsAContactNumber() {
+        assertEquals("Your contact number is required.", refusal(new Registration(
+                "Nimal Perera", "nimal@example.lk", "Password123", "Password123",
+                null, null, null)));
     }
 
     @Test
     void norAnAddressOrADateOfBirth() {
+        // Address and DOB remain optional; only the contact number (GAP-PAT-20) is required.
         Registered registered = service.register(new Registration(
-                "Nimal Perera", "nimal@example.lk", "Password123", "Password123", "  ", "  ", "  "));
+                "Nimal Perera", "nimal@example.lk", "Password123", "Password123",
+                "0771234567", null, null));
 
-        assertNull(registered.patient().contactNumber());
+        assertEquals("0771234567", registered.patient().contactNumber());
         assertNull(registered.patient().address());
         assertNull(registered.patient().dob());
     }
@@ -166,7 +168,7 @@ class SelfRegistrationServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.register(new Registration(
                 "Somebody Else", "nimal@example.lk", "Password123", "Password123",
-                null, null, null)));
+                "0777654321", null, null)));
 
         assertEquals(1, users.count());
         assertEquals(1, patients.count());
@@ -205,13 +207,13 @@ class SelfRegistrationServiceTest {
     @Test
     void aFutureDateOfBirthIsRefused() {
         assertTrue(refusal(new Registration("A Name", "a@b.lk", "Password123", "Password123",
-                null, null, LocalDate.now().plusDays(1).toString())).contains("in the future"));
+                "0771234567", null, LocalDate.now().plusDays(1).toString())).contains("in the future"));
     }
 
     @Test
     void aMalformedDateOfBirthSaysTheFormatWanted() {
         assertTrue(refusal(new Registration("A Name", "a@b.lk", "Password123", "Password123",
-                null, null, "12/04/1988")).contains("yyyy-MM-dd"));
+                "0771234567", null, "12/04/1988")).contains("yyyy-MM-dd"));
     }
 
     @Test
@@ -219,7 +221,7 @@ class SelfRegistrationServiceTest {
         // So signing in is not case-sensitive by accident.
         assertEquals("nimal@example.lk", service.register(new Registration(
                 "Nimal Perera", "  NIMAL@Example.LK  ", "Password123", "Password123",
-                null, null, null)).patient().email());
+                "0771234567", null, null)).patient().email());
     }
 
     @Test

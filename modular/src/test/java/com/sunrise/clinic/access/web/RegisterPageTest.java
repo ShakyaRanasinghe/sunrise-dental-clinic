@@ -10,8 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The registration form's validation contract, asserted against the files
  * themselves. Same style as {@link AbstractLoginServletTest}: no container, no
- * browser — the property that matters here is that the four required fields
- * carry the same browser-side checks the email field already had, so an
+ * browser — the property that matters here is that the required fields
+ * (name, email, password, confirmation and — since GAP-PAT-20 — contact
+ * number) carry the same browser-side checks the email field already had, so
+ * an
  * invalid submission is blocked on the form (field bubble, no server round
  * trip) and, when something still reaches the server, the form re-renders
  * with the reason and the typed values rather than dumping to the error page.
@@ -51,9 +53,19 @@ class RegisterPageTest {
     }
 
     @Test
+    void theRequiredFieldsAllCarryTheBrowserCheck() {
+        // GAP-PAT-20 made the contact number required, joining the original four.
+        String form = read(JSP);
+        for (String name : new String[]{"name", "email", "password", "confirmPassword", "contactNumber"}) {
+            assertTrue(hasAttribute(form, "id=\"" + name + "\"", "required"),
+                    name + " must carry the browser-side required check");
+        }
+    }
+
+    @Test
     void theOptionalFieldsStayOptional() {
         String form = read(JSP);
-        for (String name : new String[]{"contactNumber", "dob", "address"}) {
+        for (String name : new String[]{"dob", "address"}) {
             assertFalse(hasAttribute(form, "id=\"" + name + "\"", "required"),
                     name + " is optional and must not get a required bubble");
         }

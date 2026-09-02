@@ -1,6 +1,6 @@
 package com.sunrise.clinic.appointments.web;
 
-import com.sunrise.clinic.appointments.domain.AppointmentResponse;
+import com.sunrise.clinic.appointments.domain.AppointmentDetailResponse;
 import com.sunrise.clinic.feedback.domain.ReviewResponse;
 import com.sunrise.clinic.platform.web.PageServlet;
 
@@ -25,7 +25,7 @@ public class PatientHomeServlet extends PageServlet {
         page(request, response, () -> {
             // No id from the request: a patient's own appointments are resolved from
             // their account, so there is no parameter to tamper with.
-            var appointments = app().appointmentService().forSelf(currentUser(request));
+            var appointments = app().appointmentService().forSelfDetail(currentUser(request));
             request.setAttribute("appointments", appointments);
             request.setAttribute("booked", field(request, "booked"));
             request.setAttribute("cancelled", field(request, "cancelled"));

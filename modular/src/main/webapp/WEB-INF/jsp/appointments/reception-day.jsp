@@ -78,13 +78,18 @@
                                            class="btn small">Bill</a>
                                     </c:if>
                                     <c:if test="${a.isCancellable()}">
-                                        <form method="post" action="${ctx}/reception/home"
-                                              style="display:inline">
-                                            <input type="hidden" name="appointmentNo"
-                                                   value="${a.appointmentNo()}">
-                                            <input type="hidden" name="date" value="${date}">
-                                            <button type="submit" class="btn small secondary">Cancel</button>
-                                        </form>
+                                        <details class="confirm-cancel">
+                                            <summary class="btn small secondary">Cancel</summary>
+                                            <div class="confirm-cancel__panel">
+                                                <p class="page-subtitle">Cancel ${a.appointmentNo()}? The slot opens again.</p>
+                                                <form method="post" action="${ctx}/reception/home">
+                                                    <input type="hidden" name="appointmentNo"
+                                                           value="${a.appointmentNo()}">
+                                                    <input type="hidden" name="date" value="${date}">
+                                                    <button type="submit" class="btn small">Yes, cancel</button>
+                                                </form>
+                                            </div>
+                                        </details>
                                     </c:if>
                                 </td>
                             </tr>
