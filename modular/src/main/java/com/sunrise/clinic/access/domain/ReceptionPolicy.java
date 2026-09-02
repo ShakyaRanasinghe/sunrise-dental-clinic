@@ -13,8 +13,7 @@ public final class ReceptionPolicy extends RolePolicy {
             Action.READ_PATIENT_RECORD,
             Action.REGISTER_PATIENT,
             Action.PUBLISH_AVAILABILITY,
-            Action.ISSUE_BILL,
-            Action.MANAGE_PHONE
+            Action.ISSUE_BILL
     );
 
     @Override
@@ -53,8 +52,7 @@ public final class ReceptionPolicy extends RolePolicy {
                 new NavItem("Dentists", "/reception/dentists"),
                 new NavItem("Patients", "/reception/patients"),
                 new NavItem("Availability", "/reception/availability"),
-                new NavItem("Billing", "/reception/billing"),
-                new NavItem("Phone", "/reception/phone"));
+                new NavItem("Billing", "/reception/billing"));
     }
 
     /**
