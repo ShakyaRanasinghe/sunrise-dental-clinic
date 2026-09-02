@@ -38,10 +38,6 @@ public class HomeServlet extends PageServlet {
         var dentists = app().referenceService().directoryDentists();
         request.setAttribute("dentists", dentists);
         request.setAttribute("treatments", app().referenceService().directoryTreatments());
-        request.setAttribute("clinicName", app().clinicIdentity().get("clinic.name"));
-        request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
-        request.setAttribute("clinicEmail", app().clinicIdentity().get("clinic.email"));
-        request.setAttribute("clinicAddress", app().clinicIdentity().get("clinic.address"));
 
         // FR-RVW-11: aggregate ratings per dentist for the public landing page.
         Map<String, RatingSummary> ratings = dentists.stream()
