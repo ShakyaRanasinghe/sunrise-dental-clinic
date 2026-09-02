@@ -1,7 +1,37 @@
-<%-- Shared page footer. --%>
+<%-- Shared page footer: clinic identity and release version.
+     AuthenticationFilter decorates every rendered request with clinicName,
+     clinicAddress, clinicPhone, clinicEmail and releaseVersion, so the same
+     footer renders on every page. When they are missing (a failure before the
+     servlet ran) the page still renders with the plain brand bar. --%>
 </main>
+<c:set var="footerName" value="${empty clinicName ? 'Sunrise Dental Clinic' : clinicName}" />
 <footer class="site-footer">
-    Sunrise Dental Clinic &mdash; Appointment &amp; Patient Management System
+    <div class="site-footer__grid">
+        <div class="site-footer__brand">
+            <div class="site-footer__name"><c:out value="${footerName}" /></div>
+            <div class="site-footer__tag">Appointment &amp; Patient Management System</div>
+        </div>
+        <c:if test="${not empty clinicAddress or not empty clinicPhone or not empty clinicEmail}">
+            <div class="site-footer__contact">
+                <div class="site-footer__heading">Visit us</div>
+                <c:if test="${not empty clinicAddress}">
+                    <p><c:out value="${clinicAddress}" /></p>
+                </c:if>
+                <c:if test="${not empty clinicPhone}">
+                    <p>Telephone: <c:out value="${clinicPhone}" /></p>
+                </c:if>
+                <c:if test="${not empty clinicEmail}">
+                    <p>Email: <c:out value="${clinicEmail}" /></p>
+                </c:if>
+            </div>
+        </c:if>
+    </div>
+    <div class="site-footer__bar">
+        <span>&copy; 2026 <c:out value="${footerName}" /></span>
+        <c:if test="${not empty releaseVersion}">
+            <span class="site-footer__release">Release v<c:out value="${releaseVersion}" /></span>
+        </c:if>
+    </div>
 </footer>
 </body>
 </html>

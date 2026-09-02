@@ -72,7 +72,11 @@ public class ClinicIdentityService {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(label(key) + " cannot be empty.");
         }
-        settings.save(key, value.trim());
+        String stored = value.trim();
+        if ("clinic.phone".equals(key)) {
+            PhoneNumbers.validate(stored, label(key));
+        }
+        settings.save(key, stored);
     }
 
     private String defaultFor(String key) {
