@@ -1,5 +1,6 @@
 package com.sunrise.clinic.feedback.web;
 
+import com.sunrise.clinic.feedback.domain.ComplaintResponse;
 import com.sunrise.clinic.feedback.domain.ComplaintStatus;
 import com.sunrise.clinic.platform.web.PageServlet;
 
@@ -53,9 +54,17 @@ public class AdminComplaintsServlet extends PageServlet {
                 throw new IllegalArgumentException("Unknown state: " + statusFilter);
             }
         }
-        request.setAttribute("complaints", app().complaintService().search(currentUser(request),
+        // Open (still to act on) first, closed/reviewed folded below. A concern the
+        // admin has not yet touched matters more than one resolved this morning.
+        var complaints = app().complaintService().search(currentUser(request),
                 status, field(request, "dentistId"),
-                dateField(request, "from", null), dateField(request, "to", null)));
+                dateField(request, "from", null), dateField(request, "to", null));
+        request.setAttribute("open", complaints.stream()
+                .filter(ComplaintResponse::isOpen)
+                .toList());
+        request.setAttribute("closed", complaints.stream()
+                .filter(c -> !c.isOpen())
+                .toList());
         request.setAttribute("statuses", ComplaintStatus.values());
         request.setAttribute("status", statusFilter);
         request.setAttribute("dentists",

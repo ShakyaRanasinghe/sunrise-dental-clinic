@@ -176,6 +176,15 @@ main {
     margin-left: 6px;
 }
 
+.card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.card__head h2 { margin: 0; }
+
 .grid { display: grid; gap: 20px; }
 .grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .grid.stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
@@ -370,6 +379,134 @@ main {
 
 .stat .value.money::before { content: "Rs "; font-size: 15px; color: var(--ink-faint); }
 
+/* Report money-split tiles: label, figure and what share of takings it is. */
+.stat__label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink-faint);
+    font-weight: 600;
+}
+.stat__value {
+    display: block;
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -.02em;
+    margin-top: 4px;
+}
+.stat__value.money::before { content: "Rs "; font-size: 15px; color: var(--ink-faint); }
+.stat__share {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+
+.stat__value .accent { color: var(--blue); }
+.stat--total { background: var(--blue-light); border-color: #cfe0f3; }
+.stat--total .stat__label { color: var(--blue-dark); }
+.stat--total .stat__value { color: var(--blue); }
+.stat--total .stat__value.money::before { color: var(--blue-dark); }
+.stat--total .stat__share { color: var(--blue-dark); }
+
+/* --- Report: ranked person earnings (per dentist / per receptionist) --- */
+.person-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.person-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.person-row__main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.person-row__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.person-row__meta {
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+.person-row__value {
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -.01em;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.person-row__value.money::before { content: "Rs "; font-size: 12px; color: var(--ink-faint); }
+
+/* --- Report: daily takings with bars ---------------------------------- */
+.takings { display: flex; flex-direction: column; gap: 8px; }
+.takings-day {
+    display: grid;
+    grid-template-columns: 1fr minmax(120px, 2fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--line);
+}
+.takings-day--peak { background: var(--blue-light); border-color: #cfe0f3; }
+.takings-day__label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.takings-day__date { font-size: 13px; font-weight: 600; color: var(--ink); }
+.takings-day__meta { font-size: 12px; color: var(--ink-faint); }
+.takings-day__bar-track {
+    background: #efeae4;
+    border-radius: 3px;
+    height: 0.9rem;
+    overflow: hidden;
+}
+.takings-day__bar {
+    background: linear-gradient(90deg, var(--sunrise), var(--sunrise-dark));
+    height: 100%;
+    min-width: 2px;
+    border-radius: 3px;
+}
+.takings-day--peak .takings-day__bar { background: linear-gradient(90deg, var(--blue), var(--blue-dark)); }
+.takings-day__value {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
+}
+.takings-day__value .money::before { content: "Rs "; font-size: 12px; color: var(--ink-faint); }
+.takings-day__best {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--blue);
+}
+@media (max-width: 560px) {
+    .takings-day { grid-template-columns: 1fr auto; }
+    .takings-day__bar-track { grid-column: 1 / -1; order: 3; }
+}
+
 /* --- Forms -------------------------------------------------------- */
 
 .field { margin-bottom: 14px; }
@@ -469,6 +606,60 @@ textarea { min-height: 80px; resize: vertical; }
 .walkin summary::-webkit-details-marker { display: none; }
 .walkin summary:hover { background: #e6ae07; }
 .walkin[open] form { padding: 16px; }
+
+/* --- Dentist schedule: folded-away previous appointments ------------- */
+.done-list { padding: 0; }
+.done-list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    font-weight: 600;
+    color: var(--ink-soft);
+}
+.done-list summary::-webkit-details-marker { display: none; }
+.done-list:not([open]) summary { border-radius: var(--radius); }
+.done-list[open] summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--line); }
+.done-list summary:hover { background: var(--canvas); }
+.done-list summary .count { color: var(--ink-faint); font-weight: 400; }
+.done-list[open] .table-wrap { padding: 8px 6px 12px; }
+
+/* --- Admin complaints: compact cards, review form on click (GAP-ADM-09) - */
+.complaint-card { padding: 0; margin-bottom: 14px; }
+.complaint-card summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+.complaint-card summary::-webkit-details-marker { display: none; }
+.complaint-card[open] summary { border-bottom: 1px solid var(--line); }
+.complaint-card summary:hover { background: var(--canvas); }
+.complaint-card__title { font-weight: 600; }
+.complaint-card__who { color: var(--ink-soft); flex: 1; }
+.complaint-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+.complaint-card__resolution {
+    display: block;
+    color: var(--ink-soft);
+    margin-top: 4px;
+}
+.complaint-card.faded { background: var(--canvas-glass, transparent); color: var(--ink-soft); }
+.complaint-card.faded .table-wrap { padding: 0 18px 16px; }
+.complaint-card.faded table th { width: 160px; }
+.complaint-card.faded + .complaint-card.faded { margin-top: 14px; }
 
 /* --- Buttons ------------------------------------------------------ */
 
