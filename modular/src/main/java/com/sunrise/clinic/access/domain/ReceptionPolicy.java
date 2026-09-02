@@ -50,11 +50,23 @@ public final class ReceptionPolicy extends RolePolicy {
     @Override
     protected List<NavItem> ownNavigation() {
         return List.of(
-                new NavItem("Walk-in", "/reception/walkin"),
                 new NavItem("Dentists", "/reception/dentists"),
                 new NavItem("Patients", "/reception/patients"),
                 new NavItem("Availability", "/reception/availability"),
                 new NavItem("Billing", "/reception/billing"),
                 new NavItem("Phone", "/reception/phone"));
+    }
+
+    /**
+     * No "Home" tab (the Sunrise logo already lands here) and no "Walk-in" tab
+     * (registering a walk-in patient is what the Patients screen is under
+     * FR-REC-21, and this policy would otherwise offer two doorways to the
+     * same register).
+     */
+    @Override
+    public List<NavItem> navigation() {
+        List<NavItem> items = new java.util.ArrayList<>();
+        items.addAll(ownNavigation());
+        return List.copyOf(items);
     }
 }

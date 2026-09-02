@@ -72,7 +72,6 @@ public abstract class RolePolicy {
         List<NavItem> items = new java.util.ArrayList<>();
         items.add(new NavItem("Home", homePath()));
         items.addAll(ownNavigation());
-        items.add(new NavItem("Help", "/help"));
         return List.copyOf(items);
     }
 
