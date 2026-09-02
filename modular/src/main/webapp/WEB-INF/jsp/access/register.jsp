@@ -97,9 +97,9 @@
                 </label>
                 <input type="tel" id="contactNumber" name="contactNumber"
                        value="<c:out value='${param.contactNumber}' />"
-                       pattern="[0-9+() -]+" maxlength="20"
-                       title="Digits, with + ( ) and - allowed — no letters.">
-                <div class="page-subtitle">So the clinic can reach you about an appointment.</div>
+                       pattern="[0-9+() -]{10,20}"
+                       title="A Sri Lankan number: 10 digits starting with 0, or +94 international.">
+                <div class="page-subtitle">So the clinic can reach you about an appointment (e.g. 077 123 4567).</div>
             </div>
             <div class="form-row">
                 <div class="field">

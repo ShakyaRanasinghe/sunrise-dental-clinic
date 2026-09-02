@@ -10,6 +10,7 @@ public final class PatientPolicy extends RolePolicy {
             Action.BOOK_OWN,
             Action.CANCEL_OWN,
             Action.READ_CLINICAL,
+            Action.EDIT_OWN_PROFILE,
             Action.DECLARE_OWN_NOTES,
             Action.RAISE_CONCERN,
             Action.RATE_VISIT
@@ -40,7 +41,18 @@ public final class PatientPolicy extends RolePolicy {
     protected List<NavItem> ownNavigation() {
         return List.of(
                 new NavItem("Book", "/patient/book"),
-                new NavItem("My details", "/patient/profile"),
                 new NavItem("Raise a concern", "/patient/complaints"));
+    }
+
+    /**
+     * The "Home" and "Help" tabs are omitted: the Sunrise logo already takes a
+     * signed-in visitor to the same landing page, and the Help page exists for
+     * visitors, not signed-in users.
+     */
+    @Override
+    public List<NavItem> navigation() {
+        List<NavItem> items = new java.util.ArrayList<>();
+        items.addAll(ownNavigation());
+        return List.copyOf(items);
     }
 }

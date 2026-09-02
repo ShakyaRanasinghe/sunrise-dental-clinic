@@ -24,7 +24,9 @@
         <div class="field">
             <label for="clinic.phone">Phone number</label>
             <input type="text" id="clinic.phone" name="clinic.phone"
-                   value="<c:out value="${values['clinic.phone']}" />" required>
+                   value="<c:out value="${values['clinic.phone']}" />" required
+                   pattern="[0-9+() -]{10,20}"
+                   title="A Sri Lankan number: 10 digits starting with 0, or +94 international.">
         </div>
         <div class="field">
             <label for="clinic.email">Email address</label>

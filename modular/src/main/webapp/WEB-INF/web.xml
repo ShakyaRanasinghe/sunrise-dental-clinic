@@ -8,7 +8,7 @@
     is easier to read and to review than the same information scattered across
     thirty classes.
 
-    Generated from docs/servlets.md — 33 servlets, 36 mappings, 1 filter.
+    Generated from docs/servlets.md — 39 servlets, 42 mappings, 1 filter.
     That document is the contract; if the two disagree, it is right and this is
     stale.
 
@@ -109,19 +109,14 @@
         <url-pattern></url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>PortalChooser</servlet-name>
-        <servlet-class>com.sunrise.clinic.access.web.PortalChooserServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PortalChooser</servlet-name>
-        <url-pattern>/login</url-pattern>
-    </servlet-mapping>
-
     <!--
         Four portals, four subclasses of AbstractLoginServlet. The superclass
         holds the whole authentication sequence; each subclass supplies only the
-        role it admits and the view it renders (FR-OOP-11).
+        role it admits and the view it renders (FR-OOP-11). There is no bare
+        {@code /login} chooser: it was removed because it only offered the patient
+        door, and a visitor who has business with the clinic is either a patient
+        (who arrives via the public home page) or staff (who are issued their own
+        portal address).
     -->
     <servlet>
         <servlet-name>PatientLogin</servlet-name>
@@ -228,15 +223,6 @@
     <servlet-mapping>
         <servlet-name>AppointmentSlip</servlet-name>
         <url-pattern>/reception/slip</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ReceptionPhone</servlet-name>
-        <servlet-class>com.sunrise.clinic.reception.web.ReceptionPhoneServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ReceptionPhone</servlet-name>
-        <url-pattern>/reception/phone</url-pattern>
     </servlet-mapping>
 
     <!-- ============================================================ -->

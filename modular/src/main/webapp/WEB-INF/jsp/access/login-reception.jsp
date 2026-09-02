@@ -16,9 +16,6 @@
         <p class="page-subtitle" style="margin-top:0">Front desk access.</p>
         <%@ include file="/WEB-INF/jsp/access/login-form.jspf" %>
     </div>
-
-    <div class="alt"><a href="${ctx}/help">Need help signing in?</a></div>
-    <div class="alt"><a href="${ctx}/login">&larr; All sign-in options</a></div>
 </div>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>
