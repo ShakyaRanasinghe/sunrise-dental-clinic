@@ -29,61 +29,19 @@
 </div>
 
 <%--
-    FR-DEN-15: the week ahead. The picker above answers "what is happening on a day I
-    name"; this section answers "what is coming", which a one-day view never could -
-    a booking made for tomorrow was invisible until tomorrow was picked.
+    Today's due patients come first: the doctor opens the screen and sees the next
+    patient to treat, not a week's overview. The diagnosis and "Record and complete"
+    form sits right here, at the top of the page (GAP-DEN-08).
 --%>
-<h2 class="page-title">The week ahead</h2>
+<h2 class="page-title">Today's patients</h2>
 <c:choose>
-    <c:when test="${not hasWeekAppointments}">
-        <div class="card">
-            <p class="page-subtitle">Nothing booked with you in the seven days from ${date}.</p>
-        </div>
-    </c:when>
-    <c:otherwise>
-        <c:forEach var="day" items="${week}">
-            <c:if test="${not empty day.appointments()}">
-                <div class="card">
-                    <h2>${day.date()}</h2>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th><th></th></tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="row" items="${day.appointments()}">
-                                    <tr>
-                                        <td>${row.appointment().time()}</td>
-                                        <td>
-                                            <c:out value="${row.appointment().patientName()}" />
-                                            <c:if test="${row.hasCriticalNotes()}">
-                                                <span class="count">&#9888; notes</span>
-                                            </c:if>
-                                        </td>
-                                        <td><c:out value="${row.appointment().treatmentName()}" /></td>
-                                        <td><span class="count">${row.appointment().status()}</span></td>
-                                        <td>
-                                            <a href="${ctx}/dentist/appointment?appointmentNo=${row.appointment().appointmentNo()}">Open</a>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </c:if>
-        </c:forEach>
-    </c:otherwise>
-</c:choose>
-
-<c:choose>
-    <c:when test="${empty appointments}">
+    <c:when test="${empty pending}">
         <div class="card">
             <p class="page-subtitle">Nothing booked with you on ${date}.</p>
         </div>
     </c:when>
     <c:otherwise>
-        <c:forEach var="row" items="${appointments}">
+        <c:forEach var="row" items="${pending}">
             <c:set var="a" value="${row.appointment()}" />
             <div class="card">
                 <h2>
@@ -139,7 +97,7 @@
                             of the appointment.
                         </p>
                     </c:when>
-                    <c:when test="${a.status() eq 'CONFIRMED'}">
+                    <c:otherwise>
                         <form method="post" action="${ctx}/dentist/schedule">
                             <input type="hidden" name="appointmentNo" value="${a.appointmentNo()}">
                             <input type="hidden" name="date" value="${date}">
@@ -152,16 +110,89 @@
                                 <button type="submit" class="btn">Record and complete</button>
                             </div>
                         </form>
-                    </c:when>
-                    <c:otherwise>
-                        <p class="page-subtitle">
-                            <%-- The status machine says nothing further is possible, so the
-                                 page offers nothing rather than a button that would fail. --%>
-                            Recorded. Nothing further to do here.
-                        </p>
                     </c:otherwise>
                 </c:choose>
             </div>
+        </c:forEach>
+    </c:otherwise>
+</c:choose>
+
+<%--
+    What has already been handled on this day — recorded, billed or cancelled — is folded
+    away behind an expander so a doctor opening the schedule sees what still needs attention
+    first, and only opens the rest when they want the day's shape. <details> keeps it script-free.
+--%>
+<c:if test="${not empty done}">
+    <details class="card done-list">
+        <summary>
+            Previous on ${date}
+            <span class="count">${fn:length(done)}</span>
+        </summary>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="row" items="${done}">
+                        <c:set var="a" value="${row.appointment()}" />
+                        <tr>
+                            <td>${a.time()}</td>
+                            <td><c:out value="${a.patientName()}" /></td>
+                            <td><c:out value="${a.treatmentName()}" /></td>
+                            <td><span class="count">${a.status()}</span></td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+    </details>
+</c:if>
+
+<%--
+    FR-DEN-15: the week ahead. The picker above answers "what is happening on a day I
+    name"; this section answers "what is coming", which a one-day view never could -
+    a booking made for tomorrow was invisible until tomorrow was picked.
+--%>
+<h2 class="page-title">The week ahead</h2>
+<c:choose>
+    <c:when test="${not hasWeekAppointments}">
+        <div class="card">
+            <p class="page-subtitle">Nothing booked with you in the seven days from ${date}.</p>
+        </div>
+    </c:when>
+    <c:otherwise>
+        <c:forEach var="day" items="${week}">
+            <c:if test="${not empty day.appointments()}">
+                <div class="card">
+                    <h2>${day.date()}</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Time</th><th>Patient</th><th>Treatment</th><th>Status</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="row" items="${day.appointments()}">
+                                    <tr>
+                                        <td>${row.appointment().time()}</td>
+                                        <td>
+                                            <c:out value="${row.appointment().patientName()}" />
+                                            <c:if test="${row.hasCriticalNotes()}">
+                                                <span class="count">&#9888; notes</span>
+                                            </c:if>
+                                        </td>
+                                        <td><c:out value="${row.appointment().treatmentName()}" /></td>
+                                        <td><span class="count">${row.appointment().status()}</span></td>
+                                        <td>
+                                            <a href="${ctx}/dentist/appointment?appointmentNo=${row.appointment().appointmentNo()}">Open</a>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:if>
         </c:forEach>
     </c:otherwise>
 </c:choose>

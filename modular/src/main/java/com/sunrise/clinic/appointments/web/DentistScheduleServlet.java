@@ -1,5 +1,6 @@
 package com.sunrise.clinic.appointments.web;
 
+import com.sunrise.clinic.appointments.domain.AppointmentStatus;
 import com.sunrise.clinic.platform.web.PageServlet;
 
 import jakarta.servlet.ServletException;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Comparator;
 
 /**
  * A dentist's own schedule, and where a diagnosis is recorded.
@@ -26,15 +28,26 @@ public class DentistScheduleServlet extends PageServlet {
             request.setAttribute("date", date);
             request.setAttribute("today", LocalDate.now());
             // Rows carrying a critical-notes flag, not bare appointments - FR-NOTE-08.
-            request.setAttribute("appointments",
-                    app().appointmentService().forDentistWithWarnings(currentUser(request), date));
+            var day = app().appointmentService().forDentistWithWarnings(currentUser(request), date);
+            // Pending (still to treat) first, in the order the day runs; what is finished
+            // or cancelled is pushed below so a completed day does not lead the screen.
+            var pending = day.stream()
+                    .filter(row -> row.appointment().status() == AppointmentStatus.CONFIRMED)
+                    .sorted(Comparator.comparing(row -> row.appointment().time()))
+                    .toList();
+            var done = day.stream()
+                    .filter(row -> row.appointment().status() != AppointmentStatus.CONFIRMED)
+                    .sorted(Comparator.comparing(row -> row.appointment().time()))
+                    .toList();
+            request.setAttribute("pending", pending);
+            request.setAttribute("done", done);
             // The week ahead above the picker: today and six more days, so a booking made
             // for any day this week is visible without picking that day first - FR-DEN-15.
             var week = app().appointmentService().forDentistWeekWithWarnings(
                     currentUser(request), date, date.plusDays(6));
             request.setAttribute("week", week);
             request.setAttribute("hasWeekAppointments", week.stream()
-                    .anyMatch(day -> !day.appointments().isEmpty()));
+                    .anyMatch(d -> !d.appointments().isEmpty()));
             request.setAttribute("completed", field(request, "completed"));
             render(request, response, "appointments/dentist-schedule");
         });
