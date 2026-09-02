@@ -66,7 +66,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
     public List<Patient> search(String term) {
         String pattern = "%" + term + "%";
         return queryList("SELECT " + COLUMNS + " FROM patient"
-                        + " WHERE name LIKE ? OR contact_number LIKE ? OR email LIKE ?"
+                        + " WHERE " + WHERE_TERM
                         + " ORDER BY name LIMIT 50",
                 statement -> {
                     statement.setString(1, pattern);
@@ -75,6 +75,56 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                 },
                 PatientDao::mapPatient);
     }
+
+    /**
+     * One page of the register. The term and the page limits are all bound
+     * parameters, and the page only stretches to {@code LIMIT} rows, so a long
+     * register never ships the whole list to the front desk in one request.
+     */
+    @Override
+    public List<Patient> page(String term, long offset, int limit) {
+        if (isBlank(term)) {
+            return queryList("SELECT " + COLUMNS + " FROM patient ORDER BY name LIMIT ? OFFSET ?",
+                    statement -> {
+                        statement.setInt(1, limit);
+                        statement.setLong(2, offset);
+                    },
+                    PatientDao::mapPatient);
+        }
+        String pattern = "%" + term + "%";
+        return queryList("SELECT " + COLUMNS + " FROM patient WHERE " + WHERE_TERM
+                        + " ORDER BY name LIMIT ? OFFSET ?",
+                statement -> {
+                    statement.setString(1, pattern);
+                    statement.setString(2, pattern);
+                    statement.setString(3, pattern);
+                    statement.setInt(4, limit);
+                    statement.setLong(5, offset);
+                },
+                PatientDao::mapPatient);
+    }
+
+    /** The size of the page {@link #page(String, long, int)} addresses. */
+    @Override
+    public long countMatching(String term) {
+        if (isBlank(term)) {
+            return count();
+        }
+        String pattern = "%" + term + "%";
+        return queryCount("SELECT COUNT(*) FROM patient WHERE " + WHERE_TERM,
+                statement -> {
+                    statement.setString(1, pattern);
+                    statement.setString(2, pattern);
+                    statement.setString(3, pattern);
+                });
+    }
+
+    private static boolean isBlank(String term) {
+        return term == null || term.isBlank();
+    }
+
+    private static final String WHERE_TERM =
+            "name LIKE ? OR contact_number LIKE ? OR email LIKE ?";
 
     /**
      * Exact match on the contact number, for the duplicate warning (FR-REC-25).

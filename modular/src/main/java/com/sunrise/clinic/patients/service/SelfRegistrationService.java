@@ -6,6 +6,7 @@ import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.domain.Patient;
 import com.sunrise.clinic.patients.domain.PatientResponse;
 import com.sunrise.clinic.platform.data.TransactionRunner;
+import com.sunrise.clinic.platform.service.PhoneNumbers;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -43,8 +44,6 @@ public class SelfRegistrationService {
 
     private static final int MIN_PASSWORD = 8;
     private static final String EMAIL_PATTERN = "[^@\\s]+@[^@\\s]+\\.[^@\\s]+";
-    private static final int MIN_PHONE_DIGITS = 7;
-    private static final String PHONE_PATTERN = "[0-9+()\\- ]+";
 
     private final UserAccountFactory accounts;
     private final PatientRepository patients;
@@ -138,19 +137,7 @@ public class SelfRegistrationService {
     }
 
     private static String contactNumber(String value) {
-        String trimmed = trimToNull(value);
-        if (trimmed == null) {
-            return null;
-        }
-        if (!trimmed.matches(PHONE_PATTERN)) {
-            throw new IllegalArgumentException(
-                    "The contact number can contain digits with + ( ) and - only. No letters.");
-        }
-        if (trimmed.replaceAll("[^0-9]", "").length() < MIN_PHONE_DIGITS) {
-            throw new IllegalArgumentException(
-                    "The contact number needs at least " + MIN_PHONE_DIGITS + " digits.");
-        }
-        return trimmed;
+        return PhoneNumbers.validate(value, "The contact number");
     }
 
     private static String required(String value, String label) {

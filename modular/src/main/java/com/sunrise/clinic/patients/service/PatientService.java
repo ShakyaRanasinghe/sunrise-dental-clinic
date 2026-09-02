@@ -7,6 +7,7 @@ import com.sunrise.clinic.patients.data.PatientRepository;
 import com.sunrise.clinic.patients.domain.Patient;
 import com.sunrise.clinic.patients.domain.PatientResponse;
 import com.sunrise.clinic.platform.error.ResourceNotFoundException;
+import com.sunrise.clinic.platform.service.PhoneNumbers;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -61,6 +62,52 @@ public class PatientService {
                 ? patients.findAll()
                 : patients.search(term.trim());
         return found.stream().map(PatientResponse::of).toList();
+    }
+
+    /**
+     * One page of the register, with the totals the screen needs to draw the
+     * pager and the honest count in the heading.
+     *
+     * <p>{@code page} is treated as an index a human typed: a value below one, an
+     * unreadable value, or one beyond the last page all collapse to a real page
+     * instead of an error, so a stale link or a hand-edited address still renders.
+     * The row window is computed here, off the same total the feed of the current
+     * page is counted from, so the pager never points past the end of the register.
+     * The alternative - a raw {@code offset} travelling through the query string -
+     * is a page number rendered as arithmetic, which is how a register drifts out
+     * of step the moment any record is added.</p>
+     */
+    public PatientPage searchPage(ClinicPrincipal caller, String term, int page, int pageSize) {
+        AccessControl.require(caller, Action.SEARCH_PATIENTS);
+        String clean = (term == null || term.isBlank()) ? null : term.trim();
+        long total = patients.countMatching(clean);
+        int safePageSize = Math.max(1, pageSize);
+        int totalPages = (int) Math.max(1, (total + safePageSize - 1) / safePageSize);
+        int current = clamp(page, 1, totalPages);
+        long offset = (long) (current - 1) * safePageSize;
+        List<PatientResponse> rows = patients.page(clean, offset, safePageSize).stream()
+                .map(PatientResponse::of)
+                .toList();
+        return new PatientPage(rows, total, current, totalPages, safePageSize);
+    }
+
+    /** One screenful of the register and what it sits inside. */
+    public record PatientPage(List<PatientResponse> patients,
+                              long total,
+                              int page,
+                              int totalPages,
+                              int pageSize) {
+        public long firstOnPage() {
+            return total == 0 ? 0 : (long) (page - 1) * pageSize + 1;
+        }
+
+        public long lastOnPage() {
+            return Math.min((long) page * pageSize, total);
+        }
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return value < min ? min : Math.min(value, max);
     }
 
     /**
@@ -137,7 +184,7 @@ public class PatientService {
         AccessControl.require(caller, Action.REGISTER_PATIENT);
 
         String name = required(details.name(), "name");
-        String contactNumber = required(details.contactNumber(), "contactNumber");
+        String contactNumber = validPhone(details.contactNumber());
         String email = validEmail(details.email());
         LocalDate dob = parseDob(details.dob());
 
@@ -168,6 +215,49 @@ public class PatientService {
                              String address,
                              String email,
                              String dob) {
+    }
+
+    /** What a patient may change about their own record. Email is deliberately absent:
+     *  it is the identity that signs them in, so it is not editable here. */
+    public record ProfileUpdate(String name,
+                                String address,
+                                String contactNumber,
+                                String dob) {
+    }
+
+    /**
+     * Edits a patient's own contact details.
+     *
+     * <p>Email is never updated: it is the login identity, and letting it move
+     * would let an account be quietly retargeted. The record is resolved from the
+     * caller's own uid, so there is no id parameter to change to reach someone
+     * else's record.</p>
+     */
+    public PatientResponse updateOwn(ClinicPrincipal caller, ProfileUpdate details) {
+        AccessControl.require(caller, Action.EDIT_OWN_PROFILE);
+
+        Patient patient = patients.findByUserUid(caller.uid())
+                .orElseThrow(() -> new ResourceNotFoundException("No profile for this account"));
+
+        String name = required(details.name(), "name");
+        String contactNumber = validPhone(details.contactNumber());
+        LocalDate dob = parseDob(details.dob());
+
+        Patient updated = Patient.builder()
+                .id(patient.getId())
+                .userUid(patient.getUserUid())
+                .name(name)
+                .address(trimToNull(details.address()))
+                .contactNumber(contactNumber)
+                .email(patient.getEmail())
+                .dob(dob)
+                .build();
+        patients.save(updated);
+
+        log.log(Level.INFO, "patient_profile_updated id={0} by={1}",
+                new Object[] { patient.getId(), caller.uid() });
+
+        return PatientResponse.of(updated);
     }
 
     /**
@@ -210,6 +300,11 @@ public class PatientService {
             throw new IllegalArgumentException("email must be valid");
         }
         return trimmed;
+    }
+
+    /** Required, and must be a number the clinic would store. */
+    private static String validPhone(String value) {
+        return PhoneNumbers.validate(required(value, "contactNumber"), "contactNumber");
     }
 
     private static LocalDate parseDob(String raw) {

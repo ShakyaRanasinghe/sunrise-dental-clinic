@@ -23,6 +23,15 @@ public interface PatientRepository extends Repository<Patient, String> {
     /** Front-desk search across name, contact number and email. */
     List<Patient> search(String term);
 
+    /**
+     * One page of the register, ordered by name. A blank or null {@code term}
+     * lists everyone; the count comes from {@link #countMatching(String)}.
+     */
+    List<Patient> page(String term, long offset, int limit);
+
+    /** How many records {@link #page(String, long, int)} would ever return. */
+    long countMatching(String term);
+
     /** Every patient reachable on this contact number - for the duplicate check. */
     List<Patient> findByContactNumber(String contactNumber);
 }

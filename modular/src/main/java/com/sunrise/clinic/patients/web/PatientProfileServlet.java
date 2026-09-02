@@ -1,6 +1,7 @@
 package com.sunrise.clinic.patients.web;
 
 import com.sunrise.clinic.patients.domain.NoteCategory;
+import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.platform.web.PageServlet;
 
 import jakarta.servlet.ServletException;
@@ -31,6 +32,12 @@ public class PatientProfileServlet extends PageServlet {
         page(request, response, () -> {
             String action = requiredField(request, "action", "Action");
             switch (action) {
+                case "update" -> app().patientService().updateOwn(currentUser(request),
+                        new PatientService.ProfileUpdate(
+                                requiredField(request, "name", "Name"),
+                                field(request, "address"),
+                                requiredField(request, "contactNumber", "Contact number"),
+                                field(request, "dob")));
                 case "declare" -> app().patientNoteService().declare(currentUser(request),
                         category(request), requiredField(request, "detail", "Detail"),
                         request.getParameter("critical") != null);
@@ -54,6 +61,7 @@ public class PatientProfileServlet extends PageServlet {
         request.setAttribute("notes", app().patientNoteService().own(currentUser(request)));
         request.setAttribute("categories", NoteCategory.values());
         request.setAttribute("saved", field(request, "saved"));
+        request.setAttribute("editing", "1".equals(request.getParameter("edit")));
         request.setAttribute("message", message);
         render(request, response, "patients/profile");
     }
