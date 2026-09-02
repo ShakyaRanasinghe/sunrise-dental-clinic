@@ -632,8 +632,9 @@ textarea { min-height: 80px; resize: vertical; }
 .complaint-card { padding: 0; margin-bottom: 14px; }
 .complaint-card summary {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: 6px 12px;
     padding: 14px 18px;
     cursor: pointer;
     list-style: none;
@@ -643,12 +644,24 @@ textarea { min-height: 80px; resize: vertical; }
 .complaint-card[open] summary { border-bottom: 1px solid var(--line); }
 .complaint-card summary:hover { background: var(--canvas); }
 .complaint-card__title { font-weight: 600; }
-.complaint-card__who { color: var(--ink-soft); flex: 1; }
+.complaint-card__who {
+    color: var(--ink-soft);
+    flex: 1 1 160px;
+    min-width: 160px;
+}
+.complaint-card__status { flex: 0 0 auto; }
+
+/* Expanded body: pad the table and the review/resolve form so they don't sit
+   flush against the card edge, and give the textarea room to breathe. */
+.complaint-card[open] > .table-wrap,
+.complaint-card[open] > form { padding: 16px 18px; }
+.complaint-card[open] > .table-wrap { padding-bottom: 0; }
 .complaint-card__head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 6px 12px;
     margin-bottom: 6px;
 }
 .complaint-card__resolution {
@@ -656,10 +669,20 @@ textarea { min-height: 80px; resize: vertical; }
     color: var(--ink-soft);
     margin-top: 4px;
 }
-.complaint-card.faded { background: var(--canvas-glass, transparent); color: var(--ink-soft); }
-.complaint-card.faded .table-wrap { padding: 0 18px 16px; }
+.complaint-card.faded {
+    background: var(--canvas-glass, transparent);
+    color: var(--ink-soft);
+    padding: 2px 0;
+}
+.complaint-card.faded .table-wrap { padding: 4px 18px 16px; }
 .complaint-card.faded table th { width: 160px; }
-.complaint-card.faded + .complaint-card.faded { margin-top: 14px; }
+.complaint-card.faded + .complaint-card.faded { margin-top: 16px; }
+.complaint-card.faded + .complaint-card.faded::before {
+    content: "";
+    display: block;
+    border-top: 1px solid var(--line);
+    margin: 0 18px 16px;
+}
 
 /* --- Buttons ------------------------------------------------------ */
 

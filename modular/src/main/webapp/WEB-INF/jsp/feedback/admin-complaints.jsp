@@ -83,7 +83,7 @@
                     <c:out value="${c.patientName()}" />
                     <c:if test="${not empty c.dentistName()}"> &middot; named <c:out value="${c.dentistName()}" /></c:if>
                 </span>
-                <span class="pill <c:if test='${c.isOpen()}'>error</c:if>">
+                <span class="complaint-card__status pill <c:if test='${c.isOpen()}'>error</c:if>">
                     <c:out value="${c.statusLabel()}" /></span>
             </summary>
             <div class="table-wrap">
