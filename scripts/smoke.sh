@@ -84,9 +84,9 @@ postjson() {
 # ---------------------------------------------------------------- reachable
 bold "0. the application is up"
 check "GET /help answers"                     200 "$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/help")"
-check "GET /login answers"                    200 "$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/login")"
+check "GET / answers"                        200 "$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/")"
 check "the stylesheet is served, not redirected" 200 "$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/css/app.css")"
-contains "every page carries a doctype" '<!doctype html>' "$(curl -sS "$BASE/login")"
+contains "every page carries a doctype" '<!doctype html>' "$(curl -sS "$BASE/")"
 
 # ---------------------------------------------------------------- sign in
 bold "1. the four portals"
@@ -193,6 +193,11 @@ check "the treating dentist reads them"            200 "$(status "$DENTIST" /api
 check "another dentist cannot"                     403 "$(status "$OTHER_DENTIST" /api/patients/p-nimal/notes)"
 check "reception cannot"                           403 "$(status "$RECEPTION" /api/patients/p-nimal/notes)"
 check "the administrator cannot"                   403 "$(status "$ADMIN" /api/patients/p-nimal/notes)"
+# The critical-flag warning renders only for an appointment the dentist still has to
+# treat (pending/CONFIRMED). p-nimal's earlier visit from section 3 was already
+# treated and billed, so book a fresh pending slot on the same day to carry the flag.
+curl -sS -b "$PATIENT" -o /dev/null \
+  -d "slotId=d-silva_${TODAY}_11:00&treatmentId=t-checkup" "$BASE/patient/book"
 contains "the dentist's schedule warns before treating" "declared something important" \
   "$(body "$DENTIST" "/dentist/schedule?date=$TODAY")"
 lacks    "reception's day view carries no diagnosis" "Scaling done" \
