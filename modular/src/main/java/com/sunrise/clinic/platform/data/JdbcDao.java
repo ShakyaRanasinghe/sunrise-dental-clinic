@@ -104,7 +104,12 @@ public abstract class JdbcDao<T, ID> {
 
     /** Run a {@code SELECT COUNT(*)} style query. */
     protected long queryCount(String sql) {
-        return queryOne(sql, NO_PARAMETERS, rs -> rs.getLong(1)).orElse(0L);
+        return queryCount(sql, NO_PARAMETERS);
+    }
+
+    /** Run a parameterised {@code SELECT COUNT(*)} style query. */
+    protected long queryCount(String sql, Binder binder) {
+        return queryOne(sql, binder, rs -> rs.getLong(1)).orElse(0L);
     }
 
     // ------------------------------------------------------------------

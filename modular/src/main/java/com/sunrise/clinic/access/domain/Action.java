@@ -43,6 +43,8 @@ public enum Action {
     READ_PATIENT_RECORD,
     /** Register a walk-in patient. */
     REGISTER_PATIENT,
+    /** Edit one's own contact details. */
+    EDIT_OWN_PROFILE,
     /** Declare one's own medical notes. */
     DECLARE_OWN_NOTES,
 

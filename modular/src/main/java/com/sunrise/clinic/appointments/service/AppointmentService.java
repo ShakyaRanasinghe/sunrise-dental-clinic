@@ -253,8 +253,8 @@ public class AppointmentService {
      * <p>Both writes happen in one transaction: an appointment marked CANCELLED whose
      * slot stayed BOOKED would take that time out of the diary permanently.</p>
      *
-     * <p>A patient may cancel only their own. A billed appointment cannot be cancelled at
-     * all - see {@link Appointment#cancel()}.</p>
+     * <p>A patient may cancel only their own. A completed or billed appointment cannot
+     * be cancelled at all - see {@link Appointment#cancel()}.</p>
      */
     public AppointmentResponse cancel(ClinicPrincipal caller, String appointmentNo) {
         Appointment existing = require(appointmentNo);

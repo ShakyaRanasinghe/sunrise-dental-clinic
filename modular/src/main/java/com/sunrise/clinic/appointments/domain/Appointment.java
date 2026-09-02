@@ -184,10 +184,11 @@ public class Appointment {
     /**
      * Call the appointment off.
      *
-     * <p>Refuses a BILLED appointment. Cancelling one would release the slot while the
-     * bill stood - the clinic would have charged for a visit whose time was given away,
-     * and the revenue split would refer to an appointment that no longer claims it.
-     * Reversing a bill is a financial operation, not a scheduling one.</p>
+     * <p>Refuses a COMPLETED or BILLED appointment. Cancelling one would release the
+     * slot while the visit stands - the clinic would have charged for a visit whose
+     * time was given away, and a billed appointment's revenue split would refer to
+     * one that no longer claims it. Reversing a bill is a financial operation, not a
+     * scheduling one.</p>
      */
     public void cancel() {
         moveTo(AppointmentStatus.CANCELLED);

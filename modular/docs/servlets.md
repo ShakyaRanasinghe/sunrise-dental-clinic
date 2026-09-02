@@ -10,10 +10,10 @@ mapping conflicts in §5 went unnoticed.
 
 | | |
 |---|---|
-| Servlets | **32** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
+| Servlets | **39** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Mappings | **35** declared, plus `/css/*` served by Tomcat's default servlet = 36 routes |
+| Mappings | **42** declared, plus `/css/*` served by Tomcat's default servlet = 43 routes |
 | Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
@@ -68,7 +68,6 @@ middle. That constraint is what produces both conflicts in §5.
 | Module | Servlet | Method · Route | View | Role | Requirement |
 |---|---|---|---|---|---|
 | access | `HomeServlet` | `GET` `""` *(context root)* | redirect | any | FR-WEB-02, FR-AUTH-04 |
-| access | `PortalChooserServlet` | `GET /login` | `access/portal-chooser.jsp` | public | FR-AUTH-01 |
 | access | `PatientLoginServlet` | `GET`·`POST` `/login/patient` | `access/login-patient.jsp` | `PATIENT` | FR-PAT-01, FR-OOP-11 |
 | access | `ReceptionLoginServlet` | `GET`·`POST` `/login/reception` | `access/login-reception.jsp` | `RECEPTIONIST` | FR-REC-01 |
 | access | `DentistLoginServlet` | `GET`·`POST` `/login/dentist` | `access/login-dentist.jsp` | `DENTIST` | FR-DEN-01 |
@@ -170,7 +169,6 @@ each appears once.
 
 ```
 ""                                  HomeServlet                access
-/login                              PortalChooserServlet       access
 /login/patient                      PatientLoginServlet        access
 /login/reception                    ReceptionLoginServlet      access
 /login/dentist                      DentistLoginServlet        access

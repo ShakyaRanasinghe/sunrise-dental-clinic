@@ -87,7 +87,7 @@ curl -sf -o /dev/null -w '%{http_code}\n' http://localhost:8080/help     # 200
 grep -E 'database_pool_ready|clinic_timezone' "$CATALINA_HOME/logs/catalina.out"
 
 # 3. Does a page render, styled?
-curl -s http://localhost:8080/login | head -1                            # <!doctype html>
+curl -s http://localhost:8080/login/patient | head -1                      # <!doctype html>
 curl -sf -o /dev/null -w '%{http_code}\n' http://localhost:8080/css/app.css   # 200
 
 # 4. Can somebody sign in?

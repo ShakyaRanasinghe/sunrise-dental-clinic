@@ -133,6 +133,71 @@ class PatientServiceTest {
                 () -> service.search(DENTIST, ""));
     }
 
+    // --- pagination ----------------------------------------------------
+
+    @Test
+    void theRegisterIsHandedOutInPages() {
+        register("p-bimal", "Bimal Jayasuriya", "0771112221");
+        register("p-chamath", "Chamath Silva", "0771112222");
+        register("p-dinithi", "Dinithi Perera", "0771112223");
+
+        PatientService.PatientPage first = service.searchPage(RECEPTION, null, 1, 2);
+        assertEquals(List.of("Arun Wickrama", "Bimal Jayasuriya"), names(first.patients()));
+        assertEquals(5, first.total());
+        assertEquals(1, first.page());
+        assertEquals(3, first.totalPages());
+        assertEquals(1, first.firstOnPage());
+        assertEquals(2, first.lastOnPage());
+
+        PatientService.PatientPage last = service.searchPage(RECEPTION, null, 3, 2);
+        assertEquals(List.of("Nimal Perera"), names(last.patients()));
+        // The honest record count, not the number of rows on this page - the JSP
+        // prints this in the heading above the pager.
+        assertEquals(5, last.total());
+        assertEquals(3, last.page());
+        assertEquals(5, last.firstOnPage());
+        assertEquals(5, last.lastOnPage());
+    }
+
+    @Test
+    void aPageNumberTooBigOrTooSmallCollapsesToARealPage() {
+        register("p-bimal", "Bimal Jayasuriya", "0771112221");
+
+        // A stale link or a hand-edited ?page= must render, not error (there are
+        // four patients now; the last page is 2).
+        assertEquals(2, service.searchPage(RECEPTION, null, 99, 2).page());
+        assertEquals(2, service.searchPage(RECEPTION, null, Integer.MAX_VALUE, 2).page());
+        assertEquals(1, service.searchPage(RECEPTION, null, 0, 2).page());
+        assertEquals(1, service.searchPage(RECEPTION, null, -4, 2).page());
+    }
+
+    @Test
+    void aSearchResultIsPagedWithItsOwnTotal() {
+        register("p-dinithi", "Dinithi Perera", "0771112223");
+
+        PatientService.PatientPage first = service.searchPage(RECEPTION, "perera", 1, 1);
+        assertEquals(List.of("Dinithi Perera"), names(first.patients()));
+        assertEquals(2, first.total());
+        assertEquals(1, first.firstOnPage());
+        assertEquals(1, first.lastOnPage());
+
+        PatientService.PatientPage second = service.searchPage(RECEPTION, "perera", 2, 1);
+        assertEquals(List.of("Nimal Perera"), names(second.patients()));
+        assertEquals(2, second.total());
+        assertEquals(2, second.page());
+        assertEquals(2, second.firstOnPage());
+        assertEquals(2, second.lastOnPage());
+    }
+
+    @Test
+    void pagingTheRegisterAlsoRequiresSearchPermission() {
+        // Pagination is a different way of reading the same list, not a new read.
+        assertThrows(AccessControl.AccessDeniedException.class,
+                () -> service.searchPage(PATIENT, null, 1, 20));
+        assertThrows(AccessControl.AccessDeniedException.class,
+                () -> service.searchPage(DENTIST, null, 1, 20));
+    }
+
     // --- reading one record -------------------------------------------
 
     @Test
@@ -192,6 +257,32 @@ class PatientServiceTest {
         assertNull(created.address());
         assertNull(created.email());
         assertNull(created.dob());
+    }
+
+    // --- the phone number is validated like self-registration's ---------
+
+    @Test
+    void aContactNumberWithLettersIsRefused() {
+        assertThrows(IllegalArgumentException.class, () -> service.register(RECEPTION,
+                new NewPatient("Sunil", "o77 123 4567", null, null, null)));
+    }
+
+    @Test
+    void aContactNumberMustStartWithZero() {
+        assertThrows(IllegalArgumentException.class, () -> service.register(RECEPTION,
+                new NewPatient("Sunil", "7112345678", null, null, null)));
+    }
+
+    @Test
+    void aContactNumberWithTheWrongDigitCountIsRefused() {
+        assertThrows(IllegalArgumentException.class, () -> service.register(RECEPTION,
+                new NewPatient("Sunil", "071234", null, null, null)));
+    }
+
+    @Test
+    void updateOwnAlsoRefusesAMalformedPhoneNumber() {
+        assertThrows(IllegalArgumentException.class, () -> service.updateOwn(PATIENT,
+                new PatientService.ProfileUpdate("Nimal Perera", null, "o77 123 4567", null)));
     }
 
     @Test
@@ -272,6 +363,11 @@ class PatientServiceTest {
 
     private static NewPatient walkIn() {
         return new NewPatient("Sunil Bandara", "0761112223", "5 Lake Road, Kandy", null, null);
+    }
+
+    private void register(String id, String name, String contactNumber) {
+        patients.save(Patient.builder()
+                .id(id).name(name).contactNumber(contactNumber).build());
     }
 
     private static List<String> names(List<PatientResponse> found) {

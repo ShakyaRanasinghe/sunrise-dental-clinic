@@ -34,8 +34,8 @@ elsewhere.
 > the dentist table), and the clinic's address, telephone and email (from
 > `clinic.properties`). A navigation bar for visitors carries *Services*, *Dentists*,
 > *Contact* and *Help*, plus the two doors that exist before an account: **Sign in**
-> (to `/login`, the role chooser) and **Register**. A signed-in visitor skips it all
-> and goes straight to their role's home, exactly as before.
+> (to `/login/patient`, the patient portal) and **Register**. A signed-in visitor skips
+> it all and goes straight to their role's home, exactly as before.
 >
 > What remains genuinely out of scope is the richer marketing content a separate
 > website would carry — photo galleries, social feeds, a map embed. In production that
@@ -80,14 +80,16 @@ nothing is booked yet and inviting them to book.
 
 ### 4. Returning patient — signing in
 
-If the patient already has an account from a previous visit, they go to `/login`, choose
-**I am a patient**, and sign in with their email and password. They land on their
+If the patient already has an account from a previous visit, they sign in at the
+patient portal (`/login/patient`) from the public home page's **Sign in** button
+(kept also on `/register` for a just-registered person). They land on their
 appointments page showing their history.
 
-> Note: the patient portal (`/login/patient`) is the only one linked from the main login
-> chooser. The staff portals (reception, dentist, administrator) are not shown to the
-> public. The administrator portal is not shown at all on the chooser — it is reached
-> directly at `/login/admin` only.
+> Note: there is no shared "all doors" chooser — a bare `/login` no longer exists. The
+> public site links only the patient portal. Staff portals (reception, dentist,
+> administrator) are not shown to the public: a staff member goes straight to the
+> address issued to them — `/login/reception`, `/login/dentist`, and (deliberately
+> unadvertised) `/login/admin`.
 
 ---
 

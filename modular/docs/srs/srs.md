@@ -179,7 +179,6 @@ sees a link to create an account, a dentist does not.
 
 | Route | Portal | Accepts role |
 |---|---|---|
-| `GET /login` | Portal chooser — four links, no credential fields | — |
 | `GET`/`POST` `/login/patient` | Patient sign-in | `PATIENT` |
 | `GET`/`POST` `/login/reception` | Reception sign-in | `RECEPTIONIST` |
 | `GET`/`POST` `/login/dentist` | Dentist sign-in | `DENTIST` |
@@ -191,8 +190,8 @@ sees a link to create an account, a dentist does not.
 | **FR-AUTH-02** | A portal must reject an account whose role does not match it, even when the password is correct | Built |
 | **FR-AUTH-03** | A rejection for wrong role must be **indistinguishable** from a rejection for wrong password. Both return the same message and take comparable time, so a portal cannot be used to discover which role an email belongs to | Built |
 | **FR-AUTH-04** | On success the user must be redirected to their role's home screen, never left on the sign-in page | Built |
-| **FR-AUTH-05** | An unauthenticated request for a protected page must redirect to that page's role portal; the same request to `/api/**` must return `401` with a JSON body, because a redirect is useless to a caller expecting JSON | Built |
-| **FR-AUTH-06** | Sign-out must invalidate the session and return the user to their portal | Built |
+| **FR-AUTH-05** | An unauthenticated request for a protected page must redirect to its area of the site: a reception path to `/login/reception`, a dentist path to `/login/dentist`, an admin path to `/login/admin`, and a patient path back to the public home page `/` (its portal is reached from there, unlike the staff portals). The same request to `/api/**` must return `401` with a JSON body, because a redirect is useless to a caller expecting JSON — this is also what a lapsed (timed-out) session produces, since an expired session leaves no trace of who held it and the requested path is the only clue | Built |
+| **FR-AUTH-06** | Sign-out must invalidate the session and return the visitor to the public home page — not to a sign-in page, which a just-signed-out user does not want to see again | Built |
 
 **Design note.** Four portals cost more than one and disclose that four roles exist. The
 alternative — one page that routes by the account's role after authentication — is simpler
@@ -213,6 +212,7 @@ portals without duplicating the check is specified in §5.2.
 | **FR-UI-04** | Every destructive action must be confirmed before it takes effect | **Specified** — no confirmation step. It would need client-side script, and the application deliberately has none beyond the receipt's print button |
 | **FR-UI-05** | The bill must have a print layout that fits one page without the navigation chrome | Built |
 | **FR-UI-06** | Money must render with a thousands separator and exactly two decimal places on every screen | Built |
+| **FR-UI-07** | Every page — public and signed-in — must carry a footer showing the clinic name, address, phone, email and the application release version, drawn from the same `clinic_setting` values the administrator edits. Contact details exist once, in the footer, rather than as a body section with a duplicate navbar link | Built |
 
 ### 3.2 Web service interface
 
@@ -661,8 +661,9 @@ which is what makes this an additive change rather than a rewrite:
 | `PageServlet.render()` | Forwarding to a JSP | none |
 | `BaseServlet.handle()` | Exception-to-response mapping | none |
 
-New code required: one abstract servlet, four subclasses, one portal chooser, one shared JSP
-fragment, four thin views.
+New code required: one abstract servlet, four subclasses, one shared JSP
+fragment, four thin views. (A portal chooser at `/login` was built first, then
+removed once its only remaining door was the patient portal — see GAP-PAT-14.)
 
 ### 5.5 Pattern register
 

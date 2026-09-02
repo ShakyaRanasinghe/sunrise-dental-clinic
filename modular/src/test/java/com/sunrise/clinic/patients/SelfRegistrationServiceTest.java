@@ -93,10 +93,17 @@ class SelfRegistrationServiceTest {
     }
 
     @Test
-    void aContactNumberWithFewerThanSevenDigitsIsRefused() {
+    void aContactNumberMustStartWithZero() {
         assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
-                "Password123", "Password123", "123", null, null))
-                .contains("7 digits"));
+                "Password123", "Password123", "7112345678", null, null))
+                .contains("must start with 0"));
+    }
+
+    @Test
+    void aContactNumberWithTheWrongDigitCountIsRefused() {
+        assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
+                "Password123", "Password123", "071234", null, null))
+                .contains("10 digits"));
     }
 
     @Test
@@ -106,6 +113,20 @@ class SelfRegistrationServiceTest {
                 "+94 77 123 4567", null, null));
 
         assertEquals("+94 77 123 4567", registered.patient().contactNumber());
+    }
+
+    @Test
+    void anInternationalFormWithTooFewDigitsIsRefused() {
+        assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
+                "Password123", "Password123", "+94 71 2345", null, null))
+                .contains("must start with 0"));
+    }
+
+    @Test
+    void aLocalFormWithTheWrongDigitCountIsRefused() {
+        assertTrue(refusal(new Registration("Nimal Perera", "nimal@example.lk",
+                "Password123", "Password123", "071234", null, null))
+                .contains("10 digits"));
     }
 
     // --- the defect: both rows, linked ----------------------------------

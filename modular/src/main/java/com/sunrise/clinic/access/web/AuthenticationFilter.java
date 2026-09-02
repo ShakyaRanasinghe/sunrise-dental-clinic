@@ -4,10 +4,15 @@ import com.sunrise.clinic.access.domain.ClinicPrincipal;
 import com.sunrise.clinic.access.domain.Role;
 import com.sunrise.clinic.access.domain.RolePolicy;
 import com.sunrise.clinic.access.service.AccessControl;
+import com.sunrise.clinic.platform.ReleaseInfo;
+import com.sunrise.clinic.platform.di.AppContext;
+import com.sunrise.clinic.platform.di.ClinicServletContext;
 import com.sunrise.clinic.platform.json.Json;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -57,9 +62,16 @@ import java.util.Map;
  */
 public class AuthenticationFilter implements Filter {
 
+    private ServletContext servletContext;
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+        this.servletContext = filterConfig.getServletContext();
+    }
+
     /** Paths reachable without signing in. */
     private static final List<String> PUBLIC_PREFIXES = List.of(
-            "/login",          // the chooser and all four portals beneath it
+            "/login",          // the four login portals beneath it
             "/logout",
             "/register",
             "/help",
@@ -79,6 +91,8 @@ public class AuthenticationFilter implements Filter {
         }
 
         String path = pathWithinApplication(request);
+
+        decorateFooter(request, path);
 
         if (principal != null) {
             if (isForbiddenPrefix(path, principal)) {
@@ -103,9 +117,32 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        // Remember where they were heading so login can send them back.
-        response.sendRedirect(request.getContextPath() + "/login?next="
-                + java.net.URLEncoder.encode(path, java.nio.charset.StandardCharsets.UTF_8));
+        // A session that expires leaves no trace of who held it, so the page they
+        // were on is the only clue to their role. Send them to the login of the area
+        // they were in — or, for a patient, back to the public home page the patient
+        // portal is entered from.
+        response.sendRedirect(request.getContextPath() + anonymousLanding(path));
+    }
+
+    /**
+     * Where an anonymous browser that reached a protected page should be sent.
+     *
+     * <p>Each role owns exactly one URL prefix ({@link RolePolicy#ownedPrefix()},
+     * derived from its home path), so the requested path picks out the area the
+     * caller was in and this returns that role's own login page. Patients are the
+     * exception: the patient portal is entered from the public home page, so a
+     * patient whose session lapsed is returned to {@code /} rather than the
+     * password gate. An unfamiliar path (none should survive to here) falls back
+     * to the public home page too.</p>
+     */
+    static String anonymousLanding(String path) {
+        for (Role role : Role.values()) {
+            RolePolicy policy = RolePolicy.of(role);
+            if (path.startsWith(policy.ownedPrefix())) {
+                return role == Role.PATIENT ? "/" : policy.loginPath();
+            }
+        }
+        return "/";
     }
 
     /** @return the signed-in user, or null. */
@@ -139,6 +176,39 @@ public class AuthenticationFilter implements Filter {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
+        }
+    }
+
+    /**
+     * Give the shared footer the clinic identity and release number to draw on.
+     *
+     * <p>Every page includes {@code footer.jspf}, so the clinic's name, address,
+     * phone, email and release version have to be on every page that renders one.
+     * This filter is the one pass every such request makes — the "define once"
+     * answer to a piece of data every view needs. Static assets and the JSON API
+     * render nothing, so they are skipped rather than charged four lookups each.</p>
+     *
+     * <p>A database failure here must not take a page down before the servlet has
+     * even run: the footer is decoration, so on failure the page simply renders
+     * without the contact block and version.</p>
+     */
+    private void decorateFooter(HttpServletRequest request, String path) {
+        if (path.startsWith("/api/")
+                || path.startsWith("/css/")
+                || path.startsWith("/js/")
+                || path.startsWith("/images/")
+                || "/favicon.ico".equals(path)) {
+            return;
+        }
+        try {
+            AppContext appContext = ClinicServletContext.get(servletContext);
+            request.setAttribute("clinicName", appContext.clinicIdentity().get("clinic.name"));
+            request.setAttribute("clinicPhone", appContext.clinicIdentity().get("clinic.phone"));
+            request.setAttribute("clinicEmail", appContext.clinicIdentity().get("clinic.email"));
+            request.setAttribute("clinicAddress", appContext.clinicIdentity().get("clinic.address"));
+            request.setAttribute("releaseVersion", ReleaseInfo.version());
+        } catch (RuntimeException e) {
+            LOG.log(java.util.logging.Level.WARNING, "footer_context_unavailable", e);
         }
     }
 
