@@ -62,7 +62,6 @@ row concerned.
 | Availability | `/reception/availability` | Publish a dentist's session |
 | Billing | `/reception/billing` | Look up an appointment, issue and print its bill |
 | Book | `/patient/book` | Book on a patient's behalf |
-| Phone | `/reception/phone` | Edit the clinic phone number shown on receipts, slips and the landing page |
 | Help | `/help` | Step-by-step guidance |
 
 ### 4.1 The day view
@@ -143,7 +142,7 @@ row concerned.
 | `dentist` | all | — |
 | `treatment` | all | — |
 | `bill` | all | insert on issuing |
-| `clinic_setting` | all | phone only (`MANAGE_PHONE`) |
+| `clinic_setting` | **never** | **never** — clinic phone, like every setting, is edited only by the administrator (`/admin/clinic`, GAP-REC-10) |
 | `audit_event` | — | written on every change |
 | `notification` | — | written on booking |
 
@@ -228,6 +227,7 @@ Gaps found during QA on the `develop` branch.
 | **GAP-REC-07** | Walk-in booking (GAP-REC-04) duplicated what the Patients register already does — the same search/register and booking path was offered twice, in **Walk-in** and **Patients** | Removed the **Walk-in** tab (and the redundant **Home** tab, since the Sunrise logo is the same doorway); booking a walk-in patient now happens through the single **Patients** register as FR-REC-21 and GAP-REC-03 describe (`ReceptionPolicy.java`) | **Fixed** |
 | **GAP-REC-08** | The walk-in register accepted any contact number — letters, a wrong digit count, or a number that did not begin with the local trunk `0`. Only self-registration validated the field, and with a weaker rule (7 digits, no start/format check), so a mistyped number was stored verbatim and could never match the same person's digits-only record later | The register now validates through a shared `PhoneNumbers` rule used by every entry point (walk-in register, self-registration, profile edit, admin and reception clinic phone): no letters, must start with `0` (or `+94` international), exactly 10 digits. `PatientService.validPhone`, `PhoneNumbers` | **Fixed** |
 | **GAP-REC-09** | The day view still offered **Cancel** on a `COMPLETED` row — a treated visit could be cancelled (and its slot released) before billing, while the record of the treatment stood. FR-PAT-32 forbade it for patients but the state machine let reception do it, and only `BILLED` was refused | The status machine no longer permits `COMPLETED → CANCELLED`: the `Cancel` button disappears from the day view the moment a visit is marked done (`AppointmentStatus.permitted()`, `Appointment.cancel()`), and a direct cancel request on a completed appointment is refused with `409`. Cancel is now offered only while the appointment is still `CONFIRMED` | **Fixed** |
+| **GAP-REC-10** | Reception had its own **Phone** screen (`/reception/phone`, "Phone" tab) that edited the clinic phone number, duplicating the administrator's Clinic screen — two doorways to the same setting, where the admin already owns it (GAP-ADM-06) | Removed reception's phone editing entirely: dropped the **Phone** tab and `MANAGE_PHONE` from the reception role, and deleted `ReceptionPhoneServlet` + `reception/phone.jsp` + its `web.xml` mapping. Clinic phone, like every other identity field, is now edited only at `/admin/clinic` (`ReceptionPolicy.java`, `ClinicIdentityService` javadoc) | **Fixed** |
 
 ---
 
