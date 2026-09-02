@@ -1,10 +1,12 @@
 <%--
     The patient register: search the existing records, and add a walk-in.
 
-    Two forms on one screen, deliberately. The front desk's two jobs are "find this
-    person" and "this person is new", and which one applies is not known until the
-    search comes back empty - so making them separate screens would mean navigating
-    away and back at the moment the answer arrives.
+    The front desk's two jobs are "find this person" and "this person is new", and
+    which one applies is not known until the search comes back empty. Search sits
+    full width at the top with the register (the patient list) straight under it, so
+    the desk sees results without scrolling. The walk-in registration form is behind
+    the "Register a walk-in" toggle below the search, so the layout stays compact
+    until it is needed.
 
     Search is a GET so the result is a shareable, refreshable address. Registration
     is a POST followed by a redirect, so a refresh does not create the patient twice.
@@ -43,62 +45,62 @@
     </c:if>
 </c:if>
 
-<div class="grid two">
-    <div class="card">
-        <h2>Search</h2>
-        <form method="get" action="${ctx}/reception/patients">
-            <div class="field">
-                <label for="q">Name, contact number or email</label>
-                <input type="search" id="q" name="q" value="<c:out value='${q}' />"
-                       placeholder="e.g. Perera or 077&hellip;">
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn">Search</button>
-                <c:if test="${not empty q}">
-                    <a class="btn btn-secondary" href="${ctx}/reception/patients">Clear</a>
-                </c:if>
-            </div>
-        </form>
-        <p class="page-subtitle">One field covers all three &mdash; type whatever the patient gives you.</p>
-    </div>
-
-    <div class="card">
-        <h2>Add a walk-in</h2>
-        <form method="post" action="${ctx}/reception/patients">
-            <div class="field">
-                <label for="name">Full name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label for="contactNumber">Contact number</label>
-                    <input type="tel" id="contactNumber" name="contactNumber" required>
-                </div>
-                <div class="field">
-                    <label for="email">Email <span class="page-subtitle">(optional)</span></label>
-                    <input type="email" id="email" name="email">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label for="dob">Date of birth <span class="page-subtitle">(optional)</span></label>
-                    <input type="date" id="dob" name="dob">
-                </div>
-                <div class="field">
-                    <label for="address">Address <span class="page-subtitle">(optional)</span></label>
-                    <input type="text" id="address" name="address">
-                </div>
-            </div>
-            <div class="notice">
-                This creates a patient record, not a login. The patient can create their own
-                account later if they want online booking.
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn">Add patient</button>
-            </div>
-        </form>
-    </div>
+<div class="card">
+    <h2>Search</h2>
+    <form method="get" action="${ctx}/reception/patients" class="search-form">
+        <div class="field grow">
+            <label for="q">Name, contact number or email</label>
+            <input type="search" id="q" name="q" value="<c:out value='${q}' />"
+                   placeholder="e.g. Perera or 077&hellip;">
+        </div>
+        <div class="form-actions inline">
+            <button type="submit" class="btn">Search</button>
+            <c:if test="${not empty q}">
+                <a class="btn btn-secondary" href="${ctx}/reception/patients">Clear</a>
+            </c:if>
+        </div>
+    </form>
+    <p class="page-subtitle">One field covers all three &mdash; type whatever the patient gives you.</p>
 </div>
+
+<details class="card walkin">
+    <summary>Register a walk-in</summary>
+    <form method="post" action="${ctx}/reception/patients">
+        <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-row">
+            <div class="field">
+                <label for="contactNumber">Contact number</label>
+                <input type="tel" id="contactNumber" name="contactNumber" required
+                       pattern="[0-9+() -]{10,20}"
+                       title="A Sri Lankan number: 10 digits starting with 0, or +94 international.">
+            </div>
+            <div class="field">
+                <label for="email">Email <span class="page-subtitle">(optional)</span></label>
+                <input type="email" id="email" name="email">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="field">
+                <label for="dob">Date of birth <span class="page-subtitle">(optional)</span></label>
+                <input type="date" id="dob" name="dob">
+            </div>
+            <div class="field">
+                <label for="address">Address <span class="page-subtitle">(optional)</span></label>
+                <input type="text" id="address" name="address">
+            </div>
+        </div>
+        <div class="notice">
+            This creates a patient record, not a login. The patient can create their own
+            account later if they want online booking.
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn">Add patient</button>
+        </div>
+    </form>
+</details>
 
 <div class="card">
     <h2>
@@ -106,7 +108,11 @@
             <c:when test="${empty q}">All patients</c:when>
             <c:otherwise>Matching &ldquo;<c:out value="${q}" />&rdquo;</c:otherwise>
         </c:choose>
-        <span class="count">${fn:length(patients)}</span>
+        <%--
+            The honest size of the register, not the number of rows on this screen.
+            The table shows one page; the count is everything that would match.
+        --%>
+        <span class="count">${total}</span>
     </h2>
 
     <c:choose>
@@ -164,6 +170,53 @@
                     </tbody>
                 </table>
             </div>
+            <c:if test="${total > pageSize}">
+                <%--
+                    Q&A-free pager: the links are plain GET addresses that carry the
+                    search term and the target page, so every page of a result is a
+                    stable, refreshable, shareable URL - the same contract the search
+                    box already follows. The controls are hand-built in the servlet,
+                    clamped to the ends of the register so a stale link still draws a
+                    real page.
+                --%>
+                <c:url var="pageUrl" value="${ctx}/reception/patients">
+                    <c:param name="q" value="${q}" />
+                </c:url>
+                <div class="pager">
+                    <p class="page-subtitle">
+                        Showing ${firstOnPage}&ndash;${lastOnPage} of ${total}
+                        patient<c:if test="${total != 1}">s</c:if>.
+                    </p>
+                    <nav class="pager__links" aria-label="Patient list pages">
+                        <c:choose>
+                            <c:when test="${not empty prevPage}">
+                                <a class="pager__link" rel="prev" href="${pageUrl}&amp;page=${prevPage}">&larr; Prev</a>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="pager__link disabled" aria-disabled="true">&larr; Prev</span>
+                            </c:otherwise>
+                        </c:choose>
+                        <c:forEach var="n" items="${pages}">
+                            <c:choose>
+                                <c:when test="${n == page}">
+                                    <span class="pager__link current" aria-current="page">${n}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <a class="pager__link" href="${pageUrl}&amp;page=${n}">${n}</a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                        <c:choose>
+                            <c:when test="${not empty nextPage}">
+                                <a class="pager__link" rel="next" href="${pageUrl}&amp;page=${nextPage}">Next &rarr;</a>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="pager__link disabled" aria-disabled="true">Next &rarr;</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </nav>
+                </div>
+            </c:if>
         </c:otherwise>
     </c:choose>
 </div>

@@ -20,9 +20,12 @@ import java.util.Set;
  *
  * <p>Write access is split by role:</p>
  * <ul>
- *   <li>Administrator — all four fields ({@link Action#MANAGE_CLINIC_SETTINGS})</li>
- *   <li>Receptionist — phone only ({@link Action#MANAGE_PHONE})</li>
+ *   <li>Administrator — all four fields ({@link Action#MANAGE_CLINIC_SETTINGS},
+ *       phone via {@link Action#MANAGE_PHONE})</li>
  * </ul>
+ *
+ * <p>The reception role no longer edits the phone (GAP-REC-10); that belongs to
+ * the administrator's Clinic screen alone.</p>
  */
 public class ClinicIdentityService {
 
@@ -72,7 +75,11 @@ public class ClinicIdentityService {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(label(key) + " cannot be empty.");
         }
-        settings.save(key, value.trim());
+        String stored = value.trim();
+        if ("clinic.phone".equals(key)) {
+            PhoneNumbers.validate(stored, label(key));
+        }
+        settings.save(key, stored);
     }
 
     private String defaultFor(String key) {

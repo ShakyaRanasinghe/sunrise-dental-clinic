@@ -55,8 +55,9 @@ Every account uses the password **`Password123`**.
 | Dentist (second) | `/login/dentist` | `jayasuriya@sunrisedental.lk` |
 | Administrator | `/login/admin` | `admin@sunrisedental.lk` |
 
-Start at <http://localhost:8080/login> and pick a door — **except the administrator**, which is
-deliberately not on the chooser. Go straight to <http://localhost:8080/login/admin>.
+A patient starts at the public home page and signs in via `/login/patient`. Staff go
+straight to their issued portal address: `/login/reception`, `/login/dentist` or
+(administrator, deliberately unadvertised) `/login/admin`.
 
 Three things worth knowing before you start clicking:
 

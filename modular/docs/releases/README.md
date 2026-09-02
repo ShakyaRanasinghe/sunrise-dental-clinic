@@ -190,3 +190,4 @@ git checkout dev
 | Version | Date | Candidate (QA) | Features |
 |---------|------|----------------|----------|
 | `v1.0.0` | 2026-08-28 | `qa_v1.0.0` | See `v1.0.0.md` |
+| `v1.0.1` | 2026-09-02 | `qa_v1.0.1` | See `v1.0.1.md` |

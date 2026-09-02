@@ -30,56 +30,61 @@
     </div>
 
     <c:choose>
-        <c:when test="${empty appointments}">
+        <c:when test="${empty dentistsTreated}">
             <p class="page-subtitle">
                 You have not been treated at the clinic yet, so there is nothing to raise a
                 concern about. Telephone us if something else is wrong.
             </p>
         </c:when>
         <c:otherwise>
-            <form method="post" action="${ctx}/patient/complaints">
-                <div class="form-row">
-                    <div class="field">
-                        <label for="appointmentNo">Which visit</label>
-                        <select id="appointmentNo" name="appointmentNo" required>
-                            <c:forEach var="a" items="${appointments}">
-                                <%-- The dentist is taken from the visit, so the form cannot
-                                     name a dentist this patient has never seen. --%>
-                                <option value="${a.appointmentNo()}"
-                                        data-dentist="${a.dentistId()}">
-                                    ${a.date()} &mdash; <c:out value="${a.dentistName()}" />
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="dentistId">Dentist</label>
-                        <select id="dentistId" name="dentistId" required>
-                            <c:forEach var="a" items="${appointments}">
-                                <option value="${a.dentistId()}">
-                                    <c:out value="${a.dentistName()}" />
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="category">What is it about</label>
-                        <select id="category" name="category" required>
-                            <c:forEach var="c" items="${categories}">
-                                <option value="${c}">${c.label()}</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </div>
-                <div class="field">
-                    <label for="detail">Tell us what happened</label>
-                    <textarea id="detail" name="detail" rows="6" required
-                              placeholder="In your own words. The more you can tell us, the more we can do."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn">Send</button>
-                </div>
-            </form>
+            <p class="page-subtitle">
+                Choose the dentist your concern is about. The form opens when you do.
+            </p>
+            <c:forEach var="dentist" items="${dentistsTreated}">
+                <details class="concern-dentist">
+                    <summary>
+                        <span class="concern-dentist__name"><c:out value="${dentist.dentistName()}" /></span>
+                        <span class="concern-dentist__count">${fn:length(dentist.visits())}
+                            visit${fn:length(dentist.visits()) != 1 ? 's' : ''}</span>
+                    </summary>
+                    <form method="post" action="${ctx}/patient/complaints">
+                        <input type="hidden" name="dentistId" value="${dentist.dentistId()}">
+                        <c:choose>
+                            <c:when test="${fn:length(dentist.visits()) > 1}">
+                                <div class="field">
+                                    <label for="appointmentNo-${dentist.dentistId()}">Which visit</label>
+                                    <select id="appointmentNo-${dentist.dentistId()}" name="appointmentNo">
+                                        <option value="${dentist.visits()[0].appointmentNo()}">
+                                            Most recent &mdash; ${dentist.visits()[0].date()}</option>
+                                        <c:forEach var="a" items="${dentist.visits()}">
+                                            <option value="${a.appointmentNo()}">${a.date()} &mdash; <c:out value="${a.treatmentName()}" /></option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <input type="hidden" name="appointmentNo" value="${dentist.visits()[0].appointmentNo()}">
+                            </c:otherwise>
+                        </c:choose>
+                        <div class="field">
+                            <label for="category-${dentist.dentistId()}">What is it about</label>
+                            <select id="category-${dentist.dentistId()}" name="category" required>
+                                <c:forEach var="c" items="${categories}">
+                                    <option value="${c}">${c.label()}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="detail-${dentist.dentistId()}">Tell us what happened</label>
+                            <textarea id="detail-${dentist.dentistId()}" name="detail" rows="6" required
+                                      placeholder="In your own words. The more you can tell us, the more we can do."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Send concern</button>
+                        </div>
+                    </form>
+                </details>
+            </c:forEach>
         </c:otherwise>
     </c:choose>
 </div>

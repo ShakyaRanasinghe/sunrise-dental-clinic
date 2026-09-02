@@ -151,6 +151,21 @@ class AppointmentServiceTest {
     }
 
     @Test
+    void aCompletedAppointmentCannotBeCancelled() {
+        // Once the treatment has been recorded, the visit is a financial record in
+        // progress, and the Cancel button disappears with the transaction: cancelling a
+        // completed appointment is the same mistake as cancelling a billed one.
+        String no = fixture.service.book(nimal, "s1", "t-checkup", null).appointmentNo();
+        fixture.service.complete(AppointmentTestFixture.silva(), no, "Cleaned and polished");
+
+        assertThrows(IllegalStateException.class,
+                () -> fixture.service.cancel(AppointmentTestFixture.reception(), no));
+        assertEquals(AppointmentStatus.COMPLETED, fixture.service.require(no).getStatus());
+        assertEquals(SlotStatus.BOOKED, fixture.slots.findById("s1").orElseThrow().getStatus(),
+                "the slot must not be released");
+    }
+
+    @Test
     void aCancelledAppointmentCannotBeCompleted() {
         String no = fixture.service.book(nimal, "s1", "t-checkup", null).appointmentNo();
         fixture.service.cancel(nimal, no);

@@ -55,77 +55,123 @@
 </div>
 
 <c:choose>
-    <c:when test="${empty complaints}">
+    <c:when test="${empty open and empty closed}">
         <div class="card">
             <p class="page-subtitle">Nothing matches.</p>
         </div>
     </c:when>
     <c:otherwise>
-        <c:forEach var="c" items="${complaints}">
-            <div class="card">
-                <h2>
-                    <c:out value="${c.categoryLabel()}" />
-                    <span class="count">
-                        <span class="pill <c:if test='${c.isOpen()}'>error</c:if>">
-                            <c:out value="${c.statusLabel()}" /></span>
-                    </span>
-                </h2>
-                <div class="table-wrap">
-                    <table>
-                        <tbody>
-                            <tr><th>Patient</th><td><c:out value="${c.patientName()}" /></td></tr>
-                            <tr><th>Dentist named</th><td><c:out value="${c.dentistName()}" /></td></tr>
-                            <c:if test="${not empty c.appointmentNo()}">
-                                <tr><th>Appointment</th>
-                                    <td><code>${c.appointmentNo()}</code></td></tr>
-                            </c:if>
-                            <tr><th>Raised</th><td>${c.submittedAt()}</td></tr>
-                            <%--
-                                Read-only, with no control beside it. FR-ADM-55: the
-                                administrator must not be able to edit the patient's account
-                                of what happened, and ComplaintDao's update statement cannot
-                                write this column at all.
-                            --%>
-                            <tr><th>What the patient said</th><td><c:out value="${c.detail()}" /></td></tr>
-                            <c:if test="${not empty c.resolution()}">
-                                <tr><th>Resolution</th><td><c:out value="${c.resolution()}" /></td></tr>
-                            </c:if>
-                        </tbody>
-                    </table>
-                </div>
 
-                <c:choose>
-                    <c:when test="${c.status() eq 'SUBMITTED'}">
-                        <form method="post" action="${ctx}/admin/complaints">
-                            <input type="hidden" name="action" value="review">
-                            <input type="hidden" name="complaintId" value="${c.id()}">
-                            <div class="form-actions">
-                                <button type="submit" class="btn">Start reviewing</button>
-                            </div>
-                        </form>
-                    </c:when>
-                    <c:when test="${c.status() eq 'UNDER_REVIEW'}">
-                        <form method="post" action="${ctx}/admin/complaints">
-                            <input type="hidden" name="complaintId" value="${c.id()}">
-                            <div class="field">
-                                <label for="r-${c.id()}">What was done about it</label>
-                                <textarea id="r-${c.id()}" name="resolution" rows="3" required
-                                          placeholder="Required — a concern closed with no explanation is a concern ignored."></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn" name="action" value="resolve">
-                                    Resolve</button>
-                                <button type="submit" class="btn btn-secondary" name="action"
-                                        value="dismiss">Close without action</button>
-                            </div>
-                        </form>
-                    </c:when>
-                    <c:otherwise>
-                        <p class="page-subtitle">Closed. Nothing further to do.</p>
-                    </c:otherwise>
-                </c:choose>
+    <%--
+        Open complaints first, each as a compact card. The review controls sit inside a
+        <details> so a growing queue stays scannable — you see who, when and what at a
+        glance, and open the form only for the one you are acting on (GAP-ADM-09).
+    --%>
+    <h2 class="page-title">To act on</h2>
+    <c:if test="${empty open}">
+        <div class="card">
+            <p class="page-subtitle">No complaints waiting on you.</p>
+        </div>
+    </c:if>
+    <c:forEach var="c" items="${open}">
+        <details class="card complaint-card" <c:if test="${c.status() eq 'UNDER_REVIEW'}">open</c:if>>
+            <summary>
+                <span class="complaint-card__title">
+                    <c:out value="${c.categoryLabel()}" />
+                </span>
+                <span class="complaint-card__who">
+                    <c:out value="${c.patientName()}" />
+                    <c:if test="${not empty c.dentistName()}"> &middot; named <c:out value="${c.dentistName()}" /></c:if>
+                </span>
+                <span class="complaint-card__status pill <c:if test='${c.isOpen()}'>error</c:if>">
+                    <c:out value="${c.statusLabel()}" /></span>
+            </summary>
+            <div class="table-wrap">
+                <table>
+                    <tbody>
+                        <c:if test="${not empty c.appointmentNo()}">
+                            <tr><th>Appointment</th>
+                                <td><code>${c.appointmentNo()}</code></td></tr>
+                        </c:if>
+                        <tr><th>Raised</th><td>${c.submittedAt()}</td></tr>
+                        <tr>
+                            <%-- FR-ADM-55: the patient's account of what happened is
+                                 read-only, and cannot be rewritten from here or anywhere. --%>
+                            <th>What the patient said</th>
+                            <td><c:out value="${c.detail()}" /></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </c:forEach>
+
+            <c:choose>
+                <c:when test="${c.status() eq 'SUBMITTED'}">
+                    <form method="post" action="${ctx}/admin/complaints">
+                        <input type="hidden" name="action" value="review">
+                        <input type="hidden" name="complaintId" value="${c.id()}">
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Start reviewing</button>
+                        </div>
+                    </form>
+                </c:when>
+                <c:when test="${c.status() eq 'UNDER_REVIEW'}">
+                    <form method="post" action="${ctx}/admin/complaints">
+                        <input type="hidden" name="complaintId" value="${c.id()}">
+                        <div class="field">
+                            <label for="r-${c.id()}">What was done about it</label>
+                            <textarea id="r-${c.id()}" name="resolution" rows="3" required
+                                      placeholder="Required — a concern closed with no explanation is a concern ignored."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn" name="action" value="resolve">
+                                Resolve</button>
+                            <button type="submit" class="btn btn-secondary" name="action"
+                                    value="dismiss">Close without action</button>
+                        </div>
+                    </form>
+                </c:when>
+            </c:choose>
+        </details>
+    </c:forEach>
+
+    <%--
+        Complaints already reviewed or closed are folded away so they never crowd the
+        queue. Open on demand with <details>, no script (GAP-ADM-09).
+    --%>
+    <c:if test="${not empty closed}">
+        <details class="card done-list">
+            <summary>
+                Reviewed
+                <span class="count">${fn:length(closed)}</span>
+            </summary>
+            <c:forEach var="c" items="${closed}">
+                <div class="complaint-card faded">
+                    <div class="complaint-card__head">
+                        <span class="complaint-card__title"><c:out value="${c.categoryLabel()}" /></span>
+                        <span class="pill"><c:out value="${c.statusLabel()}" /></span>
+                    </div>
+                    <div class="complaint-card__who">
+                        <c:out value="${c.patientName()}" />
+                        <c:if test="${not empty c.resolution()}">
+                            <span class="complaint-card__resolution"><c:out value="${c.resolution()}" /></span>
+                        </c:if>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <tbody>
+                                <tr><th>Raised</th><td>${c.submittedAt()}</td></tr>
+                                <tr><th>What the patient said</th><td><c:out value="${c.detail()}" /></td></tr>
+                                <c:if test="${not empty c.resolution()}">
+                                    <tr><th>Resolution</th><td><c:out value="${c.resolution()}" /></td></tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:forEach>
+        </details>
+    </c:if>
+
     </c:otherwise>
 </c:choose>
 

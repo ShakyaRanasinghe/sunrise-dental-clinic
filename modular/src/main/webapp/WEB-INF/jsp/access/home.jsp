@@ -15,71 +15,69 @@
 </div>
 
 <h2 id="services" class="page-title">Services</h2>
-<p class="page-subtitle">What we treat. Sign in to see pricing and book online.</p>
+<p class="page-subtitle">What we treat. Open a service to see what it covers. Sign in to see pricing and book online.</p>
 
-<div class="card">
-    <table class="table">
-        <thead>
-            <tr><th>Treatment</th><th>What it covers</th></tr>
-        </thead>
-        <tbody>
-            <c:forEach var="t" items="${treatments}">
-                <tr>
-                    <td><c:out value="${t.name()}" /></td>
-                    <td><c:out value="${t.description()}" /></td>
-                </tr>
-            </c:forEach>
-        </tbody>
-    </table>
-</div>
-
-<h2 id="dentists" class="page-title">Our dentists</h2>
-<p class="page-subtitle">Every dentist publishes their own availability, so the times you see when booking are real.</p>
-
-<div class="grid two">
-    <c:forEach var="d" items="${dentists}">
-        <div class="card">
-            <h2><c:out value="${d.name()}" /></h2>
-            <p><c:out value="${d.specialization()}" /></p>
-            <%-- FR-RVW-11: aggregate rating, shown only when 5+ reviews exist (FR-RVW-12) --%>
-            <c:set var="rating" value="${ratings[d.id()]}" />
-            <c:if test="${not empty rating and rating.isPublishable()}">
-                <p style="margin:0;">
-                    <span class="stars">
-                        <c:forEach begin="1" end="5" var="i">
-                            <c:choose>
-                                <c:when test="${i <= rating.mean().intValue()}">&#9733;</c:when>
-                                <c:otherwise>&#9734;</c:otherwise>
-                            </c:choose>
-                        </c:forEach>
-                    </span>
-                    <fmt:formatNumber value="${rating.mean()}" minFractionDigits="1" maxFractionDigits="1" />
-                    <span class="page-subtitle">(${rating.reviews()} review${rating.reviews() != 1 ? 's' : ''})</span>
-                </p>
-            </c:if>
-            <c:if test="${not empty rating and not rating.isPublishable() and rating.reviews() > 0}">
-                <p style="margin:0;">
-                    <span class="page-subtitle">${rating.reviewsUntilPublishable()} more review${rating.reviewsUntilPublishable() != 1 ? 's' : ''} needed to show rating</span>
-                </p>
-            </c:if>
-        </div>
+<div class="card services-list">
+    <c:forEach var="t" items="${treatments}" varStatus="i">
+        <details class="service-item"<c:if test="${i.first}"> open</c:if>>
+            <summary>
+                <span class="service-item__no">0${i.index + 1}</span>
+                <span class="service-item__name"><c:out value="${t.name()}" /></span>
+            </summary>
+            <div class="service-item__body">
+                <p class="service-item__desc"><c:out value="${t.description()}" /></p>
+                <a class="service-item__cta" href="${ctx}/register">Book this service &rarr;</a>
+            </div>
+        </details>
     </c:forEach>
 </div>
 
-<h2 id="contact" class="page-title">Visit us</h2>
-<div class="card">
-    <p><strong><c:out value="${clinicName}" /></strong></p>
-    <p>
-        <c:out value="${clinicAddress}" /><br>
-        Telephone: <c:out value="${clinicPhone}" /><br>
-        Email: <c:out value="${clinicEmail}" />
-    </p>
-    <p class="page-subtitle">
-        Prefer to talk first? Call us &mdash; reception can answer questions and book on
-        your behalf. Or <a href="${ctx}/register">create an account</a> and choose your own
-        time. If you cannot sign in, the <a href="${ctx}/help">help page</a> explains how
-        everything works.
-    </p>
+<h2 id="dentists" class="page-title">Our dentists</h2>
+<p class="page-subtitle">Every dentist publishes their own availability, so the times you see when booking are real. Open a card to see their consultation fee.</p>
+
+<div class="grid two">
+    <c:forEach var="d" items="${dentists}" varStatus="i">
+        <details class="dentist-card"<c:if test="${i.first}"> open</c:if>>
+            <c:set var="nameWords" value="${fn:split(d.name(), ' ')}" />
+            <c:set var="wordCount" value="${fn:length(nameWords)}" />
+            <summary class="dentist-card__summary">
+                <span class="dentist-card__avatar"
+                      aria-hidden="true">${wordCount > 1 ? fn:substring(nameWords[1], 0, 1) : fn:substring(nameWords[0], 0, 1)}${wordCount > 1 ? fn:substring(nameWords[wordCount - 1], 0, 1) : ''}</span>
+                <span class="dentist-card__who">
+                    <span class="dentist-card__name"><c:out value="${d.name()}" /></span>
+                    <span class="dentist-card__spec"><c:out value="${d.specialization()}" /></span>
+                </span>
+            </summary>
+            <div class="dentist-card__body">
+                <c:set var="rating" value="${ratings[d.id()]}" />
+                <%-- FR-RVW-11: aggregate rating, shown only when 5+ reviews exist (FR-RVW-12) --%>
+                <c:if test="${not empty rating and rating.isPublishable()}">
+                    <p class="dentist-card__rating">
+                        <span class="stars">
+                            <c:forEach begin="1" end="5" var="i">
+                                <c:choose>
+                                    <c:when test="${i <= rating.mean().intValue()}">&#9733;</c:when>
+                                    <c:otherwise>&#9734;</c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </span>
+                        <fmt:formatNumber value="${rating.mean()}" minFractionDigits="1" maxFractionDigits="1" />
+                        <span class="page-subtitle">(${rating.reviews()} review${rating.reviews() != 1 ? 's' : ''})</span>
+                    </p>
+                </c:if>
+                <c:if test="${not empty rating and not rating.isPublishable() and rating.reviews() > 0}">
+                    <p class="dentist-card__rating">
+                        <span class="page-subtitle">${rating.reviewsUntilPublishable()} more review${rating.reviewsUntilPublishable() != 1 ? 's' : ''} needed to show rating</span>
+                    </p>
+                </c:if>
+                <p class="dentist-card__fee">
+                    Consultation
+                    <strong>Rs <fmt:formatNumber value="${d.consultationFee()}" minFractionDigits="2" maxFractionDigits="2" /></strong>
+                </p>
+                <a class="btn" href="${ctx}/register">Register &amp; book online</a>
+            </div>
+        </details>
+    </c:forEach>
 </div>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>
