@@ -36,6 +36,18 @@ public record IncomeTotals(int bills,
         return attributed().compareTo(gross) == 0;
     }
 
+    /**
+     * @return this share as a percentage of gross takings, or 0 when there is no
+     *         gross to divide by, so a "share" of an empty period shows 0% rather
+     *         than NaN.
+     */
+    public BigDecimal shareOf(BigDecimal share) {
+        if (gross.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return share.movePointRight(2).divide(gross, 1, java.math.RoundingMode.HALF_UP);
+    }
+
     private static BigDecimal zeroIfNull(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }

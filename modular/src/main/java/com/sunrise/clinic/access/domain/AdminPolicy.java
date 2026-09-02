@@ -63,4 +63,16 @@ public final class AdminPolicy extends RolePolicy {
                 new NavItem("Complaints", "/admin/complaints"),
                 new NavItem("Audit", "/admin/audit"));
     }
+
+    /**
+     * No "Home" tab: the Sunrise logo already lands here, on the reports screen,
+     * so a second doorway to the same page would be noise - the same reason the
+     * patient and reception navigation carry no Home (GAP-REC-07).
+     */
+    @Override
+    public List<NavItem> navigation() {
+        List<NavItem> items = new java.util.ArrayList<>();
+        items.addAll(ownNavigation());
+        return List.copyOf(items);
+    }
 }
