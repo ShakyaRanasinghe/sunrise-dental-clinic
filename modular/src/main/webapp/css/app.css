@@ -10,6 +10,9 @@
     --sunrise:        #c2571a;
     --sunrise-dark:   #9c4514;
     --sunrise-light:  #fdf3ec;
+    --blue:           #1e6bb8;
+    --blue-dark:      #175a9a;
+    --blue-light:     #eef4fb;
     --ink:            #1f2933;
     --ink-soft:       #52606d;
     --ink-faint:      #7b8794;
@@ -22,6 +25,7 @@
     --warn-light:     #fdf4e3;
     --bad:            #b3261e;
     --bad-light:      #fdecea;
+    --gold:           #e9a821;
     --radius:         8px;
     --shadow:         0 1px 3px rgba(31, 41, 51, .08), 0 1px 2px rgba(31, 41, 51, .06);
 }
@@ -59,7 +63,7 @@ body {
 .brand {
     font-weight: 700;
     font-size: 17px;
-    color: var(--sunrise);
+    color: var(--blue);
     text-decoration: none;
     white-space: nowrap;
 }
@@ -176,6 +180,170 @@ main {
 .grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .grid.stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 
+/* ---------------------------------------------------------------------
+   Services on the public home page — an interactive catalogue, not a table.
+
+   Each treatment is a numbered row the visitor opens to read what it covers,
+   with a "Book this service" prompt in the revealed body. A
+   <details>/<summary> pair (no script, matching .concern-dentist and
+   .walkin). The rows share the card's edges so the list reads as one piece;
+   the "+" badge and number chip mark each row as something to click.
+   --------------------------------------------------------------------- */
+
+.services-list { padding: 0; }
+.service-item {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+.service-item:last-child { border-bottom: 0; }
+.service-item summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    color: var(--ink);
+}
+.service-item summary::-webkit-details-marker { display: none; }
+.service-item__no {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.service-item__name { flex: 1; font-weight: 600; }
+.service-item summary::after {
+    content: "+";
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.service-item[open] summary::after {
+    content: "\2013";
+    background: var(--blue);
+    color: #fff;
+}
+.service-item summary:hover { background: var(--canvas); }
+.service-item[open] summary { color: var(--blue-dark); }
+.service-item__body { padding: 0 18px 16px 60px; }
+.service-item__desc { margin: 0; color: var(--ink-soft); }
+.service-item__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    text-decoration: none;
+}
+.service-item__cta:hover { color: var(--blue); text-decoration: underline; }
+
+/* ---------------------------------------------------------------------
+   Our dentists on the public home page — profile cards.
+
+   <details>/<summary> again: the head (initials avatar, name,
+   specialisation pill) is always visible, and opening the card reveals the
+   aggregate rating, the consultation fee and the booking call-to-action.
+   Avatar initials are drawn from the name itself; each card cycles its own
+   accent of the clinic palette. No script, as everywhere on this site.
+   --------------------------------------------------------------------- */
+
+.dentist-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.dentist-card summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+}
+.dentist-card summary::-webkit-details-marker { display: none; }
+.dentist-card summary:hover { background: var(--canvas); }
+.dentist-card__avatar {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.grid.two .dentist-card:nth-child(4n+1) summary .dentist-card__avatar { background: var(--blue); }
+.grid.two .dentist-card:nth-child(4n+2) summary .dentist-card__avatar { background: var(--sunrise); }
+.grid.two .dentist-card:nth-child(4n+3) summary .dentist-card__avatar { background: var(--good); }
+.grid.two .dentist-card:nth-child(4n+4) summary .dentist-card__avatar { background: #7b5aa6; }
+.dentist-card__who { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.dentist-card__name { font-size: 17px; font-weight: 700; color: var(--ink); }
+.dentist-card__spec {
+    align-self: flex-start;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 600;
+    font-size: 12px;
+    border-radius: 20px;
+    padding: 2px 10px;
+}
+.dentist-card summary::after {
+    content: "+";
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.dentist-card[open] summary::after {
+    content: "\2013";
+    background: var(--blue);
+    color: #fff;
+}
+.dentist-card__body {
+    border-top: 1px solid var(--line);
+    background: var(--canvas);
+    padding: 14px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.dentist-card__rating { margin: 0; color: var(--ink-soft); }
+.dentist-card__fee { margin: 0; font-size: 13.5px; color: var(--ink-faint); }
+.dentist-card__fee strong { color: var(--ink); font-size: 15px; }
+.dentist-card .btn { width: 100%; padding: 10px 16px; }
+
+.stars { color: var(--gold); letter-spacing: 1px; font-size: 14px; }
+
 /* --- Statistics --------------------------------------------------- */
 
 .stat {
@@ -277,6 +445,31 @@ textarea { min-height: 80px; resize: vertical; }
 
 .form-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
 
+/* Inline search: the field stretches to fill the row, actions sit beside it. */
+.search-form { display: flex; gap: 14px; align-items: flex-end; }
+.search-form .field { flex: 1; margin-bottom: 0; }
+.search-form .form-actions.inline { margin-top: 0; padding-bottom: 1px; }
+
+/* Walk-in registration, folded behind a toggle so the patient list stays prominent. */
+.walkin { padding: 0; }
+.walkin summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    background: var(--button-bg, #ffc20e);
+    color: var(--button-ink, #1632a6);
+    font-weight: 600;
+}
+.walkin:not([open]) summary { border-radius: var(--radius); }
+.walkin[open] summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--line); }
+.walkin summary::-webkit-details-marker { display: none; }
+.walkin summary:hover { background: #e6ae07; }
+.walkin[open] form { padding: 16px; }
+
 /* --- Buttons ------------------------------------------------------ */
 
 .btn {
@@ -284,8 +477,8 @@ textarea { min-height: 80px; resize: vertical; }
     padding: 9px 16px;
     border: 1px solid transparent;
     border-radius: var(--radius);
-    background: var(--sunrise);
-    color: #fff;
+    background: var(--button-bg, #ffc20e);
+    color: var(--button-ink, #1632a6);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -293,7 +486,7 @@ textarea { min-height: 80px; resize: vertical; }
     text-align: center;
 }
 
-.btn:hover { background: var(--sunrise-dark); }
+.btn:hover { background: #e6ae07; color: #122c8e; }
 
 .btn.secondary {
     background: var(--surface);
@@ -408,12 +601,12 @@ td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 .slot label:hover { border-color: var(--sunrise); background: var(--sunrise-light); }
 
 .slot input:checked + label {
-    background: var(--sunrise);
-    border-color: var(--sunrise);
-    color: #fff;
+    background: #ffc20e;
+    border-color: #ffc20e;
+    color: #1632a6;
 }
 
-.slot input:focus-visible + label { box-shadow: 0 0 0 3px rgba(194, 87, 26, .25); }
+.slot input:focus-visible + label { box-shadow: 0 0 0 3px rgba(255, 194, 14, .35); }
 
 /* --- Bar chart (plain divs — no charting library) ------------------ */
 
@@ -444,7 +637,7 @@ td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 .narrow { max-width: 420px; margin: 56px auto; }
 .narrow .card { padding: 28px; }
 .narrow .brand-block { text-align: center; margin-bottom: 24px; }
-.narrow .brand-block .name { font-size: 22px; font-weight: 700; color: var(--sunrise); }
+.narrow .brand-block .name { font-size: 22px; font-weight: 700; color: var(--blue); }
 .narrow .brand-block .tagline { color: var(--ink-faint); font-size: 14px; }
 .narrow .alt { text-align: center; margin-top: 18px; font-size: 14px; color: var(--ink-faint); }
 
@@ -453,11 +646,66 @@ a { color: var(--sunrise-dark); }
 /* --- Footer ------------------------------------------------------- */
 
 .site-footer {
-    border-top: 1px solid var(--line);
-    padding: 20px;
-    text-align: center;
-    color: var(--ink-faint);
+    margin-top: 40px;
+    background: #221b16;
+    color: #cfc8c0;
     font-size: 13px;
+    line-height: 1.55;
+}
+
+.site-footer__grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 24px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 28px;
+}
+
+.site-footer__brand { padding-right: 24px; }
+
+.site-footer__name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .2px;
+}
+
+.site-footer__tag {
+    margin-top: 5px;
+    color: #a89e94;
+    font-size: 13px;
+}
+
+.site-footer__heading {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--sunrise);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.site-footer__contact p { margin: 4px 0; }
+
+.site-footer__bar {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #a89e94;
+}
+
+.site-footer__release { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 720px) {
+    .site-footer__grid { grid-template-columns: 1fr; gap: 18px; }
+    .site-footer__brand { padding-right: 0; }
 }
 
 @media print {
@@ -472,40 +720,11 @@ a { color: var(--sunrise-dark); }
    does not yet have. Everything above this line is unchanged.
    ===================================================================== */
 
-/* --- Portal chooser: the four doors at /login --------------------- */
-.portals {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 14px;
-    margin-top: 4px;
-}
-.portal {
-    display: block;
-    padding: 20px 18px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    text-decoration: none;
-    color: inherit;
-    transition: border-color .12s, box-shadow .12s;
-}
-.portal:hover {
-    border-color: var(--sunrise);
-    box-shadow: var(--shadow);
-}
-.portal .name {
-    font-weight: 600;
-    color: var(--sunrise);
-    margin-bottom: 4px;
-}
-.portal .what {
-    font-size: 13px;
-    color: var(--ink-soft);
-    line-height: 1.45;
-}
-
 /* --- Login pages: portal label only; .brand-block and .alt already
-       exist under .narrow in the base stylesheet above. ------------- */
+       exist under .narrow in the base stylesheet above.
+       (The portal chooser these once sat beside was removed: it only
+       offered the patient door, so it has been dropped with its .portals /
+       .portal rules — no page uses them any more.) ---------------- */
 .portal-label {
     display: inline-block;
     font-size: 11px;
@@ -616,3 +835,550 @@ a { color: var(--sunrise-dark); }
 .right { text-align: right; font-variant-numeric: tabular-nums; }
 tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
 .otp { font-size: 1.25rem; letter-spacing: 0.08em; }
+
+/* ---------------------------------------------------------------------
+   Sub-window (GAP-PAT-15).
+
+   The doctor's fee details on the booking page are no longer a card in
+   the page flow; clicking the dentist's name beside the times opens them
+   here. CSS-only via :target — the name link has href="#dentist-details",
+   which makes this element the target and displays it; the Close link
+   returns to #top, which clears the target and hides it again. No script.
+   --------------------------------------------------------------------- */
+.sub-window {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 26, 22, 0.45);
+    z-index: 40;
+    padding: 20px;
+}
+.sub-window:target { display: flex; align-items: flex-start; justify-content: center; }
+.sub-window .dialog {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    max-width: 480px;
+    width: 100%;
+    margin-top: 8vh;
+    padding: 20px;
+}
+.sub-window .dialog h3 { margin: 0 0 14px; font-size: 16px; font-weight: 650; }
+.sub-window .dialog .form-actions { margin-top: 16px; }
+.sub-window .dialog .btn { text-decoration: none; }
+
+/* ---------------------------------------------------------------------
+   Availability overview — compact dentist cards (book.jsp)
+
+   Each dentist is a horizontal row: name on the left, date chips on
+   the right. Much shorter than the old nested-card layout.
+   --------------------------------------------------------------------- */
+.availability-overview {
+    padding: 18px 20px 14px;
+}
+.availability-overview h2 {
+    margin-bottom: 4px;
+}
+
+.dentist-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+}
+.dentist-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.dentist-row:first-of-type {
+    padding-top: 4px;
+}
+
+.dentist-row__info {
+    flex-shrink: 0;
+    min-width: 150px;
+    max-width: 210px;
+    padding-left: 8px;
+    border-left: 3px solid var(--blue);
+}
+.dentist-row__name {
+    display: block;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.3;
+}
+.dentist-row__spec {
+    display: inline-block;
+    margin-top: 3px;
+    padding: 1px 8px;
+    border-radius: 20px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.dentist-row__dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.date-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    padding: 10px 12px;
+    border: 1px solid #cfe0f1;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f7fafe 0%, var(--blue-light) 100%);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: var(--ink);
+    transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
+}
+.date-chip__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    white-space: nowrap;
+    line-height: 1.25;
+}
+.date-chip:hover {
+    transform: translateY(-2px);
+    border-color: var(--blue);
+    box-shadow: 0 4px 12px rgba(30, 107, 184, .22);
+    background: linear-gradient(180deg, #fbfdff 0%, #ddebfa 100%);
+}
+.date-chip__slots {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 1px 8px;
+    border-radius: 20px;
+    background: rgba(30, 107, 184, .10);
+    color: var(--blue-dark);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------
+   Raise a concern — one collapsible form per dentist.
+   A <details>/<summary> pair (no script): the page lists each dentist the
+   patient has seen as a compact row, and the form for that dentist opens
+   only when the row is opened — so a patient treated by several doctors is
+   not faced with every form stacked down the page at once. GAP-PAT-18.
+   --------------------------------------------------------------------- */
+
+.concern-dentist {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin: 10px 0;
+    background: var(--surface);
+    overflow: hidden;
+}
+.concern-dentist summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    font-weight: 700;
+    color: var(--ink);
+}
+.concern-dentist summary::-webkit-details-marker { display: none; }
+.concern-dentist summary::before {
+    content: "+";
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.concern-dentist[open] summary::before { content: "\2013"; }
+.concern-dentist[open] summary { border-bottom: 1px solid var(--line); }
+.concern-dentist__count {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-faint);
+    background: var(--canvas);
+    border-radius: 20px;
+    padding: 2px 10px;
+}
+.concern-dentist form {
+    padding: 16px;
+    background: var(--canvas);
+}
+
+/* ---------------------------------------------------------------------
+   User menu — the signed-in identity in the header.
+
+   A <details>/<summary> pair, so it opens and closes on a click with no
+   JavaScript — the whole stack is no-JS. The summary shows the avatar and
+   name; opening it reveals the account panel: identity on top, then the
+   role's own links and the sign-out action.
+   --------------------------------------------------------------------- */
+.user-menu {
+    position: relative;
+    --user-size: 32px;
+}
+
+.user-menu__toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 10px 3px 3px;
+    border: 1px solid var(--line);
+    border-radius: 32px;
+    background: var(--surface);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: border-color .12s, box-shadow .12s;
+}
+.user-menu__toggle::-webkit-details-marker { display: none; }
+.user-menu__toggle:hover { border-color: var(--sunrise); }
+
+.user-menu__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--user-size);
+    height: var(--user-size);
+    border-radius: 50%;
+    background: var(--sunrise);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.user-menu__name {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.user-menu__chevron {
+    color: var(--ink-faint);
+    transition: transform .15s;
+}
+.user-menu[open] .user-menu__chevron { transform: rotate(180deg); }
+
+.user-menu__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(31, 41, 51, .14);
+    padding: 8px;
+    z-index: 60;
+}
+
+.user-menu__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 6px;
+}
+
+.user-menu__avatar-lg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--sunrise);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.user-menu__identity { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.user-menu__full { font-size: 14.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.user-menu__item {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+}
+.user-menu__item:hover { background: var(--sunrise-light); color: var(--sunrise-dark); }
+
+.user-menu__signout { color: var(--bad); }
+.user-menu__signout:hover { background: var(--bad-light); color: var(--bad); }
+
+/* --- Help page ------------------------------------------------------
+   The public help page uses the same no-script idioms as the rest of the
+   site: numbered steps, status cards, a journey timeline and a Q&A
+   accordion. Nothing here needs JavaScript.
+   --------------------------------------------------------------------- */
+
+.help-toc__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.help-toc__item {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 16px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--blue-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+.help-toc__item:hover { border-color: var(--blue); background: var(--blue-light); }
+
+.help-steps { list-style: none; margin: 0 0 8px; padding: 0; }
+.help-steps__item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+}
+.help-steps__item + .help-steps__item { border-top: 1px solid var(--line); }
+.help-steps__no {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.help-steps__text { padding-top: 4px; }
+
+.help-statuses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+    gap: 14px;
+}
+.status-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.status-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.status-card__whom { font-size: 12px; color: var(--ink-faint); }
+.status-card__mean { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.status-card__next { margin: 0; font-size: 13px; color: var(--ink-faint); }
+.status-card__next span {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink);
+}
+
+.pill.ready { background: var(--sunrise); color: #fff; }
+
+.help-timeline { display: flex; flex-direction: column; }
+.help-timeline__step {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    padding-bottom: 22px;
+}
+.help-timeline__step::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 36px;
+    bottom: 0;
+    width: 2px;
+    background: var(--line);
+}
+.help-timeline__step:last-child { padding-bottom: 0; }
+.help-timeline__step:last-child::before { display: none; }
+.help-timeline__dot {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.help-timeline__card {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.help-timeline__card h3 { margin: 0 0 4px; font-size: 15px; }
+.help-timeline__who { margin-left: 6px; font-size: 12.5px; font-weight: 500; color: var(--ink-faint); }
+.help-timeline__card p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+.help-faq { display: flex; flex-direction: column; }
+.help-faq__item {
+    margin-bottom: 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+}
+.help-faq__item:last-child { margin-bottom: 0; }
+.help-faq__item summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 16px;
+    font-weight: 600;
+    color: var(--ink);
+}
+.help-faq__item summary::-webkit-details-marker { display: none; }
+.help-faq__item summary::after {
+    content: "+";
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.help-faq__item[open] summary::after {
+    content: "\2013";
+    background: var(--blue);
+    color: #fff;
+}
+.help-faq__item summary:hover { background: var(--canvas); }
+.help-faq__item[open] summary { border-bottom: 1px solid var(--line); }
+.help-faq__item p { margin: 0; padding: 13px 16px; background: var(--canvas); color: var(--ink-soft); }
+
+.help-contact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+.help-contact__item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+}
+.help-contact__item:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+.help-contact__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--ink-faint);
+}
+.help-contact__value { font-size: 16px; font-weight: 700; color: var(--blue-dark); }
+
+/* --- Pager --------------------------------------------------------
+   Handles the patient register. Prev/next and the numbered buttons are
+   plain links - no JavaScript, and every page is a stable address.
+   ------------------------------------------------------------------- */
+
+.pager {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+.pager .page-subtitle { margin: 0 0 12px; }
+.pager__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+.pager__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--blue-dark);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+}
+.pager__link:hover { border-color: var(--blue); background: var(--blue-light); }
+.pager__link.current {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+    cursor: default;
+}
+.pager__link.disabled {
+    background: var(--canvas);
+    color: var(--ink-faint);
+    cursor: not-allowed;
+}
+.pager__link.disabled:hover { border-color: var(--line); background: var(--canvas); }
