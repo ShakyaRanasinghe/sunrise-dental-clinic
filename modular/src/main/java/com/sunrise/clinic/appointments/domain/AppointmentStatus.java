@@ -7,8 +7,8 @@ import java.util.Set;
  *
  * <pre>
  *   CONFIRMED ──→ COMPLETED ──→ BILLED
- *       │              │
- *       └──────────────┴──→ CANCELLED
+ *       │
+ *       └─────→ CANCELLED
  * </pre>
  *
  * <p>In {@code layered/} this was a bare enum of four names and the rules lived
@@ -56,9 +56,11 @@ public enum AppointmentStatus {
     private Set<AppointmentStatus> permitted() {
         return switch (this) {
             case CONFIRMED -> Set.of(COMPLETED, CANCELLED);
-            // A visit that happened can still be called off before it is billed -
-            // a patient who never turned up, recorded in error.
-            case COMPLETED -> Set.of(BILLED, CANCELLED);
+            // Once the dentist has treated the patient, the appointment is a financial
+            // record in progress. Cancelling it - and releasing its slot - while the
+            // treatment stands is the same error as cancelling a billed one, so the
+            // Cancel button disappears as soon as the visit is marked done.
+            case COMPLETED -> Set.of(BILLED);
             case BILLED, CANCELLED -> Set.of();
         };
     }
