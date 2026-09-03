@@ -663,7 +663,10 @@ which is what makes this an additive change rather than a rewrite:
 
 New code required: one abstract servlet, four subclasses, one shared JSP
 fragment, four thin views. (A portal chooser at `/login` was built first, then
-removed once its only remaining door was the patient portal — see GAP-PAT-14.)
+removed once its only remaining door was the patient portal — see GAP-PAT-14. A
+staff-only chooser now lives at `/staff`, listing the three staff doors; it is not
+advertised on any public page, so the confidentiality provisions of GAP-PAT-14 and
+FR-ADM-03 still hold.)
 
 ### 5.5 Pattern register
 

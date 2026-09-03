@@ -10,10 +10,10 @@ mapping conflicts in §5 went unnoticed.
 
 | | |
 |---|---|
-| Servlets | **39** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
+| Servlets | **40** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Mappings | **42** declared, plus `/css/*` served by Tomcat's default servlet = 43 routes |
+| Mappings | **43** declared, plus `/css/*` served by Tomcat's default servlet = 44 routes |
 | Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
@@ -68,6 +68,8 @@ middle. That constraint is what produces both conflicts in §5.
 | Module | Servlet | Method · Route | View | Role | Requirement |
 |---|---|---|---|---|---|
 | access | `HomeServlet` | `GET` `""` *(context root)* | redirect | any | FR-WEB-02, FR-AUTH-04 |
+| access | `StaffPortalServlet` | `GET` `/staff` | `access/staff-portal.jsp` | public | GAP-FTB-10 |
+| access | `PatientLoginServlet` | `GET`·`POST` `/login/patient` | `access/login-patient.jsp` | `PATIENT` | FR-PAT-01, FR-OOP-11 |
 | access | `PatientLoginServlet` | `GET`·`POST` `/login/patient` | `access/login-patient.jsp` | `PATIENT` | FR-PAT-01, FR-OOP-11 |
 | access | `ReceptionLoginServlet` | `GET`·`POST` `/login/reception` | `access/login-reception.jsp` | `RECEPTIONIST` | FR-REC-01 |
 | access | `DentistLoginServlet` | `GET`·`POST` `/login/dentist` | `access/login-dentist.jsp` | `DENTIST` | FR-DEN-01 |
@@ -90,7 +92,7 @@ middle. That constraint is what produces both conflicts in §5.
 | feedback | `PatientComplaintsServlet` | `GET`·`POST` `/patient/complaints` | `feedback/patient-complaints.jsp` | `PATIENT` | FR-PAT-50…57 |
 | feedback | `AdminComplaintsServlet` | `GET`·`POST` `/admin/complaints` | `feedback/admin-complaints.jsp` | `ADMIN` | FR-ADM-50…58 |
 
-**23 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
+**24 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
 concrete portals each declare their own, which is the whole point of the hierarchy.
 
 ---
@@ -169,6 +171,7 @@ each appears once.
 
 ```
 ""                                  HomeServlet                access
+/staff                              StaffPortalServlet         access
 /login/patient                      PatientLoginServlet        access
 /login/reception                    ReceptionLoginServlet      access
 /login/dentist                      DentistLoginServlet        access

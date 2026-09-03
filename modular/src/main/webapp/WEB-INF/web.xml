@@ -110,6 +110,19 @@
     </servlet-mapping>
 
     <!--
+        The central staff portal. Lists the three staff roles and sends each to its
+        own login; the patient door stays on the public home page.
+    -->
+    <servlet>
+        <servlet-name>StaffPortal</servlet-name>
+        <servlet-class>com.sunrise.clinic.access.web.StaffPortalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StaffPortal</servlet-name>
+        <url-pattern>/staff</url-pattern>
+    </servlet-mapping>
+
+    <!--
         Four portals, four subclasses of AbstractLoginServlet. The superclass
         holds the whole authentication sequence; each subclass supplies only the
         role it admits and the view it renders (FR-OOP-11). There is no bare

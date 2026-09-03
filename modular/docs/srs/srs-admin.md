@@ -50,7 +50,7 @@ it.
 |---|---|---|
 | **FR-ADM-01** | `/login/admin` must present email and password only. No registration link, and no route to create an administrator from outside | Built |
 | **FR-ADM-02** | An account whose role is not `ADMIN` must be rejected, with the same message as a wrong password (FR-AUTH-03) | Built |
-| **FR-ADM-03** | This portal must not be advertised to the public — there is no listing on any public page (the shared "all doors" chooser it was kept off was removed), and it remains reachable only by direct URL | Built |
+| **FR-ADM-03** | This portal must not be advertised to the public — there is no listing on any public page (the shared "all doors" chooser it was kept off was removed), and it remains reachable only by direct URL | Built — the staff-only chooser at `/staff` (GAP-FTB-10) lists the admin door alongside reception and dentist but is itself unadvertised, reachable only by direct URL, so it does not surface this portal on any public page |
 | **FR-ADM-04** | A failed sign-in on this portal must be written to the audit trail, whether or not the email exists | **Partial** — a failed administrator sign-in is written to the application log, not to the audit trail. The hook is there and writes the wrong sink |
 
 ---

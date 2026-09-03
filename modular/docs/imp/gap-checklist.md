@@ -139,6 +139,16 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Done:** `.user-menu__avatar`(lg), `.site-nav a` hover + active, and `.role-tag` now use the
       blue accent in `app.css`.
 
+- [x] **GAP-FTB-10** — there is no single staff front door: an administrator, receptionist or
+      dentist each needs their own portal address, and a new staff member has no one place that
+      lists the staff logins.
+      **Accept:** `/staff` lists the three staff roles (administrator, reception, dentist), each
+      linking to its own sign-in screen; the patient door is not listed. Blue-themed to match the
+      current palette.
+      **Done:** `StaffPortalServlet` (`/staff`) renders `access/staff-portal.jsp`; blue
+      `.portal-grid` / `.staff-card` rules in `app.css`; web.xml mapping. No navigation link points
+      at it — staff reach it by its own address. Deployed + verified live.
+
 **Note:** GAP-FTB-04/06/07 are coded, compile, and pass 316 tests; they were verified live on the
 deployed instance (schema migrated in place on the running MySQL, then each acceptance step checked
 over HTTP) and are now marked Fixed (see "How to close a gap").

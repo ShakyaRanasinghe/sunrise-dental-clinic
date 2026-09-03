@@ -1017,9 +1017,9 @@ a { color: var(--sunrise-dark); }
 
 /* --- Login pages: portal label only; .brand-block and .alt already
        exist under .narrow in the base stylesheet above.
-       (The portal chooser these once sat beside was removed: it only
-       offered the patient door, so it has been dropped with its .portals /
-       .portal rules — no page uses them any more.) ---------------- */
+       The original chooser sat here once and was dropped: it only offered the
+       patient door. Its staff-only replacement (see StaffPortalServlet, /staff)
+       uses .portal-grid / .staff-card below, themed blue. ---------------- */
 .portal-label {
     display: inline-block;
     font-size: 11px;
@@ -1034,6 +1034,69 @@ a { color: var(--sunrise-dark); }
 }
 .alt { text-align: center; font-size: 13.5px; color: var(--ink-soft); margin-top: 14px; }
 .alt a { color: var(--sunrise-dark); }
+
+/* --- Staff portal (/staff): a blue-themed role chooser. The original chooser
+       only offered the patient door and was removed; this one lists the three
+       staff roles - administrator, reception, dentist - and sends each to its own
+       login. The patient door stays on the public home page. ---------------- */
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin: 20px 0 4px;
+}
+.staff-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--line, #e2e8f0);
+    border-radius: var(--radius, 10px);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.staff-card:hover,
+.staff-card:focus-visible {
+    border-color: var(--blue);
+    box-shadow: 0 4px 14px rgba(30, 107, 184, .12);
+    transform: translateY(-1px);
+    outline: none;
+}
+.staff-card__badge {
+    flex: 0 0 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+}
+.staff-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.staff-card__name {
+    color: var(--blue-dark);
+}
+.staff-card__desc {
+    font-size: 13px;
+    color: var(--ink-soft, #667085);
+    line-height: 1.4;
+}
+.staff-card__cta {
+    margin-left: auto;
+    align-self: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    white-space: nowrap;
+}
 
 /* --- Diagnosis block, dentist only -------------------------------- */
 .clinical {
