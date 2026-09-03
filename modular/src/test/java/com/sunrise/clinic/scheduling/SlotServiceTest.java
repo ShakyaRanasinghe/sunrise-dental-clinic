@@ -68,7 +68,8 @@ class SlotServiceTest {
         sessions = new InMemorySessionRepository();
         slots = new InMemorySlotRepository();
         service = new SlotService(sessions, slots,
-                new ReferenceService(dentists, new InMemoryTreatmentRepository()));
+                new ReferenceService(dentists, new InMemoryTreatmentRepository(),
+                        new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository()));
     }
 
     // --- publishing, the happy path -----------------------------------

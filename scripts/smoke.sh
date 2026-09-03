@@ -116,10 +116,16 @@ bold "1a. a new patient registers"
 # a profile that did not exist and failed at the first booking.
 NEW_EMAIL="smoke-$$@example.lk"
 NEW_JAR="$JARS/registered"
+# GAP-PAT-20 made the contact number mandatory on self-registration, so the form is
+# sent with a valid one. A number starting 0 with ten local digits is accepted.
 REGISTERED=$(curl -sS -c "$NEW_JAR" -o /dev/null -w '%{http_code}' \
-  -d "name=Smoke Tester&email=$NEW_EMAIL&password=Password123&confirmPassword=Password123" \
+  -d "name=Smoke Tester&email=$NEW_EMAIL&password=Password123&confirmPassword=Password123&contactNumber=0771234567" \
   "$BASE/register")
-check "registering needs no contact number"    302 "$REGISTERED"
+check "registering with a contact number"      302 "$REGISTERED"
+check "and refuses one without a number"       200 \
+  "$(curl -sS -o /dev/null -w '%{http_code}' \
+     -d "name=No Number&email=nonumber-$$@example.lk&password=Password123&confirmPassword=Password123" \
+     "$BASE/register")"
 check "and lands on the patient's own page"    200 "$(status "$NEW_JAR" /patient/home)"
 # The profile row is what booking resolves through. Without it this answers 404.
 check "the new account has a patient profile"  200 "$(status "$NEW_JAR" /patient/profile)"

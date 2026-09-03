@@ -51,7 +51,8 @@ class BillingServiceTest {
         bills = new InMemoryBillRepository();
         billing = new BillingService(bills, appointments.service,
                 new com.sunrise.clinic.scheduling.service.ReferenceService(
-                        appointments.dentists, appointments.treatments),
+                        appointments.dentists, appointments.treatments,
+                        new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository()),
                 appointments.clinicAccess,
                 new StandardBillingStrategy(),
                 new DefaultRevenueSplitStrategy(new BigDecimal("0.60"), BigDecimal.ZERO),
@@ -293,7 +294,8 @@ class BillingServiceTest {
 
         BillingService other = new BillingService(new InMemoryBillRepository(), fresh.service,
                 new com.sunrise.clinic.scheduling.service.ReferenceService(
-                        fresh.dentists, fresh.treatments),
+                        fresh.dentists, fresh.treatments,
+                        new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository()),
                 fresh.clinicAccess, new StandardBillingStrategy(),
                 new DefaultRevenueSplitStrategy(new BigDecimal("0.60"), BigDecimal.ZERO),
                 new BigDecimal("200.00"), new SerialTransactionRunner());

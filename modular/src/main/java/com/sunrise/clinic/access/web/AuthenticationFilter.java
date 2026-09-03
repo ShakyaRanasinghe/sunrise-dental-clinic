@@ -75,6 +75,7 @@ public class AuthenticationFilter implements Filter {
             "/logout",
             "/register",
             "/help",
+            "/staff",          // the staff role chooser, itself a public landing page
             "/css/", "/js/", "/images/", "/favicon.ico",
             "/api/auth/");
 

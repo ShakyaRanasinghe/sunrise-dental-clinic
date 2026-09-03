@@ -8,11 +8,14 @@
     Only OPEN slots are offered. A patient must never be shown a time they cannot have.
 
     GAP-PAT-15: once a dentist and date are chosen, the open TIMES are the first card
-    (they are the thing the patient is deciding), and the dentist and date picker sits
-    below. The doctor's fee details are not a card on the page at all any more: the
-    dentist's name beside the times opens them in a sub-window - a CSS-only :target
-    modal, so no script is needed. Closing the modal links to #top, which clears the
-    :target and hides it again.
+    (they are the thing the patient is deciding). GAP-PAT-28: the times head the
+    single card under a heading naming the doctor, the treatment picker sits below
+    them, the submit names the dentist ("Proceed appointment with …"), and the old
+    "2. Dentist and date" picker card is gone. GAP-PAT-29: each treatment has an
+    info mark opening its description in a sub-window. The doctor's fee details are
+    not a card on the page at all: the dentist's name beside the times opens them in
+    a sub-window - a CSS-only :target modal, so no script is needed. Closing a modal
+    links to #top, which clears the :target and hides it again.
 --%>
 <%@ include file="/WEB-INF/jsp/shared/taglibs.jspf" %>
 <c:set var="pageTitle" value="Book an appointment" />
@@ -29,8 +32,8 @@
 --%>
 <c:if test="${not empty availabilityOverview}">
     <div class="card availability-overview">
-        <h2>Availability this fortnight</h2>
-        <p class="page-subtitle">Click a date to jump to that dentist's available times below.</p>
+        <h2>Open days in the next two weeks</h2>
+        <p class="page-subtitle">The days each dentist has free appointments soon. Click a date to jump to their available times below.</p>
         <c:forEach var="dentist" items="${availabilityOverview}">
             <div class="dentist-row">
                 <div class="dentist-row__info">
@@ -54,17 +57,23 @@
 
 <c:if test="${not empty dentistId}">
     <%--
-        GAP-PAT-15: the times are the top card now. The patient chose a dentist and
+        GAP-PAT-15/28: the times are the card now. The patient chose a dentist and
         date on their way here (or jumped from the availability overview), so the first
-        thing they should see is which times are actually open. Sidebar about the
-        dentist's fees would only push the decision further down the page.
+        thing they should see is which times are actually open, then the treatment
+        picker below. No dentist/date picker card: a link returns to the overview.
+    --%>
+    <%--
+        GAP-PAT-28: the available TIMES come first under a heading naming the doctor,
+        then the treatment picker below them. The old "2. Dentist and date" picker
+        card is gone — the patient chose both to get here, and a small link returns
+        to the overview to pick differently.
     --%>
     <div class="card">
-        <h2>1. Treatment and time</h2>
         <c:choose>
             <c:when test="${empty slots}">
+                <h2>Available times</h2>
                 <p class="page-subtitle">
-                    No times are open on ${date}. Try another date, or telephone the clinic.
+                    No times are open on ${date}. <a href="${ctx}/patient/book">Choose a different dentist or date</a>, or telephone the clinic.
                 </p>
                 <%-- The doctor's card is still reachable even when no times are open. --%>
                 <c:forEach var="d" items="${dentists}">
@@ -76,57 +85,16 @@
                 </c:forEach>
             </c:when>
             <c:otherwise>
-                <%--
-                    One form per slot rather than a radio group, so the chosen time is
-                    unambiguous in the POST and no JavaScript is needed to enable a
-                    submit button. The treatment is chosen once, above the times.
-                --%>
+                <h2>Available times with <c:out value="${slots[0].dentistName()}" /> on ${date}</h2>
+                <p class="page-subtitle">
+                    <a href="${ctx}/patient/book">Choose a different dentist or date</a>
+                    &middot;
+                    <a href="#dentist-details">About <c:out value="${slots[0].dentistName()}" /></a>
+                </p>
                 <form method="post" action="${ctx}/patient/book">
                     <c:if test="${not empty patientId}">
                         <input type="hidden" name="patientId" value="<c:out value='${patientId}' />">
                     </c:if>
-                    <div class="field">
-                        <label for="treatmentId">Treatment</label>
-                        <select id="treatmentId" name="treatmentId" required>
-                            <c:forEach var="t" items="${treatments}">
-                                <option value="<c:out value='${t.id()}' />">
-                                    <c:out value="${t.name()}" />
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="table-wrap" style="margin-top:0.5rem;margin-bottom:1rem;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Treatment</th>
-                                    <th>Description</th>
-                                    <th>Price (Rs)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="t" items="${treatments}">
-                                    <tr>
-                                        <td><c:out value="${t.name()}" /></td>
-                                        <td><c:out value="${t.description()}" /></td>
-                                        <td>
-                                            <fmt:formatNumber value="${t.baseCost()}"
-                                                             minFractionDigits="2"
-                                                             maxFractionDigits="2" />
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <p class="page-subtitle">
-                        ${fn:length(slots)} times open with
-                        <a href="#dentist-details">
-                            <c:out value="${slots[0].dentistName()}" />
-                        </a>
-                        on ${date}.
-                    </p>
                     <div class="slots">
                         <c:forEach var="slot" items="${slots}">
                             <div class="slot">
@@ -136,45 +104,72 @@
                             </div>
                         </c:forEach>
                     </div>
+                    <%--
+                        GAP-FTB-06: a single-treatment radio checklist replaces the old
+                        dropdown, and an "Other (describe…)" option lets a patient book a
+                        visit whose need no listed procedure names — the free text is
+                        captured as the booking reason. CSS-only, no script.
+                        GAP-PAT-29: each treatment carries an info mark opening the
+                        administrator-written description in a sub-window below.
+                    --%>
+                    <fieldset class="treatment-picker">
+                        <legend class="field__label">Treatment for this visit</legend>
+                        <c:forEach var="t" items="${treatments}">
+                            <div class="treatment-choice">
+                                <input type="radio" id="t-${t.id()}" name="treatmentId"
+                                       value="<c:out value='${t.id()}' />">
+                                <label for="t-${t.id()}" class="treatment-choice__label">
+                                    <span class="treatment-choice__name"><c:out value="${t.name()}" /></span>
+                                    <span class="treatment-choice__desc"><c:out value="${t.description()}" /></span>
+                                    <span class="treatment-choice__price">
+                                        Rs <fmt:formatNumber value="${t.baseCost()}"
+                                                              minFractionDigits="2" maxFractionDigits="2" />
+                                    </span>
+                                </label>
+                                <a class="treatment-info" href="#treatment-${t.id()}"
+                                   title="About <c:out value='${t.name()}' />" aria-label="About <c:out value='${t.name()}' />">i</a>
+                            </div>
+                        </c:forEach>
+                        <div class="treatment-choice">
+                            <input type="radio" id="t-other" name="treatmentId" value="">
+                            <label for="t-other" class="treatment-choice__label">
+                                <span class="treatment-choice__name">Other (describe&hellip;)</span>
+                                <span class="treatment-choice__desc">A visit for something not listed above.</span>
+                            </label>
+                        </div>
+                        <div class="treatment-other-note" id="other-note">
+                            <label for="patientReason" class="field__label">What is it for?</label>
+                            <textarea id="patientReason" name="patientReason" rows="2"
+                                      placeholder="e.g. a sore wisdom tooth, a second opinion, a fitting…"></textarea>
+                        </div>
+                    </fieldset>
+
                     <div class="form-actions" style="margin-top:1rem;">
-                        <button type="submit" class="btn">Confirm booking</button>
+                        <button type="submit" class="btn">Proceed appointment with <c:out value="${slots[0].dentistName()}" /></button>
                     </div>
                 </form>
+                <%--
+                    GAP-PAT-29 sub-windows: one per offered treatment, showing the
+                    administrator-written description. CSS-only via :target, like the
+                    dentist-details dialog; Close returns to #top.
+                --%>
+                <c:forEach var="t" items="${treatments}">
+                    <div class="sub-window" id="treatment-${t.id()}" role="dialog"
+                         aria-modal="true" aria-labelledby="treatment-title-${t.id()}">
+                        <div class="dialog">
+                            <h3 id="treatment-title-${t.id()}"><c:out value="${t.name()}" /></h3>
+                            <p><c:out value="${t.description()}" /></p>
+                            <p class="page-subtitle">Price:
+                                Rs <fmt:formatNumber value="${t.baseCost()}"
+                                                      minFractionDigits="2" maxFractionDigits="2" /></p>
+                            <div class="form-actions">
+                                <a class="btn secondary" href="#top">Close</a>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
             </c:otherwise>
         </c:choose>
-    </div>
-
-    <%--
-        The dentist and date picker, now the second card: a patient who wants a
-        different dentist or date has a way to change their search without reloading.
-        The fee details that used to live here moved into the sub-window below.
-    --%>
-    <div class="card">
-        <h2>2. Dentist and date</h2>
-        <form method="get" action="${ctx}/patient/book">
-            <c:if test="${not empty patientId}">
-                <input type="hidden" name="patientId" value="<c:out value='${patientId}' />">
-            </c:if>
-            <div class="form-row">
-                <div class="field">
-                    <label for="dentistId">Dentist</label>
-                    <select id="dentistId" name="dentistId" required>
-                        <option value="">Choose&hellip;</option>
-                        <c:forEach var="d" items="${dentists}">
-                            <option value="<c:out value='${d.id()}' />"
-                                <c:if test="${d.id() eq dentistId}">selected</c:if>>
-                                <c:out value="${d.name()}" />
-                            </option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" name="date" value="${date}" required>
-                </div>
-                <div class="form-actions"><button type="submit" class="btn">Show times</button></div>
-            </div>
-        </form>
     </div>
 
     <%--

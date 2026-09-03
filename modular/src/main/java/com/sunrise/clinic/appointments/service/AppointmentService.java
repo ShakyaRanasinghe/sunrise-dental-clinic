@@ -99,6 +99,11 @@ public class AppointmentService {
 
     // --- booking ------------------------------------------------------
 
+    public AppointmentResponse book(ClinicPrincipal caller, String slotId, String treatmentId,
+                                    String requestedPatientId) {
+        return book(caller, slotId, treatmentId, requestedPatientId, null);
+    }
+
     /**
      * Book a slot.
      *
@@ -107,9 +112,13 @@ public class AppointmentService {
      * book on a patient's behalf and must name them. That resolution used to live in the
      * servlet, duplicated in {@code cancel}, and reached the patient repository from the
      * web tier to do it.</p>
+     *
+     * <p>{@code patientReason} carries GAP-FTB-06's "Other (describe…)" booking: the
+     * patient wanted a visit but no listed procedure fit, so they book with an
+     * unspecified {@code treatmentId} and record in their own words what it is for.</p>
      */
     public AppointmentResponse book(ClinicPrincipal caller, String slotId, String treatmentId,
-                                    String requestedPatientId) {
+                                    String requestedPatientId, String patientReason) {
         Action needed = caller != null && caller.role() == Role.PATIENT
                 ? Action.BOOK_OWN
                 : Action.BOOK_FOR_PATIENT;
@@ -117,8 +126,11 @@ public class AppointmentService {
 
         String patientId = resolvePatient(caller, requestedPatientId);
         // Fails before the transaction opens: an unknown treatment is a bad request, not
-        // a foreign-key violation discovered halfway through booking.
-        reference.requireTreatment(treatmentId);
+        // a foreign-key violation discovered halfway through booking. An "Other" booking
+        // has no treatment at all, so the reason is what validates instead.
+        if (treatmentId != null && !treatmentId.isBlank()) {
+            reference.requireTreatment(treatmentId);
+        }
 
         Appointment booked = transaction.execute(() -> {
             Slot slot = slots.findByIdForUpdate(slotId)
@@ -134,7 +146,11 @@ public class AppointmentService {
                     .patientId(patientId)
                     .dentistId(slot.getDentistId())
                     .slotId(slotId)
-                    .treatmentId(treatmentId)
+                    .treatmentId(treatmentId == null || treatmentId.isBlank() ? null : treatmentId)
+                    .patientReason(treatmentId == null || treatmentId.isBlank()
+                                    && patientReason != null && !patientReason.isBlank()
+                            ? patientReason.trim()
+                            : null)
                     .date(slot.getDate())
                     .time(slot.getStartTime())
                     .status(AppointmentStatus.CONFIRMED)
@@ -205,6 +221,25 @@ public class AppointmentService {
         Patient patient = clinicAccess.patientFor(caller).orElseThrow(() ->
                 new ResourceNotFoundException("No patient record for " + describeCaller(caller)));
         return describeAll(appointments.findByPatientId(patient.getId()));
+    }
+
+    /**
+     * The signed-in patient's own appointments, with the dentist's comment if recorded.
+     *
+     * <p>Patients may see their own diagnosis ({@link ClinicAccess#canViewClinical}),
+     * so this returns the full {@link AppointmentDetailResponse} for every appointment
+     * rather than the diagnosis-free {@link AppointmentResponse}. The patient dashboard
+     * ({@code patient-home.jsp}) uses this so the dentist's comment is visible once
+     * recorded (GAP-DEN-09).</p>
+     */
+    public List<AppointmentDetailResponse> forSelfDetail(ClinicPrincipal caller) {
+        Patient patient = clinicAccess.patientFor(caller).orElseThrow(() ->
+                new ResourceNotFoundException("No patient record for " + describeCaller(caller)));
+        return appointments.findByPatientId(patient.getId()).stream()
+                .sorted(Comparator.comparing(Appointment::getDate)
+                        .thenComparing(Appointment::getTime))
+                .map(a -> detailWithNotes(caller, a))
+                .toList();
     }
 
     // --- changing state -----------------------------------------------

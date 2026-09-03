@@ -10,8 +10,18 @@
 <h1 class="page-title">Clinic identity</h1>
 <p class="page-subtitle">Name, phone, email and address shown on the landing page, help page, receipts and appointment slips.</p>
 
+<%-- GAP-FTB-14: a saved change confirms in a sub-window, not only a notice. --%>
 <c:if test="${param.saved == '1'}">
-    <div class="notice">Saved.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="clinic-saved-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="clinic-saved-title">Successfully updated</h3>
+            <p class="page-subtitle">The clinic identity was saved.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/admin/clinic">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">

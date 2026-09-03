@@ -282,7 +282,7 @@ class PatientServiceTest {
     @Test
     void updateOwnAlsoRefusesAMalformedPhoneNumber() {
         assertThrows(IllegalArgumentException.class, () -> service.updateOwn(PATIENT,
-                new PatientService.ProfileUpdate("Nimal Perera", null, "o77 123 4567", null)));
+                new PatientService.ProfileUpdate("Nimal Perera", null, "o77 123 4567", null, null)));
     }
 
     @Test

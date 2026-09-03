@@ -36,7 +36,8 @@ public class FeedbackTestFixture {
     public FeedbackTestFixture(LocalDate today) {
         this.today = today;
         ReferenceService reference = new ReferenceService(appointments.dentists,
-                appointments.treatments);
+                appointments.treatments,
+                new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository());
         complaintService = new ComplaintService(complaints, appointments.service,
                 appointments.clinicAccess, reference, audit);
         reviewService = new ReviewService(reviews, appointments.service,
@@ -73,7 +74,8 @@ public class FeedbackTestFixture {
      */
     public ReviewService reviewServiceAsOf(LocalDate asOf) {
         return new ReviewService(reviews, appointments.service, appointments.clinicAccess,
-                new ReferenceService(appointments.dentists, appointments.treatments),
+                new ReferenceService(appointments.dentists, appointments.treatments,
+                        new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository()),
                 Clock.fixed(asOf.atStartOfDay(ZoneId.systemDefault()).toInstant(),
                         ZoneId.systemDefault()));
     }

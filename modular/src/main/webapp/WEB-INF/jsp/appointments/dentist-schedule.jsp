@@ -37,7 +37,17 @@
 <c:choose>
     <c:when test="${empty pending}">
         <div class="card">
-            <p class="page-subtitle">Nothing booked with you on ${date}.</p>
+            <%-- GAP-DEN-11: when viewing today, say plainly that nothing is booked,
+                 instead of echoing the date back (which read like an error). When a
+                 specific other day is picked, name it. --%>
+            <c:choose>
+                <c:when test="${date == today}">
+                    <p class="page-subtitle">No patients booked with you today.</p>
+                </c:when>
+                <c:otherwise>
+                    <p class="page-subtitle">No patients booked with you on ${date}.</p>
+                </c:otherwise>
+            </c:choose>
         </div>
     </c:when>
     <c:otherwise>

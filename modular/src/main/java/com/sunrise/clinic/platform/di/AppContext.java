@@ -48,6 +48,8 @@ import com.sunrise.clinic.reporting.service.ReportService;
 import com.sunrise.clinic.reporting.service.TreatmentAdminService;
 import com.sunrise.clinic.scheduling.data.DentistDao;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
+import com.sunrise.clinic.scheduling.data.DentistTreatmentDao;
+import com.sunrise.clinic.scheduling.data.DentistTreatmentRepository;
 import com.sunrise.clinic.scheduling.data.SessionDao;
 import com.sunrise.clinic.scheduling.data.SessionRepository;
 import com.sunrise.clinic.scheduling.data.SlotDao;
@@ -111,6 +113,7 @@ public class AppContext implements AutoCloseable {
     private final PatientNoteRepository patientNotes;
     private final DentistRepository dentists;
     private final TreatmentRepository treatments;
+    private final DentistTreatmentRepository dentistTreatments;
     private final SessionRepository sessions;
     private final SlotRepository slots;
     private final AppointmentRepository appointments;
@@ -152,6 +155,7 @@ public class AppContext implements AutoCloseable {
         this.patientNotes = new PatientNoteDao(database);
         this.dentists = new DentistDao(database);
         this.treatments = new TreatmentDao(database);
+        this.dentistTreatments = new DentistTreatmentDao(database);
         this.sessions = new SessionDao(database);
         this.slots = new SlotDao(database);
         this.appointments = new AppointmentDao(database);
@@ -170,7 +174,7 @@ public class AppContext implements AutoCloseable {
         // book immediately rather than signing in to an account with no profile behind it.
         this.selfRegistrationService = new SelfRegistrationService(accountFactory, patients,
                 transactionRunner);
-        this.referenceService = new ReferenceService(dentists, treatments);
+        this.referenceService = new ReferenceService(dentists, treatments, dentistTreatments);
         this.slotService = new SlotService(sessions, slots, referenceService);
         this.clinicAccess = new ClinicAccess(patients, dentists);
 

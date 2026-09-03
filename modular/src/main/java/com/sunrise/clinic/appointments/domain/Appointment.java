@@ -33,6 +33,11 @@ public class Appointment {
     private AppointmentStatus status = AppointmentStatus.CONFIRMED;
     /** Clinical diagnosis — CONFIDENTIAL (dentist + patient only). */
     private String diagnosis;
+    /**
+     * The reason a patient states when they book "Other (describe…)" instead of a
+     * listed procedure. GAP-FTB-06. NULL for a named treatment.
+     */
+    private String patientReason;
     private String createdByUid;
     private Role createdByRole;
     private Instant createdAt;
@@ -41,6 +46,10 @@ public class Appointment {
     }
 
     public Appointment(String appointmentNo, String patientId, String dentistId, String slotId, String treatmentId, LocalDate date, LocalTime time, AppointmentStatus status, String diagnosis, String createdByUid, Role createdByRole, Instant createdAt) {
+        this(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, null, createdByUid, createdByRole, createdAt);
+    }
+
+    public Appointment(String appointmentNo, String patientId, String dentistId, String slotId, String treatmentId, LocalDate date, LocalTime time, AppointmentStatus status, String diagnosis, String patientReason, String createdByUid, Role createdByRole, Instant createdAt) {
         this.appointmentNo = appointmentNo;
         this.patientId = patientId;
         this.dentistId = dentistId;
@@ -50,6 +59,7 @@ public class Appointment {
         this.time = time;
         this.status = status;
         this.diagnosis = diagnosis;
+        this.patientReason = patientReason;
         this.createdByUid = createdByUid;
         this.createdByRole = createdByRole;
         this.createdAt = createdAt;
@@ -125,6 +135,14 @@ public class Appointment {
 
     public void setDiagnosis(String diagnosis) {
         this.diagnosis = diagnosis;
+    }
+
+    public String getPatientReason() {
+        return patientReason;
+    }
+
+    public void setPatientReason(String patientReason) {
+        this.patientReason = patientReason;
     }
 
     public String getCreatedByUid() {
@@ -237,6 +255,7 @@ public class Appointment {
         private LocalTime time;
         private AppointmentStatus status = AppointmentStatus.CONFIRMED;
         private String diagnosis;
+        private String patientReason;
         private String createdByUid;
         private Role createdByRole;
         private Instant createdAt;
@@ -286,6 +305,11 @@ public class Appointment {
             return this;
         }
 
+        public Builder patientReason(String patientReason) {
+            this.patientReason = patientReason;
+            return this;
+        }
+
         public Builder createdByUid(String createdByUid) {
             this.createdByUid = createdByUid;
             return this;
@@ -302,7 +326,7 @@ public class Appointment {
         }
 
         public Appointment build() {
-            return new Appointment(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, createdByUid, createdByRole, createdAt);
+            return new Appointment(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, patientReason, createdByUid, createdByRole, createdAt);
         }
     }
 }
