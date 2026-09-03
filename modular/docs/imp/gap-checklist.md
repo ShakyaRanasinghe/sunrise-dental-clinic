@@ -155,6 +155,94 @@ over HTTP) and are now marked Fixed (see "How to close a gap").
 
 ---
 
+# v1.0.2 UX polish batch (documented — not yet built)
+
+A review of the public page, sign-up, profile, booking and help flows turned up a batch of
+presentation-grade changes. They are **documented only** — none are implemented yet. Each entry
+states its SRS gap ID, the role file it belongs to and the acceptance criterion. Flip a box to
+`[x]` and mark the SRS row **Fixed** only once the change is built, committed and verified live.
+
+## Patient — `srs-patient.md`
+
+- [ ] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
+      service on the public home page.
+      **Accept:** a service description is shown with no "Book" call-to-action inviting a
+      sign-up from the middle of the page.
+
+- [ ] **GAP-PAT-23** — the public **"Our dentists"** cards are `<details>` rows that only show
+      their body (fee, phone, rating, register button) when opened; the user wants the whole card
+      visible without expanding.
+      **Accept:** every dentist card on the public home is fully displayed without a
+      `<details>/<summary>` toggle.
+
+- [ ] **GAP-PAT-24** — the **Help** link is missing from the patient dashboard navigation bar
+      (each role's signed-in nav currently omits Help entirely).
+      **Accept:** a signed-in patient sees a **Help** entry in the dashboard nav (and, per
+      GAP-FTB-12, each role gets its own help page from that link).
+
+- [ ] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
+      (`<h2>What happened</h2>` plus the **"Who reads this: the clinic's administrator…"** notice
+      and the **"Choose the dentist your concern is about. The form opens when you do."** line).
+      **Accept:** that intro block is removed so the page gets straight to the dentist list and
+      form.
+
+- [ ] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
+      wants a **wider card** with **two inputs per line** to shorten the form. Also remove the
+      **"Nothing medical is asked here. Allergies and medications are added from your profile once
+      you have signed in."** notice and the phone helper text **"So the clinic can reach you about
+      an appointment (e.g. 077 123 4567)."**
+      **Accept:** the create-account form fits without vertical scrolling, is wider than the
+      current `.narrow` card, lays fields two-per-line where possible, and carries neither the
+      "Nothing medical…" notice nor the phone helper sentence.
+
+- [ ] **GAP-PAT-27** — the patient has **no place to record their own diagnosis / dental-history
+      details** even though the role is designed to do so; the profile screen has no such field.
+      **Accept:** a diagnosis / history details field exists in the patient profile and can be
+      edited and saved there.
+
+- [ ] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
+      reads **"Confirm booking"** with no reference to who or what; and the page still carries a
+      **"2. Dentist and date"** picker card below the times (redundant on a page the patient is
+      already on). The user wants the button to read **"Proceed appointment &lt;dentist name&gt;"**,
+      the redundant **"2. Dentist and date"** card **removed**, and the **time slots shown before
+      the treatment picker** under a heading that names the doctor's available times.
+      **Accept:** the submit button names the chosen dentist; the "2. Dentist and date" card is
+      gone; the times for the selected dentist are shown before the treatment list.
+
+- [ ] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
+      even though the administrator authors a description for it.
+      **Accept:** each treatment in the booking list has an info icon/link that opens the
+      administrator-written description in a sub-window.
+
+## Shared / all roles — `srs-patient.md` (+ role files noted below)
+
+- [ ] **GAP-FTB-11** — the footer labels the running build as **"Release v1.0.1"**.
+      **Accept:** the footer reads **"Version v1.0.1"** (label changed from "Release" to
+      "Version"). Public footer (`footer.jspf`).
+
+- [ ] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
+      **help page specific to how it uses the system**, referencing the project SRS/docs; each
+      role's sign-in page (and the sign-up page) should link to its own help; and the **help link on
+      the `/staff` portal should be removed** since the staff scenarios differ by role.
+      **Accept:** patient, reception, dentist and admin each get a role-specific help page rooted
+      in the repo's SRS documentation; the patient login and register pages link to the patient
+      help; the `/staff` portal no longer offers the shared help link. Affects `srs-patient.md`,
+      `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
+
+- [ ] **GAP-FTB-13** — the public help page's contents card is headed **"Jump to a topic"**.
+      **Accept:** that label is replaced with something simpler/appropriate for the page.
+
+- [ ] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
+      the user wants a **read-only view by default** with an **Edit** button that reveals **only the
+      fields that role may change**, and every successful update anywhere in the system (profile,
+      availability, settings, etc.) should show a **confirmation sub-window ("successfully
+      updated")** rather than only a top-of-page notice.
+      **Accept:** each role's profile shows read-only values with an Edit control that makes the
+      editable subset interactive; after any update the user gets a success sub-window. Affects
+      `srs-patient.md`, `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
+
+---
+
 ## How to close a gap
 
 1. Fix on `dev`; run the module build + tests (and the affected view test) green.
