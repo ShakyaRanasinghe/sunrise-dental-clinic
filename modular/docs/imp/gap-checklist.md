@@ -100,33 +100,36 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Accept:** the overview heading plainly says open days in the next two weeks.
       **Done:** `book.jsp` heading is **"Open days in the next two weeks"** with a clearer subtitle.
 
-- [ ] **GAP-FTB-04** — a dentist can publish their own **phone number** on the public "Our
+- [x] **GAP-FTB-04** — a dentist can publish their own **phone number** on the public "Our
       dentists" page.
       **Accept:** a dentist sets a number on their dashboard and it appears on the public page.
-      **Done (awaiting live deployment):** `dentist.phone` column + `Dentist.phone`/`DentistResponse`
+      **Done:** `dentist.phone` column + `Dentist.phone`/`DentistResponse`
       fields; `ReferenceService.updateOwnPhone`; edit on the dentist availability screen; shown on
-      `access/home.jsp` dentist cards.
+      `access/home.jsp` dentist cards. Deployed + verified live (silva sets `+94 77 123 4567` on his
+      availability screen; the home-page dentist card renders it).
 
 - [x] **GAP-FTB-05** — remove the misleading **"Only patients create their own account…"** notice
       from the registration page (administrators and staff can too).
       **Done:** the `.notice info` block was removed from `access/register.jsp`.
 
-- [ ] **GAP-FTB-06** — booking offers a **single-treatment radio checklist** and an
+- [x] **GAP-FTB-06** — booking offers a **single-treatment radio checklist** and an
       **"Other (describe…)"** free-text reason instead of a bare dropdown.
       **Accept:** a patient picks one listed treatment, or "Other" and states their reason; the
       reason is stored on the appointment.
-      **Done (awaiting live deployment):** `appointment.patient_reason` column + threaded field;
+      **Done:** `appointment.patient_reason` column + threaded field;
       `AppointmentService.book` accepts an optional reason; `BookAppointmentServlet` requires either
-      a treatment or a reason; `book.jsp` renders the radios + Other textarea.
+      a treatment or a reason; `book.jsp` renders the radios + Other textarea. Deployed + verified
+      live (an "Other" booking stores `patient_reason` with `treatment_id` NULL).
 
-- [ ] **GAP-FTB-07** — a dentist **enables/disables which treatments they offer**, and the booking
+- [x] **GAP-FTB-07** — a dentist **enables/disables which treatments they offer**, and the booking
       screen shows a patient only those.
       **Accept:** toggling a treatment hides it from that dentist's booking options (and from the
       booking form); an "Other" booking always remains possible.
-      **Done (awaiting live deployment):** `dentist_treatment` junction table + `DentistTreatmentDao`
+      **Done:** `dentist_treatment` junction table + `DentistTreatmentDao`
       / in-memory repository; `ReferenceService.treatmentsFor` / `setTreatmentOffered` /
       `dentistTreatmentToggles`; toggle list on the dentist availability screen; booking treatment
-      list filtered by the selected dentist.
+      list filtered by the selected dentist. Deployed + verified live (toggling `t-whitening` off for
+      silva removed it from his booking options; toggled back on afterwards).
 
 - [x] **GAP-FTB-08** — the patient's "Concerns you have raised" list was too table-heavy.
       **Done:** compact `<details class="concern-item">` rows (summary = category, dentist, status
@@ -136,8 +139,9 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Done:** `.user-menu__avatar`(lg), `.site-nav a` hover + active, and `.role-tag` now use the
       blue accent in `app.css`.
 
-**Note:** GAP-FTB-04/06/07 are coded, compile, and pass 316 tests; they await schema re-seed and
-live deployment verification (see "How to close a gap" — the box flips to [x] when deployed + green).
+**Note:** GAP-FTB-04/06/07 are coded, compile, and pass 316 tests; they were verified live on the
+deployed instance (schema migrated in place on the running MySQL, then each acceptance step checked
+over HTTP) and are now marked Fixed (see "How to close a gap").
 
 ---
 
