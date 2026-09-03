@@ -224,6 +224,16 @@ class V102UxPolishTest {
         }
     }
 
+    // The schedule's coming-week section reads "Upcoming appointments".
+    @Test
+    void scheduleWeekSectionIsPlainlyLabelled() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("Upcoming appointments"),
+                "the coming-week section must say what it is");
+        assertFalse(schedule.contains("<h2 class=\"page-title\">The week ahead</h2>"),
+                "the vague heading must be gone");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

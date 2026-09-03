@@ -25,7 +25,7 @@
 
 <div class="card" id="schedule">
     <h2>Your schedule</h2>
-    <p>Open <a href="${ctx}/dentist/schedule">Schedule</a> to see today's patients first, finished visits folded below, and the week ahead last. An empty day says plainly that nothing is booked. Open an appointment to record the visit.</p>
+    <p>Open <a href="${ctx}/dentist/schedule">Schedule</a> to see today's patients first, finished visits folded below, and upcoming appointments last. An empty day says plainly that nothing is booked. Open an appointment to record the visit.</p>
 </div>
 
 <div class="card" id="availability">

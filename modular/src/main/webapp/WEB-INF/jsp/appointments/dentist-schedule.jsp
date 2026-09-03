@@ -183,11 +183,12 @@
 </c:if>
 
 <%--
-    FR-DEN-15: the week ahead. The picker above answers "what is happening on a day I
-    name"; this section answers "what is coming", which a one-day view never could -
-    a booking made for tomorrow was invisible until tomorrow was picked.
+    FR-DEN-15: upcoming appointments for the next seven days. The picker above
+    answers "what is happening on a day I name"; this section answers "what is
+    coming", which a one-day view never could - a booking made for tomorrow was
+    invisible until tomorrow was picked.
 --%>
-<h2 class="page-title">The week ahead</h2>
+<h2 class="page-title">Upcoming appointments</h2>
 <c:choose>
     <c:when test="${not hasWeekAppointments}">
         <div class="card">
