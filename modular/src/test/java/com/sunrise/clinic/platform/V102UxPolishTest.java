@@ -32,6 +32,17 @@ class V102UxPolishTest {
                 "the removed call-to-action must leave no class behind");
     }
 
+    // Public dentist cards: below the publishable threshold no rating metric
+    // shows at all — neither stars nor a "more reviews needed" hint.
+    @Test
+    void unratedDentistsShowNoRatingHint() {
+        String home = read(JSP.resolve("access/home.jsp"));
+        assertFalse(home.contains("needed to show rating"),
+                "a dentist without a publishable rating must show no rating hint");
+        assertTrue(home.contains("rating.isPublishable()"),
+                "dentists with a publishable rating must still show it");
+    }
+
     // GAP-PAT-23: dentist cards render whole, with no expand toggle.
     @Test
     void dentistCardsAreFullyDisplayed() {
