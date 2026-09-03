@@ -155,12 +155,12 @@ over HTTP) and are now marked Fixed (see "How to close a gap").
 
 ---
 
-# v1.0.2 UX polish batch (documented — not yet built)
+# v1.0.2 UX polish batch (built, verified live, released as v1.0.2)
 
 A review of the public page, sign-up, profile, booking and help flows turned up a batch of
-presentation-grade changes. They are **documented only** — none are implemented yet. Each entry
-states its SRS gap ID, the role file it belongs to and the acceptance criterion. Flip a box to
-`[x]` and mark the SRS row **Fixed** only once the change is built, committed and verified live.
+presentation-grade changes. Each entry states its SRS gap ID, the role file it belongs to and
+the acceptance criterion. Every box is ticked: each change is built, committed and verified
+live, and each SRS row is marked **Fixed**.
 
 ## Patient — `srs-patient.md`
 
@@ -187,7 +187,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Done:** `PatientPolicy.ownNavigation()` gains `Help → /help/patient`; the other three
       policies gain their own Help entries too (GAP-FTB-12). 330 tests green.
 
-- [ ] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
+- [x] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
       (`<h2>What happened</h2>` plus the **"Who reads this: the clinic's administrator…"** notice
       and the       **"Choose the dentist your concern is about. The form opens when you do."** line).
       **Accept:** that intro block is removed so the page gets straight to the dentist list and
@@ -197,7 +197,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       per-dentist list. The page subtitle still names the administrator as the reader
       (FR-CMP-12). 330 tests green.
 
-- [ ] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
+- [x] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
       wants a **wider card** with **two inputs per line** to shorten the form. Also remove the
       **"Nothing medical is asked here. Allergies and medications are added from your profile once
       you have signed in."** notice and the phone helper text **"So the clinic can reach you about
@@ -218,7 +218,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       (5th component) and `PatientProfileServlet`; `profile.jsp` shows it read-only and edits it
       via textarea. 330 tests green.
 
-- [ ] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
+- [x] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
       reads **"Confirm booking"** with no reference to who or what; and the page still carries a
       **"2. Dentist and date"** picker card below the times (redundant on a page the patient is
       already on). The user wants the button to read **"Proceed appointment &lt;dentist name&gt;"**,
@@ -231,7 +231,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       replaced by a "Choose a different dentist or date" link; dentist-details dialog kept.
       330 tests green.
 
-- [ ] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
+- [x] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
       even though the administrator authors a description for it.
       **Accept:** each treatment in the booking list has an info icon/link that opens the
       administrator-written description in a sub-window.
@@ -245,7 +245,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       "Version"). Public footer (`footer.jspf`).
       **Done:** `footer.jspf` now renders "Version v…". 330 tests green.
 
-- [ ] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
+- [x] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
       **help page specific to how it uses the system**, referencing the project SRS/docs; each
       role's sign-in page (and the sign-up page) should link to its own help; and the **help link on
       the       `/staff` portal should be removed** since the staff scenarios differ by role.
@@ -265,7 +265,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Done:** `shared/help.jsp` (and the four role pages) head the card **"Help topics"**.
       330 tests green.
 
-- [ ] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
+- [x] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
       the user wants a **read-only view by default** with an **Edit** button that reveals **only the
       fields that role may change**, and every successful update anywhere in the system (profile,
       availability, settings, etc.) should show a **confirmation sub-window ("successfully
