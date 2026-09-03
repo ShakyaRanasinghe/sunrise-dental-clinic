@@ -224,6 +224,19 @@ class V102UxPolishTest {
         }
     }
 
+    // GAP-DEN-12: pending patients are expandable cards; the record form lives
+    // only inside the opened card, with the first one open.
+    @Test
+    void schedulePendingPatientsAreExpandable() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("<details class=\"card pending-list\""),
+                "each pending patient must be an expandable card");
+        assertTrue(schedule.contains("pending-list__body"),
+                "details and form must render inside the opened card only");
+        assertTrue(read(CSS).contains(".pending-list"),
+                "the expandable cards need their style");
+    }
+
     // GAP-FTB-14: the two silent updates now carry a confirmation flag.
     @Test
     void silentUpdatesCarryConfirmationFlags() {

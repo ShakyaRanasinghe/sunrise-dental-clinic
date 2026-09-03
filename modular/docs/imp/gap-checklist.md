@@ -80,6 +80,16 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       the single-day "Today's patients" view cannot show. Deployed + verified live (today →
       "No patients booked with you today"; other day → names that date).
 
+- [x] **GAP-DEN-12** — "Today's patients" renders every patient as a full details card
+      (heading, details table, record-and-complete form), so a full day is a long scroll of
+      open forms.
+      **Accept:** each patient is one expandable card showing time, name, status and the
+      critical-notes flag; the details table and record form render only inside the opened
+      card (first one open).
+      **Done:** pending rows are `<details class="card pending-list">` (first `open`),
+      styled like the done list (`app.css`); summary carries time, patient, status and
+      the flag. Tests green, verified live.
+
 ---
 
 ## Footer / public / dashboard — v1.0.1 follow-up batch (GAP-FTB)

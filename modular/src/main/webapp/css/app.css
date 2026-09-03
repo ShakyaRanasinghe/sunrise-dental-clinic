@@ -692,6 +692,29 @@ textarea { min-height: 80px; resize: vertical; }
 .done-list summary .count { color: var(--ink-faint); font-weight: 400; }
 .done-list[open] .table-wrap { padding: 8px 6px 12px; }
 
+/* --- Dentist schedule: expandable pending-patient cards (GAP-DEN-12) ----
+   One row per patient; the details table and record form live inside the
+   opened card only, so a full day stays scannable. Same pattern as the
+   done list above; the first card starts open. -------------------------- */
+.pending-list { padding: 0; margin-bottom: 14px; }
+.pending-list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    font-weight: 600;
+}
+.pending-list summary::-webkit-details-marker { display: none; }
+.pending-list:not([open]) summary { border-radius: var(--radius); }
+.pending-list[open] summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--line); }
+.pending-list summary:hover { background: var(--canvas); }
+.pending-list summary .count { color: var(--ink-faint); font-weight: 400; }
+.pending-list__body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+
 /* --- Admin complaints: compact cards, review form on click (GAP-ADM-09) - */
 .complaint-card { padding: 0; margin-bottom: 14px; }
 .complaint-card summary {
