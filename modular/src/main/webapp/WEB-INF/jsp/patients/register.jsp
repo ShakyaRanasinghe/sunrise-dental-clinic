@@ -20,7 +20,7 @@
 <%@ include file="/WEB-INF/jsp/shared/header.jspf" %>
 
 <h1 class="page-title">Patient records</h1>
-<p class="page-subtitle">Search the register, or add someone who has just walked in.</p>
+<p class="page-subtitle">Search the register, or add someone who has just walked in. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
 <c:if test="${not empty registered}">
     <div class="notice">
@@ -131,13 +131,14 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Name</th><th>Contact</th><th>Email</th>
+                            <th>Patient ID</th><th>Name</th><th>Contact</th><th>Email</th>
                             <th>Date of birth</th><th>Portal account</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="p" items="${patients}">
                             <tr>
+                                <td class="mono"><c:out value="${p.patientNumber()}" /></td>
                                 <td><c:out value="${p.name()}" /></td>
                                 <td><c:out value="${p.contactNumber()}" /></td>
                                 <td><c:out value="${p.email()}" /></td>

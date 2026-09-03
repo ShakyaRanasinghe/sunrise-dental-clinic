@@ -72,7 +72,8 @@ public class AppointmentTestFixture {
         treatments.save(Treatment.builder().id("t-checkup").name("Routine check-up")
                 .baseCost(new BigDecimal("1000.00")).active(true).build());
 
-        ReferenceService reference = new ReferenceService(dentists, treatments);
+        ReferenceService reference = new ReferenceService(dentists, treatments,
+                new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository());
         clinicAccess = new ClinicAccess(patients, dentists);
         // The real adapter, so a dentist in these tests can read the notes of a patient
         // they actually have an appointment with and nobody else's.

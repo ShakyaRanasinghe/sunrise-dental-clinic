@@ -10,15 +10,18 @@ package com.sunrise.clinic.platform;
  * <p>When the WAR carries an {@code Implementation-Version} manifest entry
  * (set by Maven from {@code <version>} on a normal {@code mvn package}), that
  * is used. In the fast class-by-class deploy loop there is no fresh manifest,
- * so {@link #VERSION} is the fallback — and the two are kept in lockstep with
- * {@code pom.xml}'s {@code <version>}.</p>
+ * so {@link #VERSION} is the fallback. {@code VERSION} is the <em>released</em>
+ * tag the clinic is actually running (GAP-FTB-01), deliberately distinct from
+ * the internal Maven snapshot {@code <version>} in {@code pom.xml} — a user
+ * asking for support should read the release that shipped, not the build
+ * snapshot the source tree happens to carry.</p>
  */
 public final class ReleaseInfo {
 
-    /** Fallback build version — keep in lockstep with {@code <version>} in pom.xml. */
-    public static final String VERSION = "3.0.0-SNAPSHOT";
+    /** The released version shown in every footer — the git tag of this deploy (v1.0.2). */
+    public static final String VERSION = "1.0.2";
 
-    /** @return the current release, e.g. {@code 3.0.0-SNAPSHOT} */
+    /** @return the current release, e.g. {@code 1.0.2} */
     public static String version() {
         String fromManifest = ReleaseInfo.class.getPackage().getImplementationVersion();
         return fromManifest == null || fromManifest.isBlank() ? VERSION : fromManifest;

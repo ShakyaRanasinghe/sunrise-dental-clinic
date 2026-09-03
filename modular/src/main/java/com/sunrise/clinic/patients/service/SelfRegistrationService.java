@@ -73,11 +73,11 @@ public class SelfRegistrationService {
     /**
      * Register somebody.
      *
-     * <p>Only four things are actually required: a name, an email, a password and its
-     * confirmation. <b>The contact number is optional</b>, and so are the address and the date of
-     * birth — the column is nullable and reception can fill any of them in later. Demanding a
-     * telephone number at sign-up turns away somebody who would otherwise have become a patient,
-     * to collect a field that is more reliably taken at the desk.</p>
+     * <p>Five things are required: a name, an email, a password and its confirmation, and a
+     * contact number (GAP-PAT-20). The address and the date of birth are optional — the columns
+     * are nullable and reception can fill either in later. The contact number is demanded because
+     * it is the clinic's one reliable way to reach the patient and the key that ties an
+     * account to its record.</p>
      *
      * @throws IllegalArgumentException on anything the person can fix by retyping
      */
@@ -85,7 +85,7 @@ public class SelfRegistrationService {
         String name = required(form.name(), "Your name");
         String email = validEmail(form.email());
         String password = requirePassword(form.password(), form.confirmPassword());
-        String contact = contactNumber(form.contactNumber());
+        String contact = contactNumber(form.contactNumber(), name);
         String address = trimToNull(form.address());
         LocalDate dob = parseDob(form.dob());
 
@@ -136,7 +136,12 @@ public class SelfRegistrationService {
         return trimmed;
     }
 
-    private static String contactNumber(String value) {
+    private static String contactNumber(String value, String name) {
+        // Required since GAP-PAT-20: a number is how the clinic reaches the patient and is the
+        // only stable key across records. Form carries `required`; here is the final gate.
+        if (value == null || value.trim().isBlank()) {
+            throw new IllegalArgumentException("Your contact number is required.");
+        }
         return PhoneNumbers.validate(value, "The contact number");
     }
 

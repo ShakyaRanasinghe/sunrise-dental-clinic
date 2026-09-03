@@ -37,7 +37,8 @@ public class PatientProfileServlet extends PageServlet {
                                 requiredField(request, "name", "Name"),
                                 field(request, "address"),
                                 requiredField(request, "contactNumber", "Contact number"),
-                                field(request, "dob")));
+                                field(request, "dob"),
+                                field(request, "diagnosisDetails")));
                 case "declare" -> app().patientNoteService().declare(currentUser(request),
                         category(request), requiredField(request, "detail", "Detail"),
                         request.getParameter("critical") != null);

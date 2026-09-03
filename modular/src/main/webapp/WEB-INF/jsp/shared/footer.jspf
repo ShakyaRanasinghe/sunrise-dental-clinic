@@ -29,7 +29,7 @@
     <div class="site-footer__bar">
         <span>&copy; 2026 <c:out value="${footerName}" /></span>
         <c:if test="${not empty releaseVersion}">
-            <span class="site-footer__release">Release v<c:out value="${releaseVersion}" /></span>
+            <span class="site-footer__release">Version v<c:out value="${releaseVersion}" /></span>
         </c:if>
     </div>
 </footer>

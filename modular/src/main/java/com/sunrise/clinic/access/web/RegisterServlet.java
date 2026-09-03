@@ -57,8 +57,9 @@ public class RegisterServlet extends PageServlet {
                         field(request, "email"),
                         field(request, "password"),
                         field(request, "confirmPassword"),
-                        // Optional, all three. The service says why.
+                        // Required since GAP-PAT-20; the service enforces it (blank is refused).
                         field(request, "contactNumber"),
+                        // Optional. The service says why.
                         field(request, "address"),
                         field(request, "dob")));
 

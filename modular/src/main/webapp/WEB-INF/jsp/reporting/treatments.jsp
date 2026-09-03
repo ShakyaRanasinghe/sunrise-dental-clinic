@@ -8,6 +8,19 @@
 <c:if test="${not empty notice}">
     <div class="notice"><c:out value="${notice}" /></div>
 </c:if>
+<%-- GAP-FTB-14: catalogue changes confirm in a sub-window after the redirect. --%>
+<c:if test="${param.saved == '1'}">
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="treatments-saved-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="treatments-saved-title">Successfully updated</h3>
+            <p class="page-subtitle">The treatment catalogue was saved.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/admin/treatments">Close</a>
+            </div>
+        </div>
+    </div>
+</c:if>
 
 <%-- ── Add new treatment ───────────────────────────────────────────── --%>
 <div class="card">

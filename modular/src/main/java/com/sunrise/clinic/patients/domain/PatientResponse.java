@@ -26,6 +26,7 @@ public record PatientResponse(String id,
                               String contactNumber,
                               String email,
                               LocalDate dob,
+                              String diagnosisDetails,
                               boolean hasPortalAccount) {
 
     /** @return the outward form of {@code patient}. */
@@ -37,6 +38,20 @@ public record PatientResponse(String id,
                 patient.getContactNumber(),
                 patient.getEmail(),
                 patient.getDob(),
+                patient.getDiagnosisDetails(),
                 patient.getUserUid() != null);
+    }
+
+    /**
+     * A readable, unique patient number for the desk. It is the patient's unique
+     * stored {@code id} (GAP-REC-12): the same value is the primary key, so two
+     * same-named patients can always be told apart by it and never collide. The
+     * id is already short and friendly where the clinic seeded one ("p-nimal");
+     * where registration generated a UUID it is shown as-is so it stays unique.
+     *
+     * @return the patient's unique identifier, printed verbatim
+     */
+    public String patientNumber() {
+        return id;
     }
 }

@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 public record DentistResponse(String id,
                               String name,
                               String specialization,
+                              String phone,
                               BigDecimal consultationFee,
                               boolean active) {
 
@@ -30,6 +31,7 @@ public record DentistResponse(String id,
                 dentist.getId(),
                 dentist.getName(),
                 dentist.getSpecialization(),
+                dentist.getPhone(),
                 dentist.getConsultationFee(),
                 dentist.isActive());
     }

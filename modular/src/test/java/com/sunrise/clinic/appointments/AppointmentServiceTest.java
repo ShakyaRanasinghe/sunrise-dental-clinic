@@ -2,6 +2,7 @@ package com.sunrise.clinic.appointments;
 
 import com.sunrise.clinic.access.domain.ClinicPrincipal;
 import com.sunrise.clinic.access.service.AccessControl;
+import com.sunrise.clinic.appointments.domain.Appointment;
 import com.sunrise.clinic.appointments.domain.AppointmentDetailResponse;
 import com.sunrise.clinic.appointments.domain.AppointmentResponse;
 import com.sunrise.clinic.appointments.domain.AppointmentStatus;
@@ -125,6 +126,30 @@ class AppointmentServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> fixture.service.book(ghost, "s1", "t-checkup", null));
+    }
+
+    // --- GAP-FTB-06: "Other (describe…)" booking ---------------------
+
+    @Test
+    void anOtherBookingHasNoTreatmentButRecordsTheReason() {
+        AppointmentResponse booked = fixture.service.book(
+                nimal, "s1", null, null, "A sore wisdom tooth");
+
+        assertEquals(null, booked.treatmentName());
+        Appointment stored = fixture.appointments.findById(booked.appointmentNo()).orElseThrow();
+        assertEquals("A sore wisdom tooth", stored.getPatientReason());
+    }
+
+    @Test
+    void aNamedTreatmentBookingHasNoPatientReason() {
+        // Even if a stray reason is posted alongside a named treatment, only the
+        // treatment matters: the reason belongs to an "Other" booking alone.
+        AppointmentResponse booked = fixture.service.book(
+                nimal, "s1", "t-checkup", null, "This text is ignored");
+
+        Appointment stored = fixture.appointments.findById(booked.appointmentNo()).orElseThrow();
+        assertEquals("t-checkup", stored.getTreatmentId());
+        assertNull(stored.getPatientReason());
     }
 
     @Test
@@ -347,6 +372,22 @@ class AppointmentServiceTest {
 
         assertEquals(List.of("p-nimal"),
                 fixture.service.forSelf(nimal).stream().map(AppointmentResponse::patientId).toList());
+    }
+
+    @Test
+    void aPatientSeesTheirOwnDiagnosisButNotAnothers() {
+        // GAP-DEN-09: the patient dashboard must show the dentist's comment on their
+        // own finished visits, and nothing for a visit belonging to someone else.
+        String mine = fixture.service.book(nimal, "s1", "t-checkup", null).appointmentNo();
+        String other = fixture.service.book(kamala, "s2", "t-checkup", null).appointmentNo();
+        fixture.service.complete(AppointmentTestFixture.silva(), mine, "Scaling, no decay");
+        fixture.service.complete(AppointmentTestFixture.silva(), other, "Root canal done");
+
+        List<AppointmentDetailResponse> mineDetails = fixture.service.forSelfDetail(nimal);
+
+        assertEquals(List.of("Scaling, no decay"),
+                mineDetails.stream().map(AppointmentDetailResponse::diagnosis).toList());
+        assertTrue(mineDetails.stream().noneMatch(d -> d.diagnosis().contains("Root canal")));
     }
 
     @Test

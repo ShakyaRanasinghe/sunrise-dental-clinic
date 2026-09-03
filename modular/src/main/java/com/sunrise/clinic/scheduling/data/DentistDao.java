@@ -15,7 +15,7 @@ import java.util.Optional;
 public class DentistDao extends JdbcDao<Dentist, String> implements DentistRepository {
 
     private static final String COLUMNS =
-            "id, user_uid, name, specialization, consultation_fee, active";
+            "id, user_uid, name, specialization, phone, consultation_fee, active";
 
     public DentistDao(Database db) {
         super(db);
@@ -24,12 +24,13 @@ public class DentistDao extends JdbcDao<Dentist, String> implements DentistRepos
     @Override
     public Dentist save(Dentist dentist) {
         update("""
-                INSERT INTO dentist (id, user_uid, name, specialization, consultation_fee, active)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO dentist (id, user_uid, name, specialization, phone, consultation_fee, active)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     user_uid = VALUES(user_uid),
                     name = VALUES(name),
                     specialization = VALUES(specialization),
+                    phone = VALUES(phone),
                     consultation_fee = VALUES(consultation_fee),
                     active = VALUES(active)
                 """, statement -> bindDentist(statement, dentist));
@@ -78,8 +79,9 @@ public class DentistDao extends JdbcDao<Dentist, String> implements DentistRepos
         statement.setString(2, d.getUserUid());
         statement.setString(3, d.getName());
         statement.setString(4, d.getSpecialization());
-        statement.setBigDecimal(5, d.getConsultationFee());
-        statement.setBoolean(6, d.isActive());
+        statement.setString(5, d.getPhone());
+        statement.setBigDecimal(6, d.getConsultationFee());
+        statement.setBoolean(7, d.isActive());
     }
 
     private static Dentist mapDentist(ResultSet rs) throws SQLException {
@@ -88,6 +90,7 @@ public class DentistDao extends JdbcDao<Dentist, String> implements DentistRepos
                 .userUid(rs.getString("user_uid"))
                 .name(rs.getString("name"))
                 .specialization(rs.getString("specialization"))
+                .phone(rs.getString("phone"))
                 .consultationFee(rs.getBigDecimal("consultation_fee"))
                 .active(rs.getBoolean("active"))
                 .build();

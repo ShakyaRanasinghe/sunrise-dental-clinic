@@ -3,7 +3,7 @@
 <%@ include file="/WEB-INF/jsp/shared/header.jspf" %>
 
 <h1 class="page-title">Walk-in booking</h1>
-<p class="page-subtitle">Find or register the patient, then pick an open slot for them.</p>
+<p class="page-subtitle">Find or register the patient, then pick an open slot for them. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
 <%-- ── Step 1: Find or register patient ───────────────────────────── --%>
 <div class="grid two">
@@ -26,11 +26,12 @@
             <div class="table-wrap" style="margin-top:1rem;">
                 <table>
                     <thead>
-                        <tr><th>Name</th><th>Contact</th><th></th></tr>
+                        <tr><th>Patient ID</th><th>Name</th><th>Contact</th><th></th></tr>
                     </thead>
                     <tbody>
                         <c:forEach var="p" items="${results}">
                             <tr>
+                                <td class="mono"><c:out value="${p.patientNumber()}" /></td>
                                 <td><c:out value="${p.name()}" /></td>
                                 <td><c:out value="${p.contactNumber()}" /></td>
                                 <td>

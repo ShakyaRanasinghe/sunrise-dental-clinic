@@ -30,8 +30,12 @@ public class BookAppointmentServlet extends PageServlet {
 
             request.setAttribute("dentists",
                     app().referenceService().activeDentists(currentUser(request)));
+            // GAP-FTB-07: once a dentist is chosen, offer only the treatments they
+            // perform; before that, show the full active catalogue.
             request.setAttribute("treatments",
-                    app().referenceService().activeTreatments(currentUser(request)));
+                    dentistId != null && !dentistId.isBlank()
+                            ? app().referenceService().treatmentsFor(currentUser(request), dentistId)
+                            : app().referenceService().activeTreatments(currentUser(request)));
             request.setAttribute("dentistId", dentistId);
             request.setAttribute("date", date);
             request.setAttribute("patientId", patientId);
@@ -56,13 +60,21 @@ public class BookAppointmentServlet extends PageServlet {
             throws ServletException, IOException {
         page(request, response, () -> {
             String patientId = field(request, "patientId");
+            // GAP-FTB-06: an "Other (describe…)" booking sends no treatmentId but a
+            // free-text reason; a named treatment sends a treatmentId and no reason.
+            String treatmentId = field(request, "treatmentId");
+            String patientReason = field(request, "patientReason");
+            if (treatmentId == null && patientReason == null) {
+                throw new IllegalArgumentException("Choose a treatment, or describe what the visit is for.");
+            }
             AppointmentResponse booked = app().appointmentService().book(
                     currentUser(request),
                     requiredField(request, "slotId", "Time"),
-                    requiredField(request, "treatmentId", "Treatment"),
+                    treatmentId,
                     // Staff booking on a patient's behalf name them; a patient sending
                     // this is ignored, because the service resolves from the account.
-                    patientId);
+                    patientId,
+                    patientReason);
 
             // Reception booking on behalf: redirect to the printable slip.
             // Patient self-booking: redirect to their home page.

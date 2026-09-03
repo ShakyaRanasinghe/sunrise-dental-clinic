@@ -20,14 +20,7 @@
 </c:if>
 
 <div class="card">
-    <h2>What happened</h2>
-
-    <div class="notice">
-        <strong>Who reads this:</strong> the clinic's administrator, and nobody else.
-        <strong>The dentist you name will not see it</strong> &mdash; not the concern, not that
-        you raised one. Reception does not see it either. Raising a concern does not affect your
-        appointments or your ability to book.
-    </div>
+    <h2>Your visits</h2>
 
     <c:choose>
         <c:when test="${empty dentistsTreated}">
@@ -37,9 +30,6 @@
             </p>
         </c:when>
         <c:otherwise>
-            <p class="page-subtitle">
-                Choose the dentist your concern is about. The form opens when you do.
-            </p>
             <c:forEach var="dentist" items="${dentistsTreated}">
                 <details class="concern-dentist">
                     <summary>
@@ -97,28 +87,34 @@
         </c:when>
         <c:otherwise>
             <c:forEach var="c" items="${complaints}">
-                <div class="table-wrap">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>Raised</th>
-                                <td>${c.submittedAt()}
-                                    <span class="pill <c:if test='${c.isOpen()}'>open</c:if>">
-                                        <c:out value="${c.statusLabel()}" /></span>
-                                </td>
-                            </tr>
-                            <tr><th>About</th>
-                                <td><c:out value="${c.categoryLabel()}" /> &mdash;
-                                    <c:out value="${c.dentistName()}" /></td></tr>
-                            <tr><th>What you told us</th><td><c:out value="${c.detail()}" /></td></tr>
-                            <c:if test="${not empty c.resolution()}">
-                                <%-- The clinic's answer sits beside the patient's account,
-                                     never over it — FR-ADM-55. --%>
-                                <tr><th>What we did</th><td><c:out value="${c.resolution()}" /></td></tr>
+                <%-- GAP-FTB-08: a compact, expandable list instead of a stack of full
+                     tables. Each concern is one row; open it to read the detail and the
+                     clinic's reply. <details>/<summary> keeps it script-free. --%>
+                <details class="concern-item">
+                    <summary>
+                        <span class="concern-item__who">
+                            <c:out value="${c.categoryLabel()}" />
+                            <c:if test="${not empty c.dentistName()}">
+                                &mdash; <c:out value="${c.dentistName()}" />
                             </c:if>
-                        </tbody>
-                    </table>
-                </div>
+                        </span>
+                        <span class="concern-item__meta">
+                            <span class="pill <c:if test='${c.isOpen()}'>open</c:if>">
+                                <c:out value="${c.statusLabel()}" /></span>
+                            <span class="page-subtitle">${c.submittedAt()}</span>
+                        </span>
+                    </summary>
+                    <div class="concern-item__body">
+                        <p class="page-subtitle"><strong>What you told us</strong></p>
+                        <p><c:out value="${c.detail()}" /></p>
+                        <c:if test="${not empty c.resolution()}">
+                            <%-- The clinic's answer sits beside the patient's account,
+                                 never over it — FR-ADM-55. --%>
+                            <p class="page-subtitle"><strong>What we did</strong></p>
+                            <p><c:out value="${c.resolution()}" /></p>
+                        </c:if>
+                    </div>
+                </details>
             </c:forEach>
             <p class="page-subtitle">
                 A concern cannot be withdrawn once sent &mdash; a record of something that

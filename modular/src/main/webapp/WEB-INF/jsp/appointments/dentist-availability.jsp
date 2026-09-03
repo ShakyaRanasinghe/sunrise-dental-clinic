@@ -11,6 +11,80 @@
 <h1 class="page-title">My availability</h1>
 <p class="page-subtitle">Time windows reception published for you. Patients can book the open slots shown here.</p>
 
+<%-- GAP-FTB-04: the dentist sets the phone number shown to patients on the public
+     "Our dentists" page. GAP-FTB-14: shown read-only with an Edit control that
+     reveals the field, and a saved change confirms in a sub-window. --%>
+<div class="card">
+    <h2>Contact details</h2>
+    <p class="page-subtitle">
+        This number is shown to patients on the clinic's public "Our dentists" page.
+        Leave it blank if the front desk should take calls instead.
+    </p>
+    <c:if test="${not empty phoneSaved}">
+        <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="phone-saved-title">
+            <div class="dialog">
+                <span class="success-tick" aria-hidden="true">&#10003;</span>
+                <h3 id="phone-saved-title">Successfully updated</h3>
+                <p class="page-subtitle">Your phone number was saved.</p>
+                <div class="form-actions">
+                    <a class="btn" href="${ctx}/dentist/availability">Close</a>
+                </div>
+            </div>
+        </div>
+    </c:if>
+    <div class="table-wrap">
+        <table>
+            <tbody>
+                <tr><th>Phone number</th><td><c:out value="${dentist.phone}" /></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <details class="confirm-cancel">
+        <summary class="btn small secondary">Edit</summary>
+        <div class="confirm-cancel__panel">
+            <form method="post" action="${pageContext.request.contextPath}/dentist/availability" class="form-row">
+                <input type="hidden" name="action" value="phone">
+                <label for="phone">Phone number</label>
+                <input type="text" id="phone" name="phone" value="${dentist.phone}"
+                       placeholder="+94 77 000 0000" size="24" />
+                <div class="form-actions"><button type="submit" class="btn">Save</button></div>
+            </form>
+        </div>
+    </details>
+</div>
+
+<%-- GAP-FTB-07: the treatments this dentist offers. A toggle list; patients booking
+     with this dentist see only the checked treatments. "Other (describe…)" is always
+     available, so disabling everything is never a dead end. --%>
+<div class="card" id="treatments">
+    <h2>Treatments I offer</h2>
+    <p class="page-subtitle">
+        Tick the treatments you perform. Patients booking with you will only see these
+        (they can still choose "Other (describe&hellip;)" for anything else).
+    </p>
+    <c:forEach var="t" items="${toggles}">
+        <form method="post" action="${ctx}/dentist/availability" class="treatment-toggle">
+            <input type="hidden" name="action" value="toggle">
+            <input type="hidden" name="treatmentId" value="<c:out value='${t.id()}' />" />
+            <span class="treatment-toggle__name"><c:out value="${t.name()}" /></span>
+            <span class="treatment-toggle__desc"><c:out value="${t.description()}" /></span>
+            <span class="treatment-toggle__state ${t.offered() ? 'on' : 'off'}">
+                ${t.offered() ? 'Offered' : 'Hidden from patients'}
+            </span>
+            <c:choose>
+                <c:when test="${t.offered()}">
+                    <input type="hidden" name="offered" value="off">
+                    <button type="submit" class="btn secondary treatment-toggle__save">Remove</button>
+                </c:when>
+                <c:otherwise>
+                    <input type="hidden" name="offered" value="on">
+                    <button type="submit" class="btn treatment-toggle__save">Add</button>
+                </c:otherwise>
+            </c:choose>
+        </form>
+    </c:forEach>
+</div>
+
 <c:choose>
     <c:when test="${not hasAvailability}">
         <div class="card">
