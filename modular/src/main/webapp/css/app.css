@@ -511,8 +511,8 @@ input[type=time], input[type=number], input[type=search], select, textarea {
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--sunrise);
-    box-shadow: 0 0 0 3px rgba(194, 87, 26, .12);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(30, 107, 184, .14);
 }
 
 textarea { min-height: 80px; resize: vertical; }
@@ -1024,14 +1024,14 @@ a { color: var(--sunrise-dark); }
     font-weight: 600;
     letter-spacing: .07em;
     text-transform: uppercase;
-    color: var(--sunrise-dark);
-    background: var(--sunrise-light);
+    color: var(--blue-dark);
+    background: var(--blue-light);
     padding: 3px 9px;
     border-radius: 4px;
     margin-bottom: 14px;
 }
 .alt { text-align: center; font-size: 13.5px; color: var(--ink-soft); margin-top: 14px; }
-.alt a { color: var(--sunrise-dark); }
+.alt a { color: var(--blue-dark); }
 
 /* --- Staff portal (/staff): a blue-themed role chooser. The original chooser
        only offered the patient door and was removed; this one lists the three
