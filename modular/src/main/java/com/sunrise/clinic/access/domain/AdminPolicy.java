@@ -61,13 +61,15 @@ public final class AdminPolicy extends RolePolicy {
                 new NavItem("Treatments", "/admin/treatments"),
                 new NavItem("Clinic", "/admin/clinic"),
                 new NavItem("Complaints", "/admin/complaints"),
-                new NavItem("Audit", "/admin/audit"));
+                new NavItem("Audit", "/admin/audit"),
+                new NavItem("Help", "/help/admin"));
     }
 
     /**
      * No "Home" tab: the Sunrise logo already lands here, on the reports screen,
      * so a second doorway to the same page would be noise - the same reason the
-     * patient and reception navigation carry no Home (GAP-REC-07).
+     * patient and reception navigation carry no Home (GAP-REC-07). "Help" leads
+     * to the administrator's own help page (GAP-FTB-12).
      */
     @Override
     public List<NavItem> navigation() {

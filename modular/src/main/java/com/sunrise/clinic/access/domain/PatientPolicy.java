@@ -36,18 +36,19 @@ public final class PatientPolicy extends RolePolicy {
         return PERMITTED;
     }
 
-    /** A patient's own pages: their appointments, and booking another. */
+    /** A patient's own pages: their appointments, booking another, and their help. */
     @Override
     protected List<NavItem> ownNavigation() {
         return List.of(
                 new NavItem("Book", "/patient/book"),
-                new NavItem("Raise a concern", "/patient/complaints"));
+                new NavItem("Raise a concern", "/patient/complaints"),
+                new NavItem("Help", "/help/patient"));
     }
 
     /**
-     * The "Home" and "Help" tabs are omitted: the Sunrise logo already takes a
-     * signed-in visitor to the same landing page, and the Help page exists for
-     * visitors, not signed-in users.
+     * The "Home" tab is omitted: the Sunrise logo already takes a signed-in
+     * visitor to the same landing page. "Help" is kept (GAP-PAT-24): it leads to
+     * the patient's own help page (GAP-FTB-12), not the visitor page.
      */
     @Override
     public List<NavItem> navigation() {

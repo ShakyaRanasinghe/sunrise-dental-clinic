@@ -12,8 +12,22 @@
 <h1 class="page-title">My details</h1>
 <p class="page-subtitle">Your contact details.</p>
 
+<%--
+    GAP-FTB-14: a saved change confirms in a sub-window ("successfully updated"),
+    not only a top-of-page notice. Rendered open after the redirect; Close drops
+    the flag and hides it again.
+--%>
 <c:if test="${not empty saved}">
-    <div class="notice">Saved.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="profile-saved-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="profile-saved-title">Successfully updated</h3>
+            <p class="page-subtitle">Your details were saved.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/patient/profile">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <c:if test="${not empty profile}">
@@ -54,6 +68,15 @@
                             <p class="hint">Your email is your sign-in identity and cannot be changed.</p>
                         </div>
                     </div>
+                    <%--
+                        GAP-PAT-27: the patient's own diagnosis / dental-history
+                        details. Free text, optional; only the patient writes it.
+                    --%>
+                    <div class="field">
+                        <label for="diagnosisDetails">Diagnosis details <span class="page-subtitle">(optional)</span></label>
+                        <textarea id="diagnosisDetails" name="diagnosisDetails" rows="3"
+                                  placeholder="e.g. ongoing root canal on upper left, allergic to penicillin…"><c:out value="${profile.diagnosisDetails()}" /></textarea>
+                    </div>
                     <div class="form-actions">
                         <button type="submit" class="btn">Save changes</button>
                         <a class="btn secondary" href="${ctx}/patient/profile">Cancel</a>
@@ -69,6 +92,7 @@
                             <tr><th>Address</th><td><c:out value="${profile.address()}" /></td></tr>
                             <tr><th>Email</th><td><c:out value="${profile.email()}" /></td></tr>
                             <tr><th>Date of birth</th><td>${profile.dob()}</td></tr>
+                            <tr><th>Diagnosis details</th><td><c:out value="${profile.diagnosisDetails()}" /></td></tr>
                         </tbody>
                     </table>
                 </div>

@@ -52,14 +52,16 @@ public final class ReceptionPolicy extends RolePolicy {
                 new NavItem("Dentists", "/reception/dentists"),
                 new NavItem("Patients", "/reception/patients"),
                 new NavItem("Availability", "/reception/availability"),
-                new NavItem("Billing", "/reception/billing"));
+                new NavItem("Billing", "/reception/billing"),
+                new NavItem("Help", "/help/reception"));
     }
 
     /**
      * No "Home" tab (the Sunrise logo already lands here) and no "Walk-in" tab
      * (registering a walk-in patient is what the Patients screen is under
      * FR-REC-21, and this policy would otherwise offer two doorways to the
-     * same register).
+     * same register). "Help" leads to the receptionist's own help page
+     * (GAP-FTB-12).
      */
     @Override
     public List<NavItem> navigation() {

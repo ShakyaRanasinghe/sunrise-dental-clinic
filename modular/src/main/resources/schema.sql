@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS patient (
     contact_number VARCHAR(32),
     email          VARCHAR(255),
     dob            DATE,
+    diagnosis_details TEXT NULL,
     PRIMARY KEY (id),
     KEY idx_patient_user (user_uid),
     CONSTRAINT fk_patient_user FOREIGN KEY (user_uid)

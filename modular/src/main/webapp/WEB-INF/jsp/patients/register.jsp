@@ -20,7 +20,7 @@
 <%@ include file="/WEB-INF/jsp/shared/header.jspf" %>
 
 <h1 class="page-title">Patient records</h1>
-<p class="page-subtitle">Search the register, or add someone who has just walked in.</p>
+<p class="page-subtitle">Search the register, or add someone who has just walked in. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
 <c:if test="${not empty registered}">
     <div class="notice">

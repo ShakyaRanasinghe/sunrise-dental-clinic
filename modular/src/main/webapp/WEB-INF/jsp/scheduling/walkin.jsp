@@ -3,7 +3,7 @@
 <%@ include file="/WEB-INF/jsp/shared/header.jspf" %>
 
 <h1 class="page-title">Walk-in booking</h1>
-<p class="page-subtitle">Find or register the patient, then pick an open slot for them.</p>
+<p class="page-subtitle">Find or register the patient, then pick an open slot for them. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
 <%-- ── Step 1: Find or register patient ───────────────────────────── --%>
 <div class="grid two">

@@ -218,11 +218,13 @@ public class PatientService {
     }
 
     /** What a patient may change about their own record. Email is deliberately absent:
-     *  it is the identity that signs them in, so it is not editable here. */
+     *  it is the identity that signs them in, so it is not editable here.
+     *  GAP-PAT-27 adds the patient's own diagnosis / history details. */
     public record ProfileUpdate(String name,
                                 String address,
                                 String contactNumber,
-                                String dob) {
+                                String dob,
+                                String diagnosisDetails) {
     }
 
     /**
@@ -251,6 +253,7 @@ public class PatientService {
                 .contactNumber(contactNumber)
                 .email(patient.getEmail())
                 .dob(dob)
+                .diagnosisDetails(trimToNull(details.diagnosisDetails()))
                 .build();
         patients.save(updated);
 

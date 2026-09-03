@@ -18,8 +18,9 @@ import java.util.Optional;
  */
 public class PatientDao extends JdbcDao<Patient, String> implements PatientRepository {
 
+    // GAP-PAT-27: diagnosis_details carries the patient's own history details.
     private static final String COLUMNS =
-            "id, user_uid, name, address, contact_number, email, dob";
+            "id, user_uid, name, address, contact_number, email, dob, diagnosis_details";
 
     public PatientDao(Database db) {
         super(db);
@@ -28,15 +29,16 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
     @Override
     public Patient save(Patient patient) {
         update("""
-                INSERT INTO patient (id, user_uid, name, address, contact_number, email, dob)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO patient (id, user_uid, name, address, contact_number, email, dob, diagnosis_details)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     user_uid = VALUES(user_uid),
                     name = VALUES(name),
                     address = VALUES(address),
                     contact_number = VALUES(contact_number),
                     email = VALUES(email),
-                    dob = VALUES(dob)
+                    dob = VALUES(dob),
+                    diagnosis_details = VALUES(diagnosis_details)
                 """, statement -> bindPatient(statement, patient));
         return patient;
     }
@@ -157,6 +159,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
         statement.setString(5, p.getContactNumber());
         statement.setString(6, p.getEmail());
         statement.setDate(7, toSqlDate(p.getDob()));
+        statement.setString(8, p.getDiagnosisDetails());
     }
 
     private static Patient mapPatient(ResultSet rs) throws SQLException {
@@ -168,6 +171,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                 .contactNumber(rs.getString("contact_number"))
                 .email(rs.getString("email"))
                 .dob(readDate(rs, "dob"))
+                .diagnosisDetails(rs.getString("diagnosis_details"))
                 .build();
     }
 }

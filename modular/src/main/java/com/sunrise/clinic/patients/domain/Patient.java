@@ -24,11 +24,18 @@ public class Patient {
     private String contactNumber;
     private String email;
     private LocalDate dob;
+    // GAP-PAT-27: the patient's own diagnosis / dental-history details, declared
+    // from the profile. Free text; null when the patient has written nothing.
+    private String diagnosisDetails;
 
     public Patient() {
     }
 
     public Patient(String id, String userUid, String name, String address, String contactNumber, String email, LocalDate dob) {
+        this(id, userUid, name, address, contactNumber, email, dob, null);
+    }
+
+    public Patient(String id, String userUid, String name, String address, String contactNumber, String email, LocalDate dob, String diagnosisDetails) {
         this.id = id;
         this.userUid = userUid;
         this.name = name;
@@ -36,6 +43,7 @@ public class Patient {
         this.contactNumber = contactNumber;
         this.email = email;
         this.dob = dob;
+        this.diagnosisDetails = diagnosisDetails;
     }
 
     public String getId() {
@@ -94,6 +102,14 @@ public class Patient {
         this.dob = dob;
     }
 
+    public String getDiagnosisDetails() {
+        return diagnosisDetails;
+    }
+
+    public void setDiagnosisDetails(String diagnosisDetails) {
+        this.diagnosisDetails = diagnosisDetails;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -124,6 +140,7 @@ public class Patient {
         private String contactNumber;
         private String email;
         private LocalDate dob;
+        private String diagnosisDetails;
 
         public Builder id(String id) {
             this.id = id;
@@ -160,8 +177,13 @@ public class Patient {
             return this;
         }
 
+        public Builder diagnosisDetails(String diagnosisDetails) {
+            this.diagnosisDetails = diagnosisDetails;
+            return this;
+        }
+
         public Patient build() {
-            return new Patient(id, userUid, name, address, contactNumber, email, dob);
+            return new Patient(id, userUid, name, address, contactNumber, email, dob, diagnosisDetails);
         }
     }
 }

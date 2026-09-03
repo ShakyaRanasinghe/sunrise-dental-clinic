@@ -26,28 +26,27 @@
             </summary>
             <div class="service-item__body">
                 <p class="service-item__desc"><c:out value="${t.description()}" /></p>
-                <a class="service-item__cta" href="${ctx}/register">Book this service &rarr;</a>
             </div>
         </details>
     </c:forEach>
 </div>
 
 <h2 id="dentists" class="page-title">Our dentists</h2>
-<p class="page-subtitle">Every dentist publishes their own availability, so the times you see when booking are real. Open a card to see their consultation fee.</p>
+<p class="page-subtitle">Every dentist publishes their own availability, so the times you see when booking are real.</p>
 
 <div class="grid two">
     <c:forEach var="d" items="${dentists}" varStatus="i">
-        <details class="dentist-card"<c:if test="${i.first}"> open</c:if>>
+        <div class="dentist-card">
             <c:set var="nameWords" value="${fn:split(d.name(), ' ')}" />
             <c:set var="wordCount" value="${fn:length(nameWords)}" />
-            <summary class="dentist-card__summary">
+            <div class="dentist-card__summary">
                 <span class="dentist-card__avatar"
                       aria-hidden="true">${wordCount > 1 ? fn:substring(nameWords[1], 0, 1) : fn:substring(nameWords[0], 0, 1)}${wordCount > 1 ? fn:substring(nameWords[wordCount - 1], 0, 1) : ''}</span>
                 <span class="dentist-card__who">
                     <span class="dentist-card__name"><c:out value="${d.name()}" /></span>
                     <span class="dentist-card__spec"><c:out value="${d.specialization()}" /></span>
                 </span>
-            </summary>
+            </div>
             <div class="dentist-card__body">
                 <c:set var="rating" value="${ratings[d.id()]}" />
                 <%-- FR-RVW-11: aggregate rating, shown only when 5+ reviews exist (FR-RVW-12) --%>
@@ -81,7 +80,7 @@
                 </p>
                 <a class="btn" href="${ctx}/register">Register &amp; book online</a>
             </div>
-        </details>
+        </div>
     </c:forEach>
 </div>
 

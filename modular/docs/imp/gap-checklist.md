@@ -164,27 +164,38 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
 
 ## Patient — `srs-patient.md`
 
-- [ ] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
+- [x] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
       service on the public home page.
       **Accept:** a service description is shown with no "Book" call-to-action inviting a
       sign-up from the middle of the page.
+      **Done:** the `.service-item__cta` link was removed from `access/home.jsp`; services
+      show name + description only. 330 tests green.
 
-- [ ] **GAP-PAT-23** — the public **"Our dentists"** cards are `<details>` rows that only show
+- [x] **GAP-PAT-23** — the public **"Our dentists"** cards are `<details>` rows that only show
       their body (fee, phone, rating, register button) when opened; the user wants the whole card
       visible without expanding.
       **Accept:** every dentist card on the public home is fully displayed without a
       `<details>/<summary>` toggle.
+      **Done:** dentist cards are plain `<div class="dentist-card">` blocks (`access/home.jsp`);
+      the `summary` chevron/expand CSS was replaced with static `.dentist-card__summary` rules
+      in `app.css`. 330 tests green.
 
-- [ ] **GAP-PAT-24** — the **Help** link is missing from the patient dashboard navigation bar
+- [x] **GAP-PAT-24** — the **Help** link is missing from the patient dashboard navigation bar
       (each role's signed-in nav currently omits Help entirely).
       **Accept:** a signed-in patient sees a **Help** entry in the dashboard nav (and, per
       GAP-FTB-12, each role gets its own help page from that link).
+      **Done:** `PatientPolicy.ownNavigation()` gains `Help → /help/patient`; the other three
+      policies gain their own Help entries too (GAP-FTB-12). 330 tests green.
 
 - [ ] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
       (`<h2>What happened</h2>` plus the **"Who reads this: the clinic's administrator…"** notice
-      and the **"Choose the dentist your concern is about. The form opens when you do."** line).
+      and the       **"Choose the dentist your concern is about. The form opens when you do."** line).
       **Accept:** that intro block is removed so the page gets straight to the dentist list and
       form.
+      **Done:** the `<h2>What happened</h2>` + notice + preamble are removed from
+      `patient-complaints.jsp`; the card now opens as "Your visits" straight into the
+      per-dentist list. The page subtitle still names the administrator as the reader
+      (FR-CMP-12). 330 tests green.
 
 - [ ] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
       wants a **wider card** with **two inputs per line** to shorten the form. Also remove the
@@ -194,11 +205,18 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Accept:** the create-account form fits without vertical scrolling, is wider than the
       current `.narrow` card, lays fields two-per-line where possible, and carries neither the
       "Nothing medical…" notice nor the phone helper sentence.
+      **Done:** `access/register.jsp` uses `.narrow.register-wide` (720px, `app.css`) with
+      name+email, password+confirm and contact+dob in `.form-row` pairs; both sentences are
+      deleted; a "Need help signing up?" link points at `/help`. 330 tests green.
 
-- [ ] **GAP-PAT-27** — the patient has **no place to record their own diagnosis / dental-history
+- [x] **GAP-PAT-27** — the patient has **no place to record their own diagnosis / dental-history
       details** even though the role is designed to do so; the profile screen has no such field.
       **Accept:** a diagnosis / history details field exists in the patient profile and can be
       edited and saved there.
+      **Done:** `patient.diagnosis_details TEXT NULL` (`schema.sql`; live DB migrated in place);
+      threaded through `Patient`/`PatientResponse`/`PatientDao`/`PatientService.ProfileUpdate`
+      (5th component) and `PatientProfileServlet`; `profile.jsp` shows it read-only and edits it
+      via textarea. 330 tests green.
 
 - [ ] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
       reads **"Confirm booking"** with no reference to who or what; and the page still carries a
@@ -208,29 +226,44 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       the treatment picker** under a heading that names the doctor's available times.
       **Accept:** the submit button names the chosen dentist; the "2. Dentist and date" card is
       gone; the times for the selected dentist are shown before the treatment list.
+      **Done:** `book.jsp` renders one card headed "Available times with … on …" (slots first,
+      treatment picker below), the submit reads "Proceed appointment with …", the picker card is
+      replaced by a "Choose a different dentist or date" link; dentist-details dialog kept.
+      330 tests green.
 
 - [ ] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
       even though the administrator authors a description for it.
       **Accept:** each treatment in the booking list has an info icon/link that opens the
       administrator-written description in a sub-window.
+      **Done:** each treatment choice carries an `i` mark (`.treatment-info`, `app.css`) opening
+      a `:target` sub-window with the full description + price (`book.jsp`). 330 tests green.
 
 ## Shared / all roles — `srs-patient.md` (+ role files noted below)
 
-- [ ] **GAP-FTB-11** — the footer labels the running build as **"Release v1.0.1"**.
+- [x] **GAP-FTB-11** — the footer labels the running build as **"Release v1.0.1"**.
       **Accept:** the footer reads **"Version v1.0.1"** (label changed from "Release" to
       "Version"). Public footer (`footer.jspf`).
+      **Done:** `footer.jspf` now renders "Version v…". 330 tests green.
 
 - [ ] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
       **help page specific to how it uses the system**, referencing the project SRS/docs; each
       role's sign-in page (and the sign-up page) should link to its own help; and the **help link on
-      the `/staff` portal should be removed** since the staff scenarios differ by role.
+      the       `/staff` portal should be removed** since the staff scenarios differ by role.
       **Accept:** patient, reception, dentist and admin each get a role-specific help page rooted
       in the repo's SRS documentation; the patient login and register pages link to the patient
       help; the `/staff` portal no longer offers the shared help link. Affects `srs-patient.md`,
       `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
+      **Done:** `HelpServlet` dispatches `/help/<role>` to `shared/help-<role>.jsp` (new; each
+      grounded in its role SRS); `web.xml` maps `/help/*` (public via the `/help` filter prefix,
+      so sign-in screens can link their own help); each policy nav ends in its own Help; staff
+      logins link their own help, register links `/help`, `/staff` help link removed;
+      reception register/walk-in link `/help/reception`. `servlets.md` mappings 43→44, routes
+      44→45. 330 tests green.
 
-- [ ] **GAP-FTB-13** — the public help page's contents card is headed **"Jump to a topic"**.
+- [x] **GAP-FTB-13** — the public help page's contents card is headed **"Jump to a topic"**.
       **Accept:** that label is replaced with something simpler/appropriate for the page.
+      **Done:** `shared/help.jsp` (and the four role pages) head the card **"Help topics"**.
+      330 tests green.
 
 - [ ] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
       the user wants a **read-only view by default** with an **Edit** button that reveals **only the
@@ -240,6 +273,10 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Accept:** each role's profile shows read-only values with an Edit control that makes the
       editable subset interactive; after any update the user gets a success sub-window. Affects
       `srs-patient.md`, `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
+      **Done:** new always-visible `.sub-window.open` style (`app.css`, with a success tick);
+      patient profile confirms saves in it; dentist phone is now read-only + Edit disclosure
+      with the same confirmation; admin clinic identity and treatment catalogue confirm in it
+      too (`TreatmentAdminServlet` redirects with `?saved=1`). 330 tests green.
 
 ---
 

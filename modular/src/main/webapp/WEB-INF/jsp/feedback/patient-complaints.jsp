@@ -20,14 +20,7 @@
 </c:if>
 
 <div class="card">
-    <h2>What happened</h2>
-
-    <div class="notice">
-        <strong>Who reads this:</strong> the clinic's administrator, and nobody else.
-        <strong>The dentist you name will not see it</strong> &mdash; not the concern, not that
-        you raised one. Reception does not see it either. Raising a concern does not affect your
-        appointments or your ability to book.
-    </div>
+    <h2>Your visits</h2>
 
     <c:choose>
         <c:when test="${empty dentistsTreated}">
@@ -37,9 +30,6 @@
             </p>
         </c:when>
         <c:otherwise>
-            <p class="page-subtitle">
-                Choose the dentist your concern is about. The form opens when you do.
-            </p>
             <c:forEach var="dentist" items="${dentistsTreated}">
                 <details class="concern-dentist">
                     <summary>

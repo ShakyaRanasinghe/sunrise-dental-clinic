@@ -6,7 +6,7 @@
 <p class="page-subtitle">Step by step, for anyone new to the clinic. No sign-in needed.</p>
 
 <div class="card help-toc">
-    <h2>Jump to a topic</h2>
+    <h2>Help topics</h2>
     <div class="help-toc__links">
         <a class="help-toc__item" href="#signing-in">Signing in</a>
         <a class="help-toc__item" href="#statuses">Appointment statuses</a>

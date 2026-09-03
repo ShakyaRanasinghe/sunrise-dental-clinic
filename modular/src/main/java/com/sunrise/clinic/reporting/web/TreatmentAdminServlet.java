@@ -49,7 +49,9 @@ public class TreatmentAdminServlet extends PageServlet {
                         requiredField(request, "id", "Treatment"), true);
                 default -> throw new IllegalArgumentException("Unknown action: " + action);
             }
-            redirect(request, response, "/admin/treatments");
+            // GAP-FTB-14: redirect with the saved flag so the catalogue confirms
+            // the change in a sub-window rather than only a notice.
+            redirect(request, response, "/admin/treatments?saved=1");
         });
     }
 

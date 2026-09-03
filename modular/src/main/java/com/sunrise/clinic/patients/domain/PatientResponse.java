@@ -26,6 +26,7 @@ public record PatientResponse(String id,
                               String contactNumber,
                               String email,
                               LocalDate dob,
+                              String diagnosisDetails,
                               boolean hasPortalAccount) {
 
     /** @return the outward form of {@code patient}. */
@@ -37,6 +38,7 @@ public record PatientResponse(String id,
                 patient.getContactNumber(),
                 patient.getEmail(),
                 patient.getDob(),
+                patient.getDiagnosisDetails(),
                 patient.getUserUid() != null);
     }
 

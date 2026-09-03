@@ -48,8 +48,6 @@
             <span class="staff-card__cta">Sign in &rarr;</span>
         </a>
     </div>
-
-    <div class="alt"><a href="${ctx}/help">Need help signing in?</a></div>
 </div>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>

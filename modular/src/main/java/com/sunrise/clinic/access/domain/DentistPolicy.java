@@ -33,13 +33,15 @@ public final class DentistPolicy extends RolePolicy {
     protected List<NavItem> ownNavigation() {
         return List.of(
                 new NavItem("Schedule", "/dentist/schedule"),
-                new NavItem("Availability", "/dentist/availability"));
+                new NavItem("Availability", "/dentist/availability"),
+                new NavItem("Help", "/help/dentist"));
     }
 
     /**
      * No "Home" tab: it pointed at the same {@code /dentist/schedule} as the
      * Schedule tab and duplicated the Sunrise logo (GAP-DEN-10, matching the
      * reception cleanup GAP-REC-07). The logo is the sole landing control.
+     * "Help" leads to the dentist's own help page (GAP-FTB-12).
      */
     @Override
     public List<NavItem> navigation() {

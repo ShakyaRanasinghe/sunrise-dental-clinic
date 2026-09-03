@@ -13,7 +13,7 @@ mapping conflicts in §5 went unnoticed.
 | Servlets | **40** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Mappings | **43** declared, plus `/css/*` served by Tomcat's default servlet = 44 routes |
+| Mappings | **44** declared, plus `/css/*` served by Tomcat's default servlet = 45 routes |
 | Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
@@ -58,7 +58,7 @@ middle. That constraint is what produces both conflicts in §5.
 |---|---|---|---|
 | `BaseServlet` | abstract | — | JSON writing, body parsing, exception-to-status mapping |
 | `PageServlet` | abstract | — | `render(request, response, view)` — forwards to `/WEB-INF/jsp/` |
-| `HelpServlet` | concrete | `GET /help` | Public. FR-HLP-01…03 |
+| `HelpServlet` | concrete | `GET /help` + `/help/*` | Public. FR-HLP-01…03, GAP-FTB-12 (`/help/patient`, `/help/reception`, `/help/dentist`, `/help/admin` pick their view from the path) |
 | `AuthenticationFilter` | filter | `/*` | Resolves the principal; 302 for pages, 401 JSON for `/api/**` |
 
 ---
@@ -179,6 +179,10 @@ each appears once.
 /register                           RegisterServlet            access
 /logout                             LogoutServlet              access
 /help                               HelpServlet                platform
+/help/patient                       HelpServlet                platform
+/help/reception                     HelpServlet                platform
+/help/dentist                       HelpServlet                platform
+/help/admin                         HelpServlet                platform
 /patient/home                       PatientHomeServlet         appointments
 /patient/book                       BookAppointmentServlet     appointments
 /patient/profile                    PatientProfileServlet      patients

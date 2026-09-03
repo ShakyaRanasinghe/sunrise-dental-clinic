@@ -81,6 +81,13 @@
     <!--  platform — shared                                           -->
     <!-- ============================================================ -->
 
+    <!--
+        GAP-FTB-12: one servlet, two mappings. /help is the shared public page;
+        /help/* serves the per-role pages (/help/patient, /help/reception,
+        /help/dentist, /help/admin) from the same servlet, which picks the view
+        from the path. All stay public via the /help filter prefix so a sign-in
+        screen can link to its own help.
+    -->
     <servlet>
         <servlet-name>Help</servlet-name>
         <servlet-class>com.sunrise.clinic.platform.web.HelpServlet</servlet-class>
@@ -88,6 +95,10 @@
     <servlet-mapping>
         <servlet-name>Help</servlet-name>
         <url-pattern>/help</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Help</servlet-name>
+        <url-pattern>/help/*</url-pattern>
     </servlet-mapping>
 
     <!-- ============================================================ -->
