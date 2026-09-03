@@ -22,10 +22,19 @@
 <h1 class="page-title">Patient records</h1>
 <p class="page-subtitle">Search the register, or add someone who has just walked in. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
+<%-- GAP-FTB-14: registering confirms in a sub-window. The duplicate warning
+     below stays an inline notice — it is a warning, not the success. --%>
 <c:if test="${not empty registered}">
-    <div class="notice">
-        Registered <strong><c:out value="${registered.name()}" /></strong>
-        on <c:out value="${registered.contactNumber()}" />.
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="registered-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="registered-title">Successfully registered</h3>
+            <p><strong><c:out value="${registered.name()}" /></strong>
+                on <c:out value="${registered.contactNumber()}" />.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/reception/patients">Close</a>
+            </div>
+        </div>
     </div>
     <%--
         A warning, never a refusal. Two people can legitimately share a number - a

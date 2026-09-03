@@ -89,7 +89,8 @@ public class DentistAvailabilityServlet extends PageServlet {
                 boolean offered = "on".equals(field(request, "offered"));
                 app().referenceService().setTreatmentOffered(
                         currentUser(request), dentist.getId(), treatmentId, offered);
-                redirect(request, response, "/dentist/availability#treatments");
+                // GAP-FTB-14: confirm the toggle in a sub-window on return.
+                redirect(request, response, "/dentist/availability?toggled=1#treatments");
             } else {
                 throw new IllegalArgumentException("Unknown action.");
             }

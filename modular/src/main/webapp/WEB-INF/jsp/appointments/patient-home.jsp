@@ -11,17 +11,47 @@
 <h1 class="page-title" id="top">My appointments</h1>
 <p class="page-subtitle">Book a visit, or cancel one you can no longer make.</p>
 
+<%--
+    GAP-FTB-14: booking, cancelling and rating confirm in sub-windows, not only
+    top-of-page notices. Rendered open after the redirect; Close drops the flag.
+--%>
 <c:if test="${not empty booked}">
-    <div class="notice">
-        Booked. Your appointment number is <strong><c:out value="${booked}" /></strong> &mdash;
-        quote it if you telephone the clinic.
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="booked-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="booked-title">Successfully booked</h3>
+            <p>Your appointment number is <strong><c:out value="${booked}" /></strong> &mdash;
+                quote it if you telephone the clinic.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/patient/home">Close</a>
+            </div>
+        </div>
     </div>
 </c:if>
 <c:if test="${not empty cancelled}">
-    <div class="notice">Cancelled <strong><c:out value="${cancelled}" /></strong>.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="cancelled-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="cancelled-title">Successfully cancelled</h3>
+            <p>Appointment <strong><c:out value="${cancelled}" /></strong> is cancelled and its
+                time is open again.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/patient/home">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 <c:if test="${not empty rated}">
-    <div class="notice">Thank you. Your rating has been recorded.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="rated-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="rated-title">Thank you</h3>
+            <p class="page-subtitle">Your rating has been recorded.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/patient/home">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">

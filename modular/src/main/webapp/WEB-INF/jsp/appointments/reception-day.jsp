@@ -12,8 +12,19 @@
 <h1 class="page-title">Today at the clinic</h1>
 <p class="page-subtitle">Everything booked on one day, across all dentists.</p>
 
+<%-- GAP-FTB-14: cancelling confirms in a sub-window; Close keeps the viewed day. --%>
 <c:if test="${not empty cancelled}">
-    <div class="notice">Cancelled <strong><c:out value="${cancelled}" /></strong>, and the time is open again.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="day-cancelled-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="day-cancelled-title">Successfully cancelled</h3>
+            <p>Appointment <strong><c:out value="${cancelled}" /></strong> is cancelled, and the
+                time is open again.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/reception/home?date=${date}">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">

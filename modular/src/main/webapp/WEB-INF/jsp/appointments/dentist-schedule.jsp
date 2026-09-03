@@ -14,8 +14,18 @@
 <h1 class="page-title">My schedule</h1>
 <p class="page-subtitle">Your patients for the day, and where you record what you treated.</p>
 
+<%-- GAP-FTB-14: recording confirms in a sub-window; Close keeps the viewed day. --%>
 <c:if test="${not empty completed}">
-    <div class="notice">Recorded for <strong><c:out value="${completed}" /></strong>.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="recorded-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="recorded-title">Successfully recorded</h3>
+            <p>Treatment recorded for <strong><c:out value="${completed}" /></strong>.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/dentist/schedule?date=${date}">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">

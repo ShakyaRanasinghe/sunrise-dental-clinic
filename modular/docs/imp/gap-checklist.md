@@ -274,9 +274,11 @@ live, and each SRS row is marked **Fixed**.
       editable subset interactive; after any update the user gets a success sub-window. Affects
       `srs-patient.md`, `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
       **Done:** new always-visible `.sub-window.open` style (`app.css`, with a success tick);
-      patient profile confirms saves in it; dentist phone is now read-only + Edit disclosure
-      with the same confirmation; admin clinic identity and treatment catalogue confirm in it
-      too (`TreatmentAdminServlet` redirects with `?saved=1`). 330 tests green.
+      **every** update point confirms in it — patient profile/book/cancel/rate/notes,
+      dentist phone + treatment toggles (`?toggled=1`) + recorded treatments, reception
+      day-view cancels + walk-in register (`?registered=1`) + published availability,
+      admin clinic identity + treatment catalogue (`?saved=1`) + resolved concerns +
+      issued accounts. Warnings and errors stay inline. 332 tests green.
 
 ---
 

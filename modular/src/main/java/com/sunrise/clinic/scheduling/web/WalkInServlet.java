@@ -76,8 +76,9 @@ public class WalkInServlet extends PageServlet {
                             field(request, "address"),
                             field(request, "email"),
                             field(request, "dob")));
+            // GAP-FTB-14: confirm the registration in a sub-window on return.
             redirect(request, response,
-                    "/reception/walkin?patientId=" + created.patient().id());
+                    "/reception/walkin?patientId=" + created.patient().id() + "&registered=1");
         });
     }
 }

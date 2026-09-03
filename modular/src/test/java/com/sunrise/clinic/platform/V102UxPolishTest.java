@@ -198,10 +198,32 @@ class V102UxPolishTest {
                 "patients/profile.jsp",
                 "appointments/dentist-availability.jsp",
                 "reporting/clinic-identity.jsp",
-                "reporting/treatments.jsp"}) {
-            assertTrue(read(JSP.resolve(page)).contains("Successfully updated"),
+                "reporting/treatments.jsp",
+                "appointments/patient-home.jsp",
+                "appointments/reception-day.jsp",
+                "appointments/dentist-schedule.jsp",
+                "patients/register.jsp",
+                "feedback/patient-complaints.jsp",
+                "feedback/admin-complaints.jsp",
+                "scheduling/availability.jsp",
+                "scheduling/walkin.jsp",
+                "reporting/accounts.jsp"}) {
+            assertTrue(read(JSP.resolve(page)).contains("sub-window open"),
                     page + " must confirm a save in a sub-window");
         }
+    }
+
+    // GAP-FTB-14: the two silent updates now carry a confirmation flag.
+    @Test
+    void silentUpdatesCarryConfirmationFlags() {
+        String availability = read(JAVA.resolve(
+                "com/sunrise/clinic/appointments/web/DentistAvailabilityServlet.java"));
+        assertTrue(availability.contains("toggled=1"),
+                "a flipped treatment toggle must redirect with a confirmation flag");
+        String walkin = read(JAVA.resolve(
+                "com/sunrise/clinic/scheduling/web/WalkInServlet.java"));
+        assertTrue(walkin.contains("registered=1"),
+                "a walk-in registration must redirect with a confirmation flag");
     }
 
     private static String read(Path file) {

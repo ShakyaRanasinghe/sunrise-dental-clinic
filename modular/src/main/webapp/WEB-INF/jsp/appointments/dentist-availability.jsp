@@ -53,6 +53,19 @@
     </details>
 </div>
 
+<%-- GAP-FTB-14: a flipped toggle confirms in a sub-window. --%>
+<c:if test="${param.toggled == '1'}">
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="toggled-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="toggled-title">Successfully updated</h3>
+            <p class="page-subtitle">Your offered treatments were saved.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/dentist/availability#treatments">Close</a>
+            </div>
+        </div>
+    </div>
+</c:if>
 <%-- GAP-FTB-07: the treatments this dentist offers. A toggle list; patients booking
      with this dentist see only the checked treatments. "Other (describe…)" is always
      available, so disabling everything is never a dead end. --%>
