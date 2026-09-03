@@ -34,7 +34,12 @@
     <div class="card">
         <h2>Contact details</h2>
         <c:choose>
-            <c:when test="${not empty editing}">
+            <%--
+                `editing` is a Boolean, never null — so this must test its value,
+                not `not empty` (a non-null Boolean is never empty, which used to
+                render the form on every visit and leave the read-only view dead).
+            --%>
+            <c:when test="${editing}">
                 <form method="post" action="${ctx}/patient/profile">
                     <input type="hidden" name="action" value="update">
                     <div class="form-row">

@@ -137,6 +137,18 @@ class V102UxPolishTest {
                 "the phone helper sentence must be gone");
     }
 
+    // GAP-FTB-14: `editing` is a Boolean set by the servlet, so the view must
+    // test its value — `not empty` on a Boolean is always true, which once
+    // rendered the edit form on every visit and left the read-only view dead.
+    @Test
+    void profileEditGateTestsTheBoolean() {
+        String profile = read(JSP.resolve("patients/profile.jsp"));
+        assertTrue(profile.contains("<c:when test=\"${editing}\">"),
+                "the edit form must render only when editing is true");
+        assertFalse(profile.contains("not empty editing"),
+                "`not empty` on a Boolean never gates anything");
+    }
+
     // GAP-PAT-27 + GAP-FTB-14: diagnosis details live on the profile, and a
     // saved change confirms in a sub-window.
     @Test
