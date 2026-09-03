@@ -25,9 +25,9 @@ INSERT INTO user_account (uid, email, password_hash, display_name, role, active,
     AS new ON DUPLICATE KEY UPDATE password_hash = new.password_hash;
 
 -- --- Dentists -------------------------------------------------------
-INSERT INTO dentist (id, user_uid, name, specialization, consultation_fee, active) VALUES
-    ('d-silva',      'u-dent1', 'Dr. Ranil Silva',        'General Dentistry', 1500.00, TRUE),
-    ('d-jayasuriya', 'u-dent2', 'Dr. Malini Jayasuriya',  'Orthodontics',      2500.00, TRUE)
+INSERT INTO dentist (id, user_uid, name, specialization, phone, consultation_fee, active) VALUES
+    ('d-silva',      'u-dent1', 'Dr. Ranil Silva',        'General Dentistry', '+94 77 123 4567', 1500.00, TRUE),
+    ('d-jayasuriya', 'u-dent2', 'Dr. Malini Jayasuriya',  'Orthodontics',      '+94 71 987 6543', 2500.00, TRUE)
     AS new ON DUPLICATE KEY UPDATE name = new.name;
 
 -- --- Treatment catalogue --------------------------------------------
@@ -39,6 +39,19 @@ INSERT INTO treatment (id, name, description, base_cost, active) VALUES
     ('t-rootcanal', 'Root canal therapy', 'Endodontic treatment, single visit', 18000.00, TRUE),
     ('t-whitening', 'Teeth whitening',    'In-clinic whitening session',        12000.00, TRUE)
     AS new ON DUPLICATE KEY UPDATE base_cost = new.base_cost;
+
+-- GAP-FTB-07: which treatments each dentist offers (toggleable on their dashboard).
+INSERT INTO dentist_treatment (dentist_id, treatment_id) VALUES
+    ('d-silva', 't-checkup'),
+    ('d-silva', 't-scaling'),
+    ('d-silva', 't-filling'),
+    ('d-silva', 't-extraction'),
+    ('d-silva', 't-rootcanal'),
+    ('d-silva', 't-whitening'),
+    ('d-jayasuriya', 't-checkup'),
+    ('d-jayasuriya', 't-rootcanal'),
+    ('d-jayasuriya', 't-whitening')
+    AS new ON DUPLICATE KEY UPDATE dentist_id = new.dentist_id;
 
 -- --- Patients -------------------------------------------------------
 INSERT INTO patient (id, user_uid, name, address, contact_number, email, dob) VALUES

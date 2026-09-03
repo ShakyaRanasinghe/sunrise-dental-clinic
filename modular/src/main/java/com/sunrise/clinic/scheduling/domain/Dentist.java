@@ -11,6 +11,12 @@ public class Dentist {
     private String name;
     private String specialization;
     /**
+     * The dentist's own public telephone number, shown to patients on the clinic's
+     * public "Our dentists" page (GAP-FTB-04). Optional: a dentist leaves it blank if
+     * they prefer the clinic front desk to take calls on their behalf.
+     */
+    private String phone;
+    /**
      * The dentist's own consultation fee, in rupees.
      *
      * <p>{@code BigDecimal}, not {@code double}. The column is {@code DECIMAL(10,2)}
@@ -28,10 +34,16 @@ public class Dentist {
     }
 
     public Dentist(String id, String userUid, String name, String specialization, BigDecimal consultationFee, boolean active) {
+        this(id, userUid, name, specialization, null, consultationFee, active);
+    }
+
+    public Dentist(String id, String userUid, String name, String specialization,
+                   String phone, BigDecimal consultationFee, boolean active) {
         this.id = id;
         this.userUid = userUid;
         this.name = name;
         this.specialization = specialization;
+        this.phone = phone;
         this.consultationFee = consultationFee;
         this.active = active;
     }
@@ -66,6 +78,14 @@ public class Dentist {
 
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public BigDecimal getConsultationFee() {
@@ -111,6 +131,7 @@ public class Dentist {
         private String userUid;
         private String name;
         private String specialization;
+        private String phone;
         private BigDecimal consultationFee = new BigDecimal("1500.00");
         private boolean active = true;
 
@@ -134,6 +155,11 @@ public class Dentist {
             return this;
         }
 
+        public Builder phone(String phone) {
+            this.phone = phone;
+            return this;
+        }
+
         public Builder consultationFee(BigDecimal consultationFee) {
             this.consultationFee = consultationFee;
             return this;
@@ -145,7 +171,7 @@ public class Dentist {
         }
 
         public Dentist build() {
-            return new Dentist(id, userUid, name, specialization, consultationFee, active);
+            return new Dentist(id, userUid, name, specialization, phone, consultationFee, active);
         }
     }
 }

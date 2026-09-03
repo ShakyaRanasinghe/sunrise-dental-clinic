@@ -82,6 +82,65 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
 
 ---
 
+## Footer / public / dashboard — v1.0.1 follow-up batch (GAP-FTB)
+
+- [x] **GAP-FTB-01** — footer shows the shipped **release tag** instead of the internal Maven
+      snapshot version.
+      **Accept:** the footer names the released version.
+      **Done:** `ReleaseInfo.VERSION` is `"1.0.1"`; its javadoc distinguishes the released tag from
+      the internal `3.0.0-SNAPSHOT` Maven coordinate. No test references it.
+
+- [x] **GAP-FTB-02** — a patient can **view their receipts** from the dashboard without re-searching.
+      **Accept:** each BILLED visit opens its receipt from the patient dashboard.
+      **Done:** `PatientHomeServlet` loads bills for BILLED visits into a `receipts` map; the
+      **BILLED** pill is a `:target` sub-window showing the receipt (id, visit, charges) with an
+      "Open full receipt" link (`ReceiptServlet`, also mapped `/patient/receipt`).
+
+- [x] **GAP-FTB-03** — booking screen wording "Availability this fortnight" was unclear.
+      **Accept:** the overview heading plainly says open days in the next two weeks.
+      **Done:** `book.jsp` heading is **"Open days in the next two weeks"** with a clearer subtitle.
+
+- [ ] **GAP-FTB-04** — a dentist can publish their own **phone number** on the public "Our
+      dentists" page.
+      **Accept:** a dentist sets a number on their dashboard and it appears on the public page.
+      **Done (awaiting live deployment):** `dentist.phone` column + `Dentist.phone`/`DentistResponse`
+      fields; `ReferenceService.updateOwnPhone`; edit on the dentist availability screen; shown on
+      `access/home.jsp` dentist cards.
+
+- [x] **GAP-FTB-05** — remove the misleading **"Only patients create their own account…"** notice
+      from the registration page (administrators and staff can too).
+      **Done:** the `.notice info` block was removed from `access/register.jsp`.
+
+- [ ] **GAP-FTB-06** — booking offers a **single-treatment radio checklist** and an
+      **"Other (describe…)"** free-text reason instead of a bare dropdown.
+      **Accept:** a patient picks one listed treatment, or "Other" and states their reason; the
+      reason is stored on the appointment.
+      **Done (awaiting live deployment):** `appointment.patient_reason` column + threaded field;
+      `AppointmentService.book` accepts an optional reason; `BookAppointmentServlet` requires either
+      a treatment or a reason; `book.jsp` renders the radios + Other textarea.
+
+- [ ] **GAP-FTB-07** — a dentist **enables/disables which treatments they offer**, and the booking
+      screen shows a patient only those.
+      **Accept:** toggling a treatment hides it from that dentist's booking options (and from the
+      booking form); an "Other" booking always remains possible.
+      **Done (awaiting live deployment):** `dentist_treatment` junction table + `DentistTreatmentDao`
+      / in-memory repository; `ReferenceService.treatmentsFor` / `setTreatmentOffered` /
+      `dentistTreatmentToggles`; toggle list on the dentist availability screen; booking treatment
+      list filtered by the selected dentist.
+
+- [x] **GAP-FTB-08** — the patient's "Concerns you have raised" list was too table-heavy.
+      **Done:** compact `<details class="concern-item">` rows (summary = category, dentist, status
+      pill, date; body = detail + resolution) in `patient-complaints.jsp`.
+
+- [x] **GAP-FTB-09** — navigation / role-tag / avatar colours made the palette feel off-brand.
+      **Done:** `.user-menu__avatar`(lg), `.site-nav a` hover + active, and `.role-tag` now use the
+      blue accent in `app.css`.
+
+**Note:** GAP-FTB-04/06/07 are coded, compile, and pass 316 tests; they await schema re-seed and
+live deployment verification (see "How to close a gap" — the box flips to [x] when deployed + green).
+
+---
+
 ## How to close a gap
 
 1. Fix on `dev`; run the module build + tests (and the affected view test) green.

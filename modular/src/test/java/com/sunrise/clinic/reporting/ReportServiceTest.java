@@ -61,7 +61,8 @@ class ReportServiceTest {
                 .name("Scaling & polishing").baseCost(new BigDecimal("3500.00")).active(true).build());
         bills = new InMemoryBillRepository();
         billing = new BillingService(bills, appointments.service,
-                new ReferenceService(appointments.dentists, appointments.treatments),
+                new ReferenceService(appointments.dentists, appointments.treatments,
+                        new com.sunrise.clinic.scheduling.data.InMemoryDentistTreatmentRepository()),
                 appointments.clinicAccess, new StandardBillingStrategy(),
                 new DefaultRevenueSplitStrategy(new BigDecimal("0.60"), BigDecimal.ZERO),
                 new BigDecimal("200.00"), new SerialTransactionRunner());

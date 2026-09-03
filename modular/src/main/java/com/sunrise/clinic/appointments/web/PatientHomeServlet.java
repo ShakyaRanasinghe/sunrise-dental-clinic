@@ -37,6 +37,23 @@ public class PatientHomeServlet extends PageServlet {
                     .collect(Collectors.toMap(ReviewResponse::appointmentNo, r -> r));
             request.setAttribute("existingReviews", existingReviews);
 
+            // GAP-FTB-02: load the bill for each BILLED visit so the dashboard can open a
+            // receipt sub-window. Only the owning patient's bills are read (BillingService
+            // gates it), and only for BILLED appointments which always have a bill.
+            java.util.Map<String, Object> bills = new java.util.HashMap<>();
+            for (var a : appointments) {
+                if ("BILLED".equals(a.status().name())) {
+                    try {
+                        bills.put(a.appointmentNo(),
+                                app().billingService().forAppointment(currentUser(request), a.appointmentNo()));
+                    } catch (Exception ignored) {
+                        // A bill could not be read for this visit; the receipt link is simply
+                        // not offered. Never fail the whole dashboard because of one row.
+                    }
+                }
+            }
+            request.setAttribute("receipts", bills);
+
             render(request, response, "appointments/patient-home");
         });
     }

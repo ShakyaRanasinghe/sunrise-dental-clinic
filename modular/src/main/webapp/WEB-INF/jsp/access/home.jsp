@@ -70,6 +70,11 @@
                         <span class="page-subtitle">${rating.reviewsUntilPublishable()} more review${rating.reviewsUntilPublishable() != 1 ? 's' : ''} needed to show rating</span>
                     </p>
                 </c:if>
+                <c:if test="${not empty d.phone()}">
+                    <p class="dentist-card__phone">
+                        <c:out value="${d.phone()}" />
+                    </p>
+                </c:if>
                 <p class="dentist-card__fee">
                     Consultation
                     <strong>Rs <fmt:formatNumber value="${d.consultationFee()}" minFractionDigits="2" maxFractionDigits="2" /></strong>

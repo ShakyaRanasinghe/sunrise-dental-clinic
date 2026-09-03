@@ -8,7 +8,7 @@
 <c:set var="pageTitle" value="My appointments" />
 <%@ include file="/WEB-INF/jsp/shared/header.jspf" %>
 
-<h1 class="page-title">My appointments</h1>
+<h1 class="page-title" id="top">My appointments</h1>
 <p class="page-subtitle">Book a visit, or cancel one you can no longer make.</p>
 
 <c:if test="${not empty booked}">
@@ -51,10 +51,22 @@
                                 <td><c:out value="${a.dentistName()}" /></td>
                                 <td><c:out value="${a.treatmentName()}" /></td>
                                 <td>
-                                    <span class="pill <c:choose>
-                                        <c:when test="${a.status() eq 'CONFIRMED'}">open</c:when>
-                                        <c:when test="${a.status() eq 'CANCELLED'}">error</c:when>
-                                    </c:choose>">${a.status()}</span>
+                                    <%-- GAP-FTB-02: a BILLED visit's status opens the receipt
+                                         sub-window (CSS-only :target), so the patient can see
+                                         what they paid for that visit later. Only offered when a
+                                         bill was loaded. --%>
+                                    <c:choose>
+                                        <c:when test="${a.status() eq 'BILLED' and not empty receipts[a.appointmentNo()]}">
+                                            <a class="pill open" href="#receipt-${a.appointmentNo()}"
+                                               title="View the receipt for this visit">BILLED</a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="pill <c:choose>
+                                                <c:when test="${a.status() eq 'CONFIRMED'}">open</c:when>
+                                                <c:when test="${a.status() eq 'CANCELLED'}">error</c:when>
+                                            </c:choose>">${a.status()}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
                                     <%-- GAP-DEN-09: the treating dentist's comment, visible
@@ -150,5 +162,67 @@
         </c:otherwise>
     </c:choose>
 </div>
+
+<%--
+    GAP-FTB-02 receipt sub-windows: one per BILLED visit we loaded a bill for.
+    The same CSS-only :target modal as the booking screen - opening the link
+    (the BILLED pill) makes this the target; Close returns to #top.
+--%>
+<c:forEach var="a" items="${appointments}">
+    <c:set var="bill" value="${receipts[a.appointmentNo()]}" />
+    <c:if test="${not empty bill}">
+        <div class="sub-window" id="receipt-${a.appointmentNo()}" role="dialog"
+             aria-modal="true" aria-labelledby="receipt-title-${a.appointmentNo()}">
+            <div class="dialog">
+                <h3 id="receipt-title-${a.appointmentNo()}">Receipt</h3>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                            <tr><th>Receipt</th><td><code>${bill.id()}</code></td></tr>
+                            <tr><th>Appointment</th><td><code>${bill.appointmentNo()}</code></td></tr>
+                            <tr><th>Patient</th><td><c:out value="${bill.patientName()}" /></td></tr>
+                            <tr><th>Dentist</th><td><c:out value="${bill.dentistName()}" /></td></tr>
+                            <tr><th>Treatment</th><td><c:out value="${bill.treatmentName()}" /></td></tr>
+                            <tr><th>Issued</th><td>${bill.issuedAt()}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3 style="margin-top:14px;">Charges</h3>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                            <tr><th>Consultation</th>
+                                <td class="right">Rs <fmt:formatNumber value="${bill.consultationFee()}"
+                                        minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            <tr><th>Treatment</th>
+                                <td class="right">Rs <fmt:formatNumber value="${bill.treatmentCost()}"
+                                        minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            <tr><th>Service charge</th>
+                                <td class="right">Rs <fmt:formatNumber value="${bill.serviceCharge()}"
+                                        minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            <c:if test="${bill.discount() gt 0}">
+                                <tr><th>Discount</th>
+                                    <td class="right">&minus; Rs <fmt:formatNumber value="${bill.discount()}"
+                                            minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            </c:if>
+                            <c:if test="${bill.tax() gt 0}">
+                                <tr><th>Tax</th>
+                                    <td class="right">Rs <fmt:formatNumber value="${bill.tax()}"
+                                            minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            </c:if>
+                            <tr class="total"><th>Total paid</th>
+                                <td class="right"><strong>Rs <fmt:formatNumber value="${bill.total()}"
+                                        minFractionDigits="2" maxFractionDigits="2" /></strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions">
+                    <a class="btn" href="${ctx}/patient/receipt?appointmentNo=${a.appointmentNo()}">Open full receipt</a>
+                    <a class="btn secondary" href="#top">Close</a>
+                </div>
+            </div>
+        </div>
+    </c:if>
+</c:forEach>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>

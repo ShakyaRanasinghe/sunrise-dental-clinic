@@ -3,13 +3,16 @@ package com.sunrise.clinic.scheduling.service;
 import com.sunrise.clinic.access.domain.ClinicPrincipal;
 import com.sunrise.clinic.platform.error.ResourceNotFoundException;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
+import com.sunrise.clinic.scheduling.data.DentistTreatmentRepository;
 import com.sunrise.clinic.scheduling.data.TreatmentRepository;
 import com.sunrise.clinic.scheduling.domain.Dentist;
 import com.sunrise.clinic.scheduling.domain.DentistResponse;
 import com.sunrise.clinic.scheduling.domain.Treatment;
 import com.sunrise.clinic.scheduling.domain.TreatmentResponse;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The reference data every booking screen needs: who practises here, and what the
@@ -30,10 +33,13 @@ public class ReferenceService {
 
     private final DentistRepository dentists;
     private final TreatmentRepository treatments;
+    private final DentistTreatmentRepository dentistTreatments;
 
-    public ReferenceService(DentistRepository dentists, TreatmentRepository treatments) {
+    public ReferenceService(DentistRepository dentists, TreatmentRepository treatments,
+                            DentistTreatmentRepository dentistTreatments) {
         this.dentists = dentists;
         this.treatments = treatments;
+        this.dentistTreatments = dentistTreatments;
     }
 
     /** Dentists currently practising, for a booking screen. */
@@ -45,6 +51,52 @@ public class ReferenceService {
     public List<TreatmentResponse> activeTreatments(ClinicPrincipal caller) {
         return treatments.findActive().stream().map(TreatmentResponse::of).toList();
     }
+
+    /**
+     * The treatments a patient may book with {@code dentistId}. GAP-FTB-07: a dentist
+     * switches their list on/off, so the booking screen offers only what that dentist
+     * performs. If the dentist offers none (or the list was never seeded) every active
+     * treatment remains available, so an "Other" booking is always possible.
+     */
+    public List<TreatmentResponse> treatmentsFor(ClinicPrincipal caller, String dentistId) {
+        Set<String> offered = dentistTreatments.offeredTreatmentIds(dentistId);
+        return treatments.findActive().stream()
+                .filter(t -> offered.isEmpty() || offered.contains(t.getId()))
+                .map(TreatmentResponse::of)
+                .toList();
+    }
+
+    /**
+     * The full active catalogue, each with whether {@code dentistId} offers it, for the
+     * dentist's own toggle screen. GAP-FTB-07.
+     */
+    public List<TreatmentToggle> dentistTreatmentToggles(String dentistId) {
+        Set<String> offered = dentistTreatments.offeredTreatmentIds(dentistId);
+        List<TreatmentToggle> toggles = new ArrayList<>();
+        for (Treatment t : treatments.findActive()) {
+            toggles.add(new TreatmentToggle(t.getId(), t.getName(), t.getDescription(),
+                    t.getBaseCost(), offered.contains(t.getId())));
+        }
+        return toggles;
+    }
+
+    /**
+     * Enable or disable a treatment for a dentist, from the dentist's own dashboard.
+     * GAP-FTB-07. The dentist may only touch their own record.
+     */
+    public void setTreatmentOffered(ClinicPrincipal caller, String dentistId, String treatmentId,
+                                    boolean offered) {
+        requireDentist(dentistId);   // 404 for a bogus id, before touching anything
+        if (offered) {
+            dentistTreatments.enable(dentistId, treatmentId);
+        } else {
+            dentistTreatments.disable(dentistId, treatmentId);
+        }
+    }
+
+    /** One toggle row for the dentist's treatment screen. GAP-FTB-07. */
+    public record TreatmentToggle(String id, String name, String description,
+                                  java.math.BigDecimal baseCost, boolean offered) {}
 
     /**
      * Dentists currently practising, for the public landing page — anyone may read it.
@@ -84,5 +136,29 @@ public class ReferenceService {
     /** The dentist record behind a signed-in dentist's account, if there is one. */
     public java.util.Optional<Dentist> forUser(String userUid) {
         return dentists.findByUserUid(userUid);
+    }
+
+    /**
+     * A dentist updates their own public contact number, shown to patients on the
+     * clinic's public "Our dentists" page. GAP-FTB-04.
+     *
+     * @param caller   the signed-in dentist (a DENTIST principal)
+     * @param userUid  the caller's account uid, used to locate their dentist record
+     * @param phone    the new number (may be null/blank to clear it)
+     */
+    public void updateOwnPhone(ClinicPrincipal caller, String userUid, String phone) {
+        Dentist dentist = dentists.findByUserUid(userUid)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No dentist record for this account"));
+        Dentist updated = Dentist.builder()
+                .id(dentist.getId())
+                .userUid(dentist.getUserUid())
+                .name(dentist.getName())
+                .specialization(dentist.getSpecialization())
+                .phone(phone == null || phone.isBlank() ? null : phone.trim())
+                .consultationFee(dentist.getConsultationFee())
+                .active(dentist.isActive())
+                .build();
+        dentists.save(updated);
     }
 }

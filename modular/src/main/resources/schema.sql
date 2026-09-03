@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS dentist (
     user_uid         VARCHAR(64),
     name             VARCHAR(255)   NOT NULL,
     specialization   VARCHAR(255),
+    phone            VARCHAR(64),
     consultation_fee DECIMAL(10, 2) NOT NULL DEFAULT 1500.00,
     active           BOOLEAN        NOT NULL DEFAULT TRUE,
     PRIMARY KEY (id),
@@ -94,6 +95,17 @@ CREATE TABLE IF NOT EXISTS treatment (
     base_cost   DECIMAL(10, 2) NOT NULL,
     active      BOOLEAN        NOT NULL DEFAULT TRUE,
     PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- GAP-FTB-07: which treatments each dentist offers. A dentist switches their
+-- list on/off, and the booking screen offers a patient only what that dentist
+-- actually performs.
+CREATE TABLE IF NOT EXISTS dentist_treatment (
+    dentist_id   VARCHAR(64) NOT NULL,
+    treatment_id VARCHAR(64) NOT NULL,
+    PRIMARY KEY (dentist_id, treatment_id),
+    CONSTRAINT fk_dt_dentist FOREIGN KEY (dentist_id) REFERENCES dentist (id) ON DELETE CASCADE,
+    CONSTRAINT fk_dt_treatment FOREIGN KEY (treatment_id) REFERENCES treatment (id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
@@ -152,6 +164,9 @@ CREATE TABLE IF NOT EXISTS appointment (
     appointment_time TIME        NOT NULL,
     status           ENUM('CONFIRMED','COMPLETED','BILLED','CANCELLED') NOT NULL DEFAULT 'CONFIRMED',
     diagnosis        TEXT,                    -- CONFIDENTIAL: dentist + patient only
+    patient_reason   TEXT,                    -- GAP-FTB-06: the reason a patient states when
+                                              -- they book "Other (describe…)" rather than a
+                                              -- listed procedure. NULL for a named treatment.
     created_by_uid   VARCHAR(64),
     created_by_role  ENUM('PATIENT','RECEPTIONIST','DENTIST','ADMIN'),
     created_at       TIMESTAMP   NULL,

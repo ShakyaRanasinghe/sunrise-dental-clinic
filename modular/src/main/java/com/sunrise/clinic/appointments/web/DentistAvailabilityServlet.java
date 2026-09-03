@@ -32,21 +32,20 @@ public class DentistAvailabilityServlet extends PageServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         page(request, response, () -> {
-            String dentistId = app().clinicAccess()
+            var dentist = app().clinicAccess()
                     .dentistFor(currentUser(request))
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "No dentist record for this account"))
-                    .getId();
+                            "No dentist record for this account"));
             LocalDate today = LocalDate.now();
 
-            var sessions = app().slotService().publishedFor(dentistId);
+            var sessions = app().slotService().publishedFor(dentist.getId());
 
             Map<LocalDate, List<SessionInfo>> byDate = new LinkedHashMap<>();
             for (var session : sessions) {
                 if (session.getDate().isBefore(today)) {
                     continue;
                 }
-                var slots = app().slotService().allSlots(dentistId, session.getDate());
+                var slots = app().slotService().allSlots(dentist.getId(), session.getDate());
                 int open = (int) slots.stream()
                         .filter(s -> s.status() == SlotStatus.OPEN).count();
                 byDate.computeIfAbsent(session.getDate(), k -> new java.util.ArrayList<>())
@@ -59,9 +58,41 @@ public class DentistAvailabilityServlet extends PageServlet {
                                 slots.size() - open));
             }
 
+            request.setAttribute("dentist", dentist);
+            request.setAttribute("phoneSaved", field(request, "saved"));
+            // GAP-FTB-07: the dentist's own treatment list, offered + toggleable.
+            request.setAttribute("toggles",
+                    app().referenceService().dentistTreatmentToggles(dentist.getId()));
             request.setAttribute("byDate", byDate);
             request.setAttribute("hasAvailability", !byDate.isEmpty());
             render(request, response, "appointments/dentist-availability");
+        });
+    }
+
+    /** Save the dentist's own public phone number (GAP-FTB-04) or toggle a treatment
+     * they offer (GAP-FTB-07). */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        page(request, response, () -> {
+            var dentist = app().clinicAccess()
+                    .dentistFor(currentUser(request))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "No dentist record for this account"));
+            String action = field(request, "action");
+            if ("phone".equals(action)) {
+                app().referenceService().updateOwnPhone(
+                        currentUser(request), currentUser(request).uid(), field(request, "phone"));
+                redirect(request, response, "/dentist/availability?saved=yes");
+            } else if ("toggle".equals(action)) {
+                String treatmentId = field(request, "treatmentId");
+                boolean offered = "on".equals(field(request, "offered"));
+                app().referenceService().setTreatmentOffered(
+                        currentUser(request), dentist.getId(), treatmentId, offered);
+                redirect(request, response, "/dentist/availability#treatments");
+            } else {
+                throw new IllegalArgumentException("Unknown action.");
+            }
         });
     }
 }

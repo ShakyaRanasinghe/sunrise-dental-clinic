@@ -9,11 +9,6 @@
     </div>
 
     <div class="card">
-        <div class="notice info">
-            Only patients create their own account. Reception, dentist and
-            administrator accounts are issued by the clinic administrator.
-        </div>
-
         <c:if test="${not empty error}">
             <div class="notice error"><c:out value="${error}" /></div>
         </c:if>

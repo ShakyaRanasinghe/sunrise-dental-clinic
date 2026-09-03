@@ -29,8 +29,8 @@
 --%>
 <c:if test="${not empty availabilityOverview}">
     <div class="card availability-overview">
-        <h2>Availability this fortnight</h2>
-        <p class="page-subtitle">Click a date to jump to that dentist's available times below.</p>
+        <h2>Open days in the next two weeks</h2>
+        <p class="page-subtitle">The days each dentist has free appointments soon. Click a date to jump to their available times below.</p>
         <c:forEach var="dentist" items="${availabilityOverview}">
             <div class="dentist-row">
                 <div class="dentist-row__info">
@@ -85,40 +85,41 @@
                     <c:if test="${not empty patientId}">
                         <input type="hidden" name="patientId" value="<c:out value='${patientId}' />">
                     </c:if>
-                    <div class="field">
-                        <label for="treatmentId">Treatment</label>
-                        <select id="treatmentId" name="treatmentId" required>
-                            <c:forEach var="t" items="${treatments}">
-                                <option value="<c:out value='${t.id()}' />">
-                                    <c:out value="${t.name()}" />
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="table-wrap" style="margin-top:0.5rem;margin-bottom:1rem;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Treatment</th>
-                                    <th>Description</th>
-                                    <th>Price (Rs)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="t" items="${treatments}">
-                                    <tr>
-                                        <td><c:out value="${t.name()}" /></td>
-                                        <td><c:out value="${t.description()}" /></td>
-                                        <td>
-                                            <fmt:formatNumber value="${t.baseCost()}"
-                                                             minFractionDigits="2"
-                                                             maxFractionDigits="2" />
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
+                    <%--
+                        GAP-FTB-06: a single-treatment radio checklist replaces the old
+                        dropdown, and an "Other (describe…)" option lets a patient book a
+                        visit whose need no listed procedure names — the free text is
+                        captured as the booking reason. CSS-only, no script.
+                    --%>
+                    <fieldset class="treatment-picker">
+                        <legend class="field__label">Treatment</legend>
+                        <c:forEach var="t" items="${treatments}">
+                            <div class="treatment-choice">
+                                <input type="radio" id="t-${t.id()}" name="treatmentId"
+                                       value="<c:out value='${t.id()}' />">
+                                <label for="t-${t.id()}" class="treatment-choice__label">
+                                    <span class="treatment-choice__name"><c:out value="${t.name()}" /></span>
+                                    <span class="treatment-choice__desc"><c:out value="${t.description()}" /></span>
+                                    <span class="treatment-choice__price">
+                                        Rs <fmt:formatNumber value="${t.baseCost()}"
+                                                              minFractionDigits="2" maxFractionDigits="2" />
+                                    </span>
+                                </label>
+                            </div>
+                        </c:forEach>
+                        <div class="treatment-choice">
+                            <input type="radio" id="t-other" name="treatmentId" value="">
+                            <label for="t-other" class="treatment-choice__label">
+                                <span class="treatment-choice__name">Other (describe&hellip;)</span>
+                                <span class="treatment-choice__desc">A visit for something not listed above.</span>
+                            </label>
+                        </div>
+                        <div class="treatment-other-note" id="other-note">
+                            <label for="patientReason" class="field__label">What is it for?</label>
+                            <textarea id="patientReason" name="patientReason" rows="2"
+                                      placeholder="e.g. a sore wisdom tooth, a second opinion, a fitting…"></textarea>
+                        </div>
+                    </fieldset>
 
                     <p class="page-subtitle">
                         ${fn:length(slots)} times open with

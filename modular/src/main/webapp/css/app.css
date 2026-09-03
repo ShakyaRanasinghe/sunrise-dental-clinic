@@ -85,8 +85,8 @@ body {
     font-weight: 500;
 }
 
-.site-nav a:hover { background: var(--sunrise-light); color: var(--sunrise-dark); }
-.site-nav a.active { background: var(--sunrise-light); color: var(--sunrise-dark); }
+.site-nav a:hover { background: var(--blue-light); color: var(--blue-dark); }
+.site-nav a.active { background: var(--blue-light); color: var(--blue-dark); }
 
 .who {
     display: flex;
@@ -98,8 +98,8 @@ body {
 }
 
 .role-tag {
-    background: var(--sunrise-light);
-    color: var(--sunrise-dark);
+    background: var(--blue-light);
+    color: var(--blue-dark);
     border-radius: 20px;
     padding: 2px 10px;
     font-size: 11px;
@@ -349,6 +349,8 @@ main {
 .dentist-card__rating { margin: 0; color: var(--ink-soft); }
 .dentist-card__fee { margin: 0; font-size: 13.5px; color: var(--ink-faint); }
 .dentist-card__fee strong { color: var(--ink); font-size: 15px; }
+.dentist-card__phone { margin: 8px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+.dentist-card__phone::before { content: "Call: "; color: var(--ink-faint); }
 .dentist-card .btn { width: 100%; padding: 10px 16px; }
 
 .stars { color: var(--gold); letter-spacing: 1px; font-size: 14px; }
@@ -539,6 +541,73 @@ input:focus, select:focus, textarea:focus {
 textarea { min-height: 80px; resize: vertical; }
 
 .field .hint { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
+
+/* --- GAP-FTB-06: single-treatment radio checklist ---------------------- */
+
+.field__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+}
+
+.treatment-picker {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin: 0 0 14px;
+}
+
+.treatment-picker legend { font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 0 6px; }
+
+.treatment-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.treatment-choice:last-of-type { margin-bottom: 0; }
+
+.treatment-choice input[type=radio] { margin-top: 3px; accent-color: var(--sunrise); }
+
+.treatment-choice:has(input[type=radio]:checked) {
+    border-color: var(--sunrise);
+    background: rgba(194, 87, 26, .06);
+}
+
+.treatment-choice__label { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; cursor: pointer; }
+
+.treatment-choice__name { font-weight: 600; color: var(--ink); }
+.treatment-choice__desc { grid-column: 1 / -1; grid-row: 2; font-size: 12.5px; color: var(--ink-soft); }
+.treatment-choice__price { grid-column: 2; grid-row: 1; font-size: 13px; color: var(--ink); white-space: nowrap; }
+
+.treatment-other-note { margin-top: 10px; }
+
+/* --- GAP-FTB-07: dentist's treatment toggle rows --------------------- */
+
+.treatment-toggle {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+}
+
+.treatment-toggle__name { font-weight: 600; color: var(--ink); }
+.treatment-toggle__desc { font-size: 12.5px; color: var(--ink-soft); }
+.treatment-toggle__state { font-size: 12px; font-weight: 600; }
+.treatment-toggle__state.on { color: var(--good); }
+.treatment-toggle__state.off { color: var(--ink-faint); }
+.treatment-toggle__save { margin: 0; white-space: nowrap; }
 
 /* --- Password show/hide eye, inside the field ------------------------- */
 
@@ -1252,6 +1321,50 @@ tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
     background: var(--canvas);
 }
 
+/* --- Raised-concern list (patient-complaints.jsp, GAP-FTB-08) ---------
+     One row per concern: who it was about and its status. Open the row to
+     read the detail. Same <details>/<summary> pattern as .concern-dentist. --*/
+.concern-item {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin: 10px 0;
+    background: var(--surface);
+    overflow: hidden;
+}
+.concern-item summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 16px;
+    color: var(--ink);
+}
+.concern-item summary::-webkit-details-marker { display: none; }
+.concern-item summary::before {
+    content: "+";
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.concern-item[open] summary::before { content: "\2013"; }
+.concern-item[open] summary { border-bottom: 1px solid var(--line); }
+.concern-item__who { font-weight: 700; }
+.concern-item__meta { display: inline-flex; align-items: center; gap: 8px; }
+.concern-item__meta .page-subtitle { margin: 0; }
+.concern-item__body { padding: 14px 16px; background: var(--canvas); }
+.concern-item__body p { margin: 0 0 8px; }
+.concern-item__body .page-subtitle { margin-bottom: 4px; }
+
 /* ---------------------------------------------------------------------
    User menu — the signed-in identity in the header.
 
@@ -1288,7 +1401,7 @@ tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
     width: var(--user-size);
     height: var(--user-size);
     border-radius: 50%;
-    background: var(--sunrise);
+    background: var(--blue);
     color: #fff;
     font-size: 15px;
     font-weight: 700;
@@ -1337,7 +1450,7 @@ tr.total th, tr.total td { border-top: 2px solid #d8d2cb; }
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--sunrise);
+    background: var(--blue);
     color: #fff;
     font-size: 20px;
     font-weight: 700;
