@@ -18,10 +18,10 @@ package com.sunrise.clinic.platform;
  */
 public final class ReleaseInfo {
 
-    /** The released version shown in every footer — the git tag of this deploy (v1.0.1). */
-    public static final String VERSION = "1.0.1";
+    /** The released version shown in every footer — the git tag of this deploy (v1.0.2). */
+    public static final String VERSION = "1.0.2";
 
-    /** @return the current release, e.g. {@code 1.0.1} */
+    /** @return the current release, e.g. {@code 1.0.2} */
     public static String version() {
         String fromManifest = ReleaseInfo.class.getPackage().getImplementationVersion();
         return fromManifest == null || fromManifest.isBlank() ? VERSION : fromManifest;
