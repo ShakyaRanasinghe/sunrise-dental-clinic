@@ -393,6 +393,15 @@ class V102UxPolishTest {
                 "record property access (use method calls): " + offenders);
     }
 
+    // An "Other" visit names its type on the patient dashboard, with the reason
+    // beneath it — never a blank cell.
+    @Test
+    void dashboardNamesOtherVisits() {
+        String home = read(JSP.resolve("appointments/patient-home.jsp"));
+        assertTrue(home.contains("a.patientReason()"),
+                "an Other row must show the stated reason under its type");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

@@ -79,7 +79,9 @@
                                 <td>${a.date()}</td>
                                 <td>${a.time()}</td>
                                 <td><c:out value="${a.dentistName()}" /></td>
-                                <td><c:out value="${a.treatmentName()}" /></td>
+                                <%-- An "Other" visit names its type plainly, with the
+                                     patient's stated reason beneath it. --%>
+                                <td><c:choose><c:when test="${not empty a.treatmentName()}"><c:out value="${a.treatmentName()}" /></c:when><c:otherwise>Other<br><span class="page-subtitle"><c:out value="${a.patientReason()}" /></span></c:otherwise></c:choose></td>
                                 <td>
                                     <%-- GAP-FTB-02: a BILLED visit's status opens the receipt
                                          sub-window (CSS-only :target), so the patient can see

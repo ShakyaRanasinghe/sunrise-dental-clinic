@@ -703,7 +703,7 @@ textarea { min-height: 80px; resize: vertical; }
    One row per patient; the details table and record form live inside the
    opened card only, so a full day stays scannable. Same pattern as the
    done list above; the first card starts open. -------------------------- */
-.pending-list { padding: 0; margin-bottom: 14px; }
+.pending-list { padding: 0; margin-bottom: 20px; }
 .pending-list summary {
     display: flex;
     align-items: center;
