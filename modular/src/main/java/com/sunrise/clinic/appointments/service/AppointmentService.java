@@ -22,6 +22,8 @@ import com.sunrise.clinic.scheduling.domain.Treatment;
 import com.sunrise.clinic.scheduling.service.ReferenceService;
 
 import java.math.BigDecimal;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -253,6 +255,19 @@ public class AppointmentService {
      */
     public AppointmentDetailResponse complete(ClinicPrincipal caller, String appointmentNo,
                                               String diagnosis) {
+        return complete(caller, appointmentNo, diagnosis, null);
+    }
+
+    /**
+     * Record the diagnosis and mark the visit done, carrying the dentist-entered
+     * price for work with no catalog treatment (GAP-DEN-13).
+     *
+     * <p>A treatment-less ("Other") visit has nothing to price it from, so the
+     * price is required there and must be positive; on a visit naming a treatment
+     * the catalog rules and any passed price is ignored.</p>
+     */
+    public AppointmentDetailResponse complete(ClinicPrincipal caller, String appointmentNo,
+                                              String diagnosis, BigDecimal customPrice) {
         AccessControl.require(caller, Action.COMPLETE_TREATMENT);
         Appointment appointment = require(appointmentNo);
 
@@ -272,8 +287,22 @@ public class AppointmentService {
                             + ". Treatment can only be recorded on the day of the appointment.");
         }
 
+        // GAP-DEN-13: treatment-less work carries the dentist's own price, so the
+        // visit is billable; a named treatment prices from the catalog instead.
+        BigDecimal price = null;
+        if (appointment.getTreatmentId() == null) {
+            if (customPrice == null) {
+                throw new IllegalArgumentException(
+                        "Enter the price for this work — there is no listed treatment to price it from.");
+            }
+            if (customPrice.signum() <= 0) {
+                throw new IllegalArgumentException("Price must be more than zero.");
+            }
+            price = customPrice;
+        }
+
         // Refuses an illegal move - a cancelled or already-billed appointment.
-        appointment.complete(diagnosis);
+        appointment.complete(diagnosis, price);
         appointments.save(appointment);
 
         log.log(Level.INFO, "appointment_completed no={0} by={1}",

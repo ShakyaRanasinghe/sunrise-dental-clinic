@@ -2,6 +2,7 @@ package com.sunrise.clinic.scheduling.service;
 
 import com.sunrise.clinic.access.domain.ClinicPrincipal;
 import com.sunrise.clinic.platform.error.ResourceNotFoundException;
+import com.sunrise.clinic.platform.service.PhoneNumbers;
 import com.sunrise.clinic.scheduling.data.DentistRepository;
 import com.sunrise.clinic.scheduling.data.DentistTreatmentRepository;
 import com.sunrise.clinic.scheduling.data.TreatmentRepository;
@@ -12,6 +13,7 @@ import com.sunrise.clinic.scheduling.domain.TreatmentResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,12 +36,38 @@ public class ReferenceService {
     private final DentistRepository dentists;
     private final TreatmentRepository treatments;
     private final DentistTreatmentRepository dentistTreatments;
+    // GAP-DEN-15: read per call, so the profile always states the live share.
+    private final java.util.function.Supplier<java.math.BigDecimal> dentistShare;
 
     public ReferenceService(DentistRepository dentists, TreatmentRepository treatments,
                             DentistTreatmentRepository dentistTreatments) {
+        this(dentists, treatments, dentistTreatments, () -> new java.math.BigDecimal("0.60"));
+    }
+
+    public ReferenceService(DentistRepository dentists, TreatmentRepository treatments,
+                            DentistTreatmentRepository dentistTreatments,
+                            java.util.function.Supplier<java.math.BigDecimal> dentistShare) {
         this.dentists = dentists;
         this.treatments = treatments;
         this.dentistTreatments = dentistTreatments;
+        this.dentistShare = dentistShare;
+    }
+
+    /**
+     * The configured dentist share as a whole percent (GAP-DEN-15) — "60", not
+     * "0.60" — for the dentist's own profile screen. A rate, never an earnings
+     * figure (srs-dentist.md §9).
+     */
+    public int dentistSharePercent() {
+        try {
+            java.math.BigDecimal share = dentistShare.get();
+            if (share == null) {
+                return 60;
+            }
+            return share.multiply(new java.math.BigDecimal("100")).intValue();
+        } catch (RuntimeException e) {
+            return 60;
+        }
     }
 
     /** Dentists currently practising, for a booking screen. */
@@ -146,19 +174,46 @@ public class ReferenceService {
      * @param userUid  the caller's account uid, used to locate their dentist record
      * @param phone    the new number (may be null/blank to clear it)
      */
-    public void updateOwnPhone(ClinicPrincipal caller, String userUid, String phone) {
+    /**
+     * The dentist record behind a portal account, for the dentist's own profile
+     * screen (GAP-DEN-14). Resolved from the uid, so a dentist reads only their own.
+     */
+    public Optional<DentistResponse> ownProfile(String userUid) {
+        return dentists.findByUserUid(userUid).map(DentistResponse::of);
+    }
+
+    /**
+     * Edits the dentist's own profile details (GAP-DEN-14).
+     *
+     * <p>Resolved from the caller's own uid, so there is no id to change to reach
+     * someone else's record — the same self-scoping as {@link #updateOwnPhone}, and
+     * for the same reason no action check: the record is own by construction. The
+     * consultation fee is deliberately absent — it prices every bill, so only the
+     * administrator sets it (GAP-ADM-02).</p>
+     *
+     * @return the updated record, for the screen to re-render
+     */
+    public DentistResponse updateOwnDetails(ClinicPrincipal caller, String userUid,
+                                            String name, String specialization, String phone) {
         Dentist dentist = dentists.findByUserUid(userUid)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No dentist record for this account"));
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name is required.");
+        }
+        String cleanPhone = phone == null || phone.isBlank() ? null
+                : PhoneNumbers.validate(phone.trim(), "phone");
         Dentist updated = Dentist.builder()
                 .id(dentist.getId())
                 .userUid(dentist.getUserUid())
-                .name(dentist.getName())
-                .specialization(dentist.getSpecialization())
-                .phone(phone == null || phone.isBlank() ? null : phone.trim())
+                .name(name.trim())
+                .specialization(specialization == null || specialization.isBlank()
+                        ? null : specialization.trim())
+                .phone(cleanPhone)
                 .consultationFee(dentist.getConsultationFee())
                 .active(dentist.isActive())
                 .build();
         dentists.save(updated);
+        return DentistResponse.of(updated);
     }
 }

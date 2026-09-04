@@ -10,10 +10,10 @@ mapping conflicts in §5 went unnoticed.
 
 | | |
 |---|---|
-| Servlets | **40** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
+| Servlets | **42** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Mappings | **44** declared, plus `/css/*` served by Tomcat's default servlet = 45 routes |
+| Mappings | **46** declared, plus `/css/*` served by Tomcat's default servlet = 47 routes |
 | Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
@@ -83,16 +83,18 @@ middle. That constraint is what produces both conflicts in §5.
 | appointments | `BookAppointmentServlet` | `GET`·`POST` `/patient/book` | `appointments/book.jsp` | `PATIENT` `RECEPTIONIST` `ADMIN` | FR-PAT-10…16, FR-REC-30…34 |
 | appointments | `ReceptionDayServlet` | `GET /reception/home` | `appointments/reception-day.jsp` | `RECEPTIONIST` | FR-REC-10…13 |
 | appointments | `DentistScheduleServlet` | `GET`·`POST` `/dentist/schedule` | `appointments/dentist-schedule.jsp` | `DENTIST` | FR-DEN-10…46 |
+| scheduling | `DentistProfileServlet` | `GET`·`POST` `/dentist/profile` | `scheduling/dentist-profile.jsp` | `DENTIST` | GAP-DEN-14 |
 | billing | `BillingPageServlet` | `GET`·`POST` `/reception/billing` | `billing/billing.jsp` | `RECEPTIONIST` `ADMIN` | FR-REC-50…56 |
 | billing | `ReceiptServlet` | `GET /reception/receipt` | `billing/receipt.jsp` | `RECEPTIONIST` `ADMIN` `PATIENT` | FR-REC-52, FR-PAT-22 |
 | reporting | `AdminReportsServlet` | `GET /admin/reports` | `reporting/reports.jsp` | `ADMIN` | FR-ADM-10…19 |
 | reporting | `CsvExportServlet` | `GET /admin/export` | — *(streams CSV)* | `ADMIN` | FR-ADM-18 |
 | reporting | `AccountsServlet` | `GET`·`POST` `/admin/accounts` | `reporting/accounts.jsp` | `ADMIN` | FR-ADM-20…27 |
 | reporting | `AuditTrailServlet` | `GET /admin/audit` | `reporting/audit.jsp` | `ADMIN` | FR-ADM-30…33 |
+| reporting | `PricingServlet` | `GET`·`POST` `/admin/pricing` | `reporting/pricing.jsp` | `ADMIN` | GAP-ADM-10 |
 | feedback | `PatientComplaintsServlet` | `GET`·`POST` `/patient/complaints` | `feedback/patient-complaints.jsp` | `PATIENT` | FR-PAT-50…57 |
 | feedback | `AdminComplaintsServlet` | `GET`·`POST` `/admin/complaints` | `feedback/admin-complaints.jsp` | `ADMIN` | FR-ADM-50…58 |
 
-**24 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
+**26 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
 concrete portals each declare their own, which is the whole point of the hierarchy.
 
 ---
@@ -193,10 +195,12 @@ each appears once.
 /reception/billing                  BillingPageServlet         billing
 /reception/receipt                  ReceiptServlet             billing
 /dentist/schedule                   DentistScheduleServlet     appointments
+/dentist/profile                    DentistProfileServlet      scheduling
 /admin/reports                      AdminReportsServlet        reporting
 /admin/export                       CsvExportServlet           reporting
 /admin/accounts                     AccountsServlet            reporting
 /admin/audit                        AuditTrailServlet          reporting
+/admin/pricing                      PricingServlet             reporting
 /admin/complaints                   AdminComplaintsServlet     feedback
 /api/auth/*                         AuthApiServlet             access
 /api/accounts                       AccountApiServlet          access

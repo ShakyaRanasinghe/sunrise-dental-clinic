@@ -24,7 +24,7 @@ public class DentistReferenceServlet extends PageServlet {
             request.setAttribute("dentists",
                     app().referenceService().activeDentists(currentUser(request)));
             request.setAttribute("serviceCharge",
-                    app().config().getDecimal("clinic.billing.service-charge", "200"));
+                    app().clinicIdentity().serviceCharge());
             render(request, response, "scheduling/dentists");
         });
     }

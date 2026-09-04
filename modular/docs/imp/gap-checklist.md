@@ -26,6 +26,15 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       it"** submit — no script. Applied to the patient dashboard and the reception day view
       (`patient-home.jsp`, `reception-day.jsp`, `app.css`). No servlet change.
 
+- [x] **GAP-PAT-30** — a finished visit's info shows charges but not **what the dentist did**:
+      opening a finished appointment (dashboard receipt view, full receipt page) never shows
+      the dentist's recorded description.
+      **Accept:** a finished visit's info shows the dentist's description to the patient it
+      belongs to (never to reception/admin).
+      **Done:** `BillResponse` carries `diagnosis`; the dashboard receipt view prints it from
+      the gated detail row and `billing/receipt.jsp` prints it only when the viewer is the
+      patient (`showClinical`; reception/admin copies stay clinical-free). Verified live.
+
 ---
 
 ## Reception — `srs-reception.md`
@@ -47,6 +56,16 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Done:** `PatientResponse.patientNumber()` exposes the unique stored `id`; a **Patient ID**
       cell is now the leftmost column of `patients/register.jsp` and the walk-in search table
       (`scheduling/walkin.jsp`).
+
+- [x] **GAP-REC-13** — an **"Other (describe…)"** booking has no catalog treatment, so
+      `BillingService` throws "nothing to price" and reception **cannot bill the visit at
+      all**, even though the dentist did the work.
+      **Accept:** reception can issue the bill for a treatment-less visit, priced at the
+      amount the dentist recorded when completing it; the receipt names the patient's
+      stated reason as the Treatment line.
+      **Done:** billing prices treatment-less visits from `appointment.custom_price`
+      (still refuses when no price was recorded); receipt/billing-list/day-view/slip
+      fall back to the patient's reason. Verified live (8000 priced, 9700 total).
 
 ---
 
@@ -79,6 +98,56 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **retained** — it is not redundant: it lists the next seven days' bookings (FR-DEN-15), which
       the single-day "Today's patients" view cannot show. Deployed + verified live (today →
       "No patients booked with you today"; other day → names that date).
+
+- [x] **GAP-DEN-12** — "Today's patients" renders every patient as a full details card
+      (heading, details table, record-and-complete form), so a full day is a long scroll of
+      open forms.
+      **Accept:** each patient is one expandable card showing time, name, status and the
+      critical-notes flag; the details table and record form render only inside the opened
+      card (first one open).
+      **Done:** pending rows are `<details class="card pending-list">` (first `open`),
+      styled like the done list (`app.css`); summary carries time, patient, status and
+      the flag. Tests green, verified live.
+
+- [x] **GAP-DEN-14** — only the patient has a **"My details"** profile section; a dentist has
+      nowhere to see or edit their own profile (name, specialisation, phone) as the public
+      cards show it.
+      **Accept:** the account menu offers the dentist "My details" (`/dentist/profile`),
+      read-only by default with an Edit control for name/specialisation/phone; the
+      consultation fee stays view-only (administrator-owned).
+      **Done:** `DentistProfileServlet` (`/dentist/profile`, `scheduling/dentist-profile.jsp`)
+      with the read-only + `${editing}`-gated form and success sub-window;
+      `ReferenceService.updateOwnDetails`/`ownProfile` (fee untouched, phone validated);
+      header menu entry; `web.xml` mapping; `servlets.md` 41 servlets / 46 routes.
+      347 green, verified live.
+
+- [x] **GAP-DEN-16** — the availability screen leads with "Treatments I offer" while the
+      time windows sit below, and the windows table is bare counts — a dentist cannot see
+      at a glance what is booked and what remains.
+      **Accept:** the time windows come first with the treatments list below; each day
+      headlines booked/open totals and an exhausted window reads Full.
+      **Done:** sections swapped; day headlined "N booked · M still open"; open cells are
+      green pills, exhausted ones read Full (`dentist-availability.jsp`). Tests green,
+      verified live.
+
+- [x] **GAP-DEN-15** — a dentist never sees the revenue share the administrator configured:
+      the dashboard shows the consultation fee but nothing says what fraction of each
+      treatment price comes to them.
+      **Accept:** the dentist's details screen states the configured share (e.g. "You
+      receive 60% of each treatment price, plus your full consultation fee"), reading
+      the live setting.
+      **Done:** profile prints the live share (`ReferenceService.dentistSharePercent`,
+      rate only per §9). Verified live (60→70→60 with no restart).
+
+- [x] **GAP-DEN-13** — completing an **"Other (describe…)"** visit records the diagnosis but
+      **no price**: there is no catalog treatment to price it from, so the visit can never
+      be billed.
+      **Accept:** completing a treatment-less visit requires the dentist to enter the price
+      for that specific work; it is stored on the appointment and used at billing.
+      **Done:** `appointment.custom_price` (`schema.sql`, migrated live); `complete()`
+      requires a positive price exactly when treatment-less (named visits ignore it);
+      schedule form shows the price field only there; API accepts `customPrice`.
+      Verified live (refused without, completed with 8000).
 
 ---
 
@@ -155,14 +224,21 @@ over HTTP) and are now marked Fixed (see "How to close a gap").
 
 ---
 
-# v1.0.2 UX polish batch (documented — not yet built)
+# v1.0.2 UX polish batch (built, verified live, released as v1.0.2)
 
 A review of the public page, sign-up, profile, booking and help flows turned up a batch of
-presentation-grade changes. They are **documented only** — none are implemented yet. Each entry
-states its SRS gap ID, the role file it belongs to and the acceptance criterion. Flip a box to
-`[x]` and mark the SRS row **Fixed** only once the change is built, committed and verified live.
+presentation-grade changes. Each entry states its SRS gap ID, the role file it belongs to and
+the acceptance criterion. Every box is ticked: each change is built, committed and verified
+live, and each SRS row is marked **Fixed**.
 
 ## Patient — `srs-patient.md`
+
+- [x] **GAP-PAT-31** — opening Book with no open slots anywhere renders a bare title:
+      the patient overview is empty and the walk-in flow names no doctors.
+      **Accept:** both booking entries say plainly that no doctor is available today and
+      to check later (patient card; walk-in notice when no active doctors).
+      **Done:** `book.jsp` no-doctors card; `walkin.jsp` no-doctors notice. Tests green,
+      verified live.
 
 - [x] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
       service on the public home page.
@@ -187,7 +263,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Done:** `PatientPolicy.ownNavigation()` gains `Help → /help/patient`; the other three
       policies gain their own Help entries too (GAP-FTB-12). 330 tests green.
 
-- [ ] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
+- [x] **GAP-PAT-25** — the **"Raise a concern"** page opens with a large explanatory block
       (`<h2>What happened</h2>` plus the **"Who reads this: the clinic's administrator…"** notice
       and the       **"Choose the dentist your concern is about. The form opens when you do."** line).
       **Accept:** that intro block is removed so the page gets straight to the dentist list and
@@ -197,7 +273,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       per-dentist list. The page subtitle still names the administrator as the reader
       (FR-CMP-12). 330 tests green.
 
-- [ ] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
+- [x] **GAP-PAT-26** — the self-registration card is tall and narrow, forcing scrolling; the user
       wants a **wider card** with **two inputs per line** to shorten the form. Also remove the
       **"Nothing medical is asked here. Allergies and medications are added from your profile once
       you have signed in."** notice and the phone helper text **"So the clinic can reach you about
@@ -218,7 +294,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       (5th component) and `PatientProfileServlet`; `profile.jsp` shows it read-only and edits it
       via textarea. 330 tests green.
 
-- [ ] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
+- [x] **GAP-PAT-28** — on the booking page, once a dentist and time are chosen the submit button
       reads **"Confirm booking"** with no reference to who or what; and the page still carries a
       **"2. Dentist and date"** picker card below the times (redundant on a page the patient is
       already on). The user wants the button to read **"Proceed appointment &lt;dentist name&gt;"**,
@@ -231,7 +307,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       replaced by a "Choose a different dentist or date" link; dentist-details dialog kept.
       330 tests green.
 
-- [ ] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
+- [x] **GAP-PAT-29** — each treatment type has **no info affordance** to inspect its details,
       even though the administrator authors a description for it.
       **Accept:** each treatment in the booking list has an info icon/link that opens the
       administrator-written description in a sub-window.
@@ -245,7 +321,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       "Version"). Public footer (`footer.jspf`).
       **Done:** `footer.jspf` now renders "Version v…". 330 tests green.
 
-- [ ] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
+- [x] **GAP-FTB-12** — there is one shared help page (`/help`). Each role should instead have a
       **help page specific to how it uses the system**, referencing the project SRS/docs; each
       role's sign-in page (and the sign-up page) should link to its own help; and the **help link on
       the       `/staff` portal should be removed** since the staff scenarios differ by role.
@@ -265,7 +341,7 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       **Done:** `shared/help.jsp` (and the four role pages) head the card **"Help topics"**.
       330 tests green.
 
-- [ ] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
+- [x] **GAP-FTB-14** — profile pages show every editable field as an in-page form when editing;
       the user wants a **read-only view by default** with an **Edit** button that reveals **only the
       fields that role may change**, and every successful update anywhere in the system (profile,
       availability, settings, etc.) should show a **confirmation sub-window ("successfully
@@ -274,9 +350,28 @@ states its SRS gap ID, the role file it belongs to and the acceptance criterion.
       editable subset interactive; after any update the user gets a success sub-window. Affects
       `srs-patient.md`, `srs-reception.md`, `srs-dentist.md`, `srs-admin.md`.
       **Done:** new always-visible `.sub-window.open` style (`app.css`, with a success tick);
-      patient profile confirms saves in it; dentist phone is now read-only + Edit disclosure
-      with the same confirmation; admin clinic identity and treatment catalogue confirm in it
-      too (`TreatmentAdminServlet` redirects with `?saved=1`). 330 tests green.
+      **every** update point confirms in it — patient profile/book/cancel/rate/notes,
+      dentist phone + treatment toggles (`?toggled=1`) + recorded treatments, reception
+      day-view cancels + walk-in register (`?registered=1`) + published availability,
+      admin clinic identity + treatment catalogue (`?saved=1`) + resolved concerns +
+      issued accounts. Warnings and errors stay inline. 332 tests green.
+
+---
+
+## Admin — `srs-admin.md`
+
+- [x] **GAP-ADM-10** — the revenue dials live in `clinic.properties`/env and need a rebuild +
+      restart to change: the administrator cannot configure the dentist's treatment-share
+      percentage (or the service charge) from the dashboard, and the Reports screen still
+      shows a "Reception handling" metric for a commission that is always zero.
+      **Accept:** a **Pricing** tab (`/admin/pricing`) edits the dentist share % and the
+      service charge with validation, applying to the next bill without restart; the
+      reception metric is gone from Reports (dashboard and CSV); historical bills keep
+      the split they were issued with.
+      **Done:** `PricingServlet` + `pricing.jsp` + nav (42 servlets/47 routes); keys in
+      `clinic_setting` via `ClinicIdentityService` (percent↔fraction, validated);
+      strategy + charge read per bill (supplier wiring); reception stat/table/CSV gone.
+      Verified live (70% bill split 4650/1550/0, then restored). 355 tests green.
 
 ---
 

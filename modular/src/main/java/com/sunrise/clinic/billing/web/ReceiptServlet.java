@@ -29,6 +29,11 @@ public class ReceiptServlet extends PageServlet {
             String appointmentNo = requiredField(request, "appointmentNo", "Appointment number");
             request.setAttribute("bill",
                     app().billingService().forAppointment(currentUser(request), appointmentNo));
+            // GAP-PAT-30: the dentist's description prints only for the patient it
+            // belongs to. forAppointment already limits patients to their own bills,
+            // so a patient viewer owns this record; reception and admin never do.
+            request.setAttribute("showClinical",
+                    currentUser(request).role() == com.sunrise.clinic.access.domain.Role.PATIENT);
             request.setAttribute("clinicName", app().clinicIdentity().get("clinic.name"));
             request.setAttribute("clinicPhone", app().clinicIdentity().get("clinic.phone"));
             render(request, response, "billing/receipt");

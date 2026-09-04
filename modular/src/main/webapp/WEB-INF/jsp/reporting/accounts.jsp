@@ -13,29 +13,37 @@
 <h1 class="page-title">Accounts</h1>
 <p class="page-subtitle">Create staff accounts, unlock a locked one, or take one out of use.</p>
 
+<%-- GAP-FTB-14: issuing an account confirms in a sub-window, which also suits
+     the one-time password — it holds focus until closed. --%>
 <c:if test="${not empty created}">
-    <div class="card">
-        <h2>Hand this over now</h2>
-        <div class="notice error">
-            This password is shown <strong>once</strong>. It is not stored anywhere and
-            cannot be looked up. If it is lost, reset it below and issue a new one.
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="account-created-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="account-created-title">Account created — hand this over now</h3>
+            <div class="notice error">
+                This password is shown <strong>once</strong>. It is not stored anywhere and
+                cannot be looked up. If it is lost, reset it below and issue a new one.
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <tbody>
+                        <tr><th>Name</th><td><c:out value="${created.account().displayName()}" /></td></tr>
+                        <tr><th>Email</th><td><c:out value="${created.account().email()}" /></td></tr>
+                        <tr><th>Role</th><td>${created.account().role()}</td></tr>
+                        <tr><th>One-time password</th>
+                            <td><code class="otp"><c:out value="${created.oneTimePassword()}" /></code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="page-subtitle">
+                Ask them to sign in at
+                <code>/login/<c:out value="${fn:toLowerCase(created.account().role())}" /></code>
+                and change it.
+            </p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/admin/accounts">Close</a>
+            </div>
         </div>
-        <div class="table-wrap">
-            <table>
-                <tbody>
-                    <tr><th>Name</th><td><c:out value="${created.account().displayName()}" /></td></tr>
-                    <tr><th>Email</th><td><c:out value="${created.account().email()}" /></td></tr>
-                    <tr><th>Role</th><td>${created.account().role()}</td></tr>
-                    <tr><th>One-time password</th>
-                        <td><code class="otp"><c:out value="${created.oneTimePassword()}" /></code></td></tr>
-                </tbody>
-            </table>
-        </div>
-        <p class="page-subtitle">
-            Ask them to sign in at
-            <code>/login/<c:out value="${fn:toLowerCase(created.account().role())}" /></code>
-            and change it.
-        </p>
     </div>
 </c:if>
 

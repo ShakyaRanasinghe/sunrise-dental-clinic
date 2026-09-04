@@ -34,7 +34,8 @@
                 </tr>
                 <tr>
                     <th>Treatment</th>
-                    <td><c:out value="${appointment.treatmentName()}" /></td>
+                    <%-- GAP-REC-13: an "Other" visit names the patient's stated reason. --%>
+                    <td><c:out value="${not empty appointment.treatmentName() ? appointment.treatmentName() : appointment.patientReason()}" /></td>
                 </tr>
                 <tr>
                     <th>Date</th>

@@ -59,7 +59,6 @@ public class DentistAvailabilityServlet extends PageServlet {
             }
 
             request.setAttribute("dentist", dentist);
-            request.setAttribute("phoneSaved", field(request, "saved"));
             // GAP-FTB-07: the dentist's own treatment list, offered + toggleable.
             request.setAttribute("toggles",
                     app().referenceService().dentistTreatmentToggles(dentist.getId()));
@@ -69,8 +68,8 @@ public class DentistAvailabilityServlet extends PageServlet {
         });
     }
 
-    /** Save the dentist's own public phone number (GAP-FTB-04) or toggle a treatment
-     * they offer (GAP-FTB-07). */
+    /** Toggle a treatment they offer (GAP-FTB-07). The phone number moved to the
+     * dentist's profile (GAP-DEN-14). */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -80,16 +79,13 @@ public class DentistAvailabilityServlet extends PageServlet {
                     .orElseThrow(() -> new IllegalArgumentException(
                             "No dentist record for this account"));
             String action = field(request, "action");
-            if ("phone".equals(action)) {
-                app().referenceService().updateOwnPhone(
-                        currentUser(request), currentUser(request).uid(), field(request, "phone"));
-                redirect(request, response, "/dentist/availability?saved=yes");
-            } else if ("toggle".equals(action)) {
+            if ("toggle".equals(action)) {
                 String treatmentId = field(request, "treatmentId");
                 boolean offered = "on".equals(field(request, "offered"));
                 app().referenceService().setTreatmentOffered(
                         currentUser(request), dentist.getId(), treatmentId, offered);
-                redirect(request, response, "/dentist/availability#treatments");
+                // GAP-FTB-14: confirm the toggle in a sub-window on return.
+                redirect(request, response, "/dentist/availability?toggled=1#treatments");
             } else {
                 throw new IllegalArgumentException("Unknown action.");
             }

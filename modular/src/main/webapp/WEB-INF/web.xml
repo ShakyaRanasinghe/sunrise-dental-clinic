@@ -298,6 +298,19 @@
         <url-pattern>/dentist/availability</url-pattern>
     </servlet-mapping>
 
+    <!--
+        GAP-DEN-14: the dentist's own profile — name, specialisation and phone as
+        the public cards show them, editable from the dashboard.
+    -->
+    <servlet>
+        <servlet-name>DentistProfile</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.DentistProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistProfile</servlet-name>
+        <url-pattern>/dentist/profile</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->
@@ -389,6 +402,19 @@
     <servlet-mapping>
         <servlet-name>AuditTrail</servlet-name>
         <url-pattern>/admin/audit</url-pattern>
+    </servlet-mapping>
+
+    <!--
+        GAP-ADM-10: pricing — the dentist's treatment-share percentage and the
+        flat service charge, editable at runtime and read live on every bill.
+    -->
+    <servlet>
+        <servlet-name>Pricing</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.PricingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Pricing</servlet-name>
+        <url-pattern>/admin/pricing</url-pattern>
     </servlet-mapping>
 
     <!-- ============================================================ -->

@@ -29,6 +29,11 @@ public record AppointmentDetailResponse(String appointmentNo,
                                         String slotId,
                                         String treatmentId,
                                         String treatmentName,
+                                        // GAP-REC-13: the patient's stated reason for an "Other"
+                                        // booking — non-clinical (reception already takes it at
+                                        // booking), so desk screens may print it as the
+                                        // treatment fallback.
+                                        String patientReason,
                                         LocalDate date,
                                         LocalTime time,
                                         AppointmentStatus status,
@@ -61,6 +66,7 @@ public record AppointmentDetailResponse(String appointmentNo,
                 appointment.getDentistId(), dentistName,
                 appointment.getSlotId(),
                 appointment.getTreatmentId(), treatmentName,
+                appointment.getPatientReason(),
                 appointment.getDate(), appointment.getTime(),
                 appointment.getStatus(),
                 appointment.getDiagnosis(),

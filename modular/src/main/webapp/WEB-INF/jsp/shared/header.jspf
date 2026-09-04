@@ -70,6 +70,10 @@
                         <c:if test="${user.role eq 'PATIENT'}">
                             <a class="user-menu__item" href="${ctx}/patient/profile">My details</a>
                         </c:if>
+                        <%-- GAP-DEN-14: the dentist's own profile lives in the same menu. --%>
+                        <c:if test="${user.role eq 'DENTIST'}">
+                            <a class="user-menu__item" href="${ctx}/dentist/profile">My details</a>
+                        </c:if>
                         <form method="post" action="${ctx}/logout">
                             <button type="submit" class="user-menu__item user-menu__signout">Sign out</button>
                         </form>

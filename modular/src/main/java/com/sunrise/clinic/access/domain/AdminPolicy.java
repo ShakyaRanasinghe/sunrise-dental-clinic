@@ -62,6 +62,7 @@ public final class AdminPolicy extends RolePolicy {
                 new NavItem("Clinic", "/admin/clinic"),
                 new NavItem("Complaints", "/admin/complaints"),
                 new NavItem("Audit", "/admin/audit"),
+                new NavItem("Pricing", "/admin/pricing"),
                 new NavItem("Help", "/help/admin"));
     }
 

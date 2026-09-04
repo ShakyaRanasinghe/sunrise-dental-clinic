@@ -279,6 +279,10 @@ main {
     background: var(--surface);
     box-shadow: var(--shadow);
     overflow: hidden;
+    /* The grey body fills short cards: without this, a dentist with no phone
+       number ends with a white stump where the body runs out. */
+    display: flex;
+    flex-direction: column;
 }
 .dentist-card__summary {
     list-style: none;
@@ -322,6 +326,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex: 1;
 }
 .dentist-card__rating { margin: 0; color: var(--ink-soft); }
 .dentist-card__fee { margin: 0; font-size: 13.5px; color: var(--ink-faint); }
@@ -648,6 +653,8 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* Inline search: the field stretches to fill the row, actions sit beside it. */
 .search-form { display: flex; gap: 14px; align-items: flex-end; }
+/* Compact register search: heading and hints removed, so tighten the card. */
+.search-card { padding-top: 14px; padding-bottom: 14px; }
 .search-form .field { flex: 1; margin-bottom: 0; }
 .search-form .form-actions.inline { margin-top: 0; padding-bottom: 1px; }
 
@@ -691,6 +698,29 @@ textarea { min-height: 80px; resize: vertical; }
 .done-list summary:hover { background: var(--canvas); }
 .done-list summary .count { color: var(--ink-faint); font-weight: 400; }
 .done-list[open] .table-wrap { padding: 8px 6px 12px; }
+
+/* --- Dentist schedule: expandable pending-patient cards (GAP-DEN-12) ----
+   One row per patient; the details table and record form live inside the
+   opened card only, so a full day stays scannable. Same pattern as the
+   done list above; the first card starts open. -------------------------- */
+.pending-list { padding: 0; margin-bottom: 14px; }
+.pending-list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    font-weight: 600;
+}
+.pending-list summary::-webkit-details-marker { display: none; }
+.pending-list:not([open]) summary { border-radius: var(--radius); }
+.pending-list[open] summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--line); }
+.pending-list summary:hover { background: var(--canvas); }
+.pending-list summary .count { color: var(--ink-faint); font-weight: 400; }
+.pending-list__body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
 
 /* --- Admin complaints: compact cards, review form on click (GAP-ADM-09) - */
 .complaint-card { padding: 0; margin-bottom: 14px; }
