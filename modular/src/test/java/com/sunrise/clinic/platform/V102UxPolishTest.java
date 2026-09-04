@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -368,6 +370,27 @@ class V102UxPolishTest {
                 "the time windows must come before the treatments list");
         assertTrue(page.contains("pill open") && page.contains(">Full<"),
                 "open windows read as pills and exhausted ones as Full");
+    }
+
+    // Records expose components as methods, not bean properties: ${empty a.x}
+    // 500s at render while ${empty a.x()} tests the value. Scan every view.
+    @Test
+    void noRecordPropertyAccessInViews() throws IOException {
+        java.util.regex.Pattern bad = java.util.regex.Pattern.compile(
+                "\\$\\{(not )?empty [a-zA-Z_$][\\w$]*\\.[a-zA-Z_$][\\w$]*\\s*\\}");
+        List<String> offenders = new ArrayList<>();
+        try (var paths = Files.walk(JSP)) {
+            for (Path file : paths.filter(f -> f.toString().endsWith(".jsp")).toList()) {
+                String body = Files.readString(file);
+                // JSP comments never evaluate — strip them before matching.
+                body = body.replaceAll("(?s)<%--.*?--%>", "");
+                if (bad.matcher(body).find()) {
+                    offenders.add(JSP.relativize(file).toString());
+                }
+            }
+        }
+        assertTrue(offenders.isEmpty(),
+                "record property access (use method calls): " + offenders);
     }
 
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
