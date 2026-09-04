@@ -63,21 +63,33 @@ public class AuthService {
     /**
      * Attempt to sign a user in.
      *
-     * @param email    the address typed at the login screen
-     * @param password the password typed at the login screen
+     * <p>GAP-ADM-12: the identifier is a staff username or an email address.
+     * Usernames cannot contain {@code @}, so anything holding one is looked up by
+     * username first; an address goes straight to the email lookup. Either way the
+     * failure message matches what the screen asked for, and stays identical for
+     * "no such user" and "wrong password".
+     *
+     * @param identifier the username or address typed at the login screen
+     * @param password   the password typed at the login screen
      * @return the result, never null
      */
-    public LoginResult login(String email, String password) {
-        String key = normalise(email);
+    public LoginResult login(String identifier, String password) {
+        String key = normalise(identifier);
+        boolean byUsername = !key.contains("@");
+        String wrongMessage = byUsername ? "Incorrect username or password."
+                : "Incorrect email or password.";
 
         if (lockService.isLocked(key)) {
-            log.log(Level.INFO, "login_blocked_locked email={0}", key);
+            log.log(Level.INFO, "login_blocked_locked identity={0}", key);
             return LoginResult.failed(
                     "This account is locked. Please contact the clinic to have it unlocked.",
                     lockService.status(key));
         }
 
-        Optional<UserAccount> found = users.findByEmail(key);
+        Optional<UserAccount> found = byUsername ? users.findByUsername(key) : Optional.empty();
+        if (found.isEmpty()) {
+            found = users.findByEmail(key);
+        }
         boolean valid = found
                 .filter(UserAccount::isActive)
                 .map(user -> PasswordHasher.matches(password, user.getPasswordHash()))
@@ -85,14 +97,14 @@ public class AuthService {
 
         if (!valid) {
             LoginAttemptService.LockStatus status = lockService.recordFailure(key);
-            log.log(Level.INFO, "login_failed email={0} attemptsRemaining={1}",
+            log.log(Level.INFO, "login_failed identity={0} attemptsRemaining={1}",
                     new Object[]{key, status.attemptsRemaining()});
             // Deliberately identical message for "no such user" and "wrong password".
-            return LoginResult.failed("Incorrect email or password.", status);
+            return LoginResult.failed(wrongMessage, status);
         }
 
         lockService.recordSuccess(key);
-        log.log(Level.INFO, "login_success email={0}", key);
+        log.log(Level.INFO, "login_success identity={0}", key);
         return LoginResult.ok(found.get(), lockService.status(key));
     }
 

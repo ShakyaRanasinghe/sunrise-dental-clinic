@@ -9,7 +9,9 @@ import com.sunrise.clinic.patients.data.InMemoryPatientRepository;
 import com.sunrise.clinic.patients.service.SelfRegistrationService;
 import com.sunrise.clinic.patients.service.SelfRegistrationService.Registered;
 import com.sunrise.clinic.patients.service.SelfRegistrationService.Registration;
+import com.sunrise.clinic.platform.data.InMemoryPersonSequenceRepository;
 import com.sunrise.clinic.platform.data.SerialTransactionRunner;
+import com.sunrise.clinic.platform.service.PersonNumberGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -152,6 +154,24 @@ class SelfRegistrationServiceTest {
         Registered registered = service.register(minimal());
 
         assertTrue(patients.findByUserUid(registered.account().getUid()).isPresent());
+    }
+
+    // GAP-PAT-33/GAP-ADM-11: readable numbers on both new rows.
+
+    @Test
+    void selfRegistrationAssignsQuotableNumbers() {
+        SelfRegistrationService numbered = new SelfRegistrationService(
+                new UserAccountFactory(users,
+                        new PersonNumberGenerator(new InMemoryPersonSequenceRepository())),
+                patients, new SerialTransactionRunner(),
+                new PersonNumberGenerator(new InMemoryPersonSequenceRepository()));
+
+        Registered registered = numbered.register(minimal());
+
+        assertTrue(registered.patient().patientNumber().matches("\\d{6}PAT\\d{4}"),
+                "patient rows get YYMMDDPATNNNN: " + registered.patient().patientNumber());
+        assertTrue(registered.account().getAccountNo().matches("\\d{6}PAT\\d{4}"),
+                "patient accounts get YYMMDDPATNNNN: " + registered.account().getAccountNo());
     }
 
     @Test

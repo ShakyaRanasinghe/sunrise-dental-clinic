@@ -45,9 +45,16 @@ public class PatientService {
     private static final String EMAIL_PATTERN = "[^@\\s]+@[^@\\s]+\\.[^@\\s]+";
 
     private final PatientRepository patients;
+    private final com.sunrise.clinic.platform.service.PersonNumberGenerator numbers;
 
     public PatientService(PatientRepository patients) {
+        this(patients, null);
+    }
+
+    public PatientService(PatientRepository patients,
+                          com.sunrise.clinic.platform.service.PersonNumberGenerator numbers) {
         this.patients = patients;
+        this.numbers = numbers;
     }
 
     /**
@@ -195,6 +202,9 @@ public class PatientService {
                 .id(UUID.randomUUID().toString())
                 // Never the caller's uid. A walk-in has no portal account.
                 .userUid(null)
+                // GAP-PAT-33: readable desk number alongside the uuid id.
+                .patientNo(numbers == null ? null
+                        : numbers.next(java.time.LocalDate.now(), "PAT"))
                 .name(name)
                 .address(trimToNull(details.address()))
                 .contactNumber(contactNumber)

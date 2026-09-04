@@ -7,6 +7,7 @@ import com.sunrise.clinic.access.domain.UserAccount;
 import com.sunrise.clinic.access.service.AuthService;
 import com.sunrise.clinic.access.service.AuthService.LoginResult;
 import com.sunrise.clinic.access.service.LoginAttemptService;
+import com.sunrise.clinic.access.service.PasswordHasher;
 import com.sunrise.clinic.access.service.UserAccountFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,57 @@ class AuthServiceTest {
 
         assertFalse(result.success());
         assertNull(result.user());
+    }
+
+    // GAP-ADM-12: staff sign in with usernames; emails keep working.
+
+    @Test
+    void usernamesAreLowercaseConstrainedAndUnique() {
+        assertEquals("desk.person", UserAccountFactory.validUsername("  Desk.Person "));
+        assertThrows(IllegalArgumentException.class,
+                () -> UserAccountFactory.validUsername("ab"));
+        assertThrows(IllegalArgumentException.class,
+                () -> UserAccountFactory.validUsername("has space"));
+        assertThrows(IllegalArgumentException.class,
+                () -> UserAccountFactory.validUsername("name@x"));
+
+        users.save(UserAccount.builder().uid("u-r1").username("reception")
+                .email("reception@sunrisedental.lk")
+                .passwordHash(PasswordHasher.hash(PASSWORD))
+                .displayName("Kumari Silva").role(Role.RECEPTIONIST).build());
+        assertThrows(IllegalArgumentException.class, () -> factory.createStaff(
+                "other@example.lk", PASSWORD, "Other", Role.RECEPTIONIST, "reception"));
+    }
+
+    @Test
+    void staffSignInWithTheirUsername() {
+        users.save(UserAccount.builder().uid("u-r1").username("reception")
+                .email("reception@sunrisedental.lk")
+                .passwordHash(PasswordHasher.hash(PASSWORD))
+                .displayName("Kumari Silva").role(Role.RECEPTIONIST).build());
+
+        AuthService.LoginResult result = auth.login("reception", PASSWORD);
+
+        assertTrue(result.success());
+        assertEquals(Role.RECEPTIONIST, result.user().getRole());
+    }
+
+    @Test
+    void staffEmailStillWorksAsFallback() {
+        users.save(UserAccount.builder().uid("u-r1").username("reception")
+                .email("reception@sunrisedental.lk")
+                .passwordHash(PasswordHasher.hash(PASSWORD))
+                .displayName("Kumari Silva").role(Role.RECEPTIONIST).build());
+
+        assertTrue(auth.login("reception@sunrisedental.lk", PASSWORD).success());
+    }
+
+    @Test
+    void usernameFailuresNameUsernames() {
+        AuthService.LoginResult result = auth.login("nosuchuser", "whatever");
+
+        assertFalse(result.success());
+        assertEquals("Incorrect username or password.", result.message());
     }
 
     @Test
@@ -119,7 +171,7 @@ class AuthServiceTest {
         // Patients register themselves; the factory has no route for staff to
         // create one, so a submitted role cannot become PATIENT by mistake.
         assertThrows(IllegalArgumentException.class,
-                () -> factory.createStaff("new@example.lk", PASSWORD, "X", Role.PATIENT));
+                () -> factory.createStaff("new@example.lk", PASSWORD, "X", Role.PATIENT, "x.staff"));
     }
 
     @Test

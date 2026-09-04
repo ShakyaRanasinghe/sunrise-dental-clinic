@@ -21,6 +21,7 @@ import java.time.LocalDate;
  * whether a patient can self-serve (FR-REC-22) without being handed the uid.</p>
  */
 public record PatientResponse(String id,
+                              String patientNo,
                               String name,
                               String address,
                               String contactNumber,
@@ -33,6 +34,7 @@ public record PatientResponse(String id,
     public static PatientResponse of(Patient patient) {
         return new PatientResponse(
                 patient.getId(),
+                patient.getPatientNo(),
                 patient.getName(),
                 patient.getAddress(),
                 patient.getContactNumber(),
@@ -43,15 +45,13 @@ public record PatientResponse(String id,
     }
 
     /**
-     * A readable, unique patient number for the desk. It is the patient's unique
-     * stored {@code id} (GAP-REC-12): the same value is the primary key, so two
-     * same-named patients can always be told apart by it and never collide. The
-     * id is already short and friendly where the clinic seeded one ("p-nimal");
-     * where registration generated a UUID it is shown as-is so it stays unique.
+     * The readable desk number (GAP-PAT-33, e.g. {@code 260904PAT0001}), falling
+     * back to the stored id where no number was ever assigned (seeded rows).
+     * Unique either way, so two same-named rows stay distinguishable (GAP-REC-12).
      *
-     * @return the patient's unique identifier, printed verbatim
+     * @return the patient's quotable identifier, printed verbatim
      */
     public String patientNumber() {
-        return id;
+        return patientNo != null ? patientNo : id;
     }
 }

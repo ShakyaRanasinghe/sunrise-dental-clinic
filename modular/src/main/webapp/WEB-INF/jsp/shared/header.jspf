@@ -92,15 +92,23 @@
     <header class="site-header">
         <div class="bar">
             <a class="brand" href="${ctx}/">Sunrise <span>Dental</span></a>
-            <nav class="site-nav">
-                <a href="${ctx}/#services">Services</a>
-                <a href="${ctx}/#dentists">Dentists</a>
-                <a href="${ctx}/help">Help</a>
-            </nav>
-            <div class="who">
-                <a class="btn small secondary" href="${ctx}/login/patient">Sign in</a>
-                <a class="btn small" href="${ctx}/register">Register</a>
-            </div>
+            <%--
+                GAP-ADM-14: staff doors (logins, /staff) render the bare branded bar —
+                theme only, no public navigation and no sign-in/register buttons.
+                `not` (not `empty`): the flag is a Boolean, and a false Boolean is
+                never empty — the patient portal must keep its bar.
+            --%>
+            <c:if test="${not hidePublicNav}">
+                <nav class="site-nav">
+                    <a href="${ctx}/#services">Services</a>
+                    <a href="${ctx}/#dentists">Dentists</a>
+                    <a href="${ctx}/help">Help</a>
+                </nav>
+                <div class="who">
+                    <a class="btn small secondary" href="${ctx}/login/patient">Sign in</a>
+                    <a class="btn small" href="${ctx}/register">Register</a>
+                </div>
+            </c:if>
         </div>
     </header>
 </c:if>

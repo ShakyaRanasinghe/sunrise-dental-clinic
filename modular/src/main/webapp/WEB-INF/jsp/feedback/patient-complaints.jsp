@@ -33,8 +33,8 @@
     <c:choose>
         <c:when test="${empty dentistsTreated}">
             <p class="page-subtitle">
-                You have not been treated at the clinic yet, so there is nothing to raise a
-                concern about. Telephone us if something else is wrong.
+                You have not been treated at the clinic yet, so there is no dentist to
+                name — for anything else, use the general concern below.
             </p>
         </c:when>
         <c:otherwise>
@@ -85,6 +85,39 @@
             </c:forEach>
         </c:otherwise>
     </c:choose>
+</div>
+
+<%--
+    GAP-PAT-32: a general concern about the clinic — no dentist, no visit, raisable
+    before any appointment. Stored and shown anonymously: the administrator sees
+    what was written but never who wrote it, so it cannot appear in anyone's
+    "raised" list afterwards.
+--%>
+<div class="card">
+    <h2>General concern</h2>
+    <div class="notice">
+        <strong>Anonymous.</strong> This is read by the clinic's administrator without
+        your name attached — not even the fact that you raised one.
+    </div>
+    <form method="post" action="${ctx}/patient/complaints">
+        <input type="hidden" name="action" value="general">
+        <div class="field">
+            <label for="general-category">What is it about</label>
+            <select id="general-category" name="category" required>
+                <c:forEach var="c" items="${categories}">
+                    <option value="${c}">${c.label()}</option>
+                </c:forEach>
+            </select>
+        </div>
+        <div class="field">
+            <label for="general-detail">Tell us what happened</label>
+            <textarea id="general-detail" name="detail" rows="6" required
+                      placeholder="In your own words. The more you can tell us, the more we can do."></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn">Send anonymously</button>
+        </div>
+    </form>
 </div>
 
 <div class="card">

@@ -20,6 +20,10 @@ USE sunrise_dental;
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS user_account (
     uid             VARCHAR(64)  NOT NULL,
+    account_no      VARCHAR(16) NULL,      -- GAP-ADM-11: readable YYMMDD + ROLE + NNNN,
+    UNIQUE KEY uq_account_no (account_no), -- backfilled; set on every new row.
+    username        VARCHAR(64) NULL,      -- GAP-ADM-12: staff sign-in name; NULL for
+    UNIQUE KEY uq_username (username),     -- patients (email-only). Backfilled for staff.
     email           VARCHAR(255) NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,   -- PBKDF2: iterations:salt:hash
     display_name    VARCHAR(255),
@@ -44,6 +48,8 @@ CREATE TABLE IF NOT EXISTS patient (
     email          VARCHAR(255),
     dob            DATE,
     diagnosis_details TEXT NULL,
+    patient_no     VARCHAR(16) NULL,      -- GAP-PAT-33: readable YYMMDDPATNNNN,
+    UNIQUE KEY uq_patient_no (patient_no),-- backfilled; set on every new row.
     PRIMARY KEY (id),
     KEY idx_patient_user (user_uid),
     CONSTRAINT fk_patient_user FOREIGN KEY (user_uid)
@@ -250,8 +256,9 @@ CREATE TABLE IF NOT EXISTS notification (
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS complaint (
     id              VARCHAR(64)   NOT NULL,
-    patient_id      VARCHAR(64)   NOT NULL,
-    dentist_id      VARCHAR(64)   NOT NULL,
+    patient_id      VARCHAR(64),           -- GAP-PAT-32: NULL for an anonymous general
+    dentist_id      VARCHAR(64),           -- concern naming no dentist. Named concerns
+                                           -- always carry both, as before.
     appointment_no  VARCHAR(32),
     category        ENUM('CONDUCT','CLINICAL_CONCERN','WAIT_TIME','BILLING','OTHER') NOT NULL,
     detail          TEXT          NOT NULL,
@@ -330,6 +337,15 @@ CREATE TABLE IF NOT EXISTS appointment_counter (
     day_key   CHAR(8) NOT NULL,   -- yyyyMMdd
     counter_value INT NOT NULL DEFAULT 0,
     PRIMARY KEY (day_key)
+) ENGINE=InnoDB;
+
+-- Person numbers (GAP-PAT-33): per-day-per-role sequence behind the readable
+-- YYMMDD + ROLE + NNNN identifiers. Same row-lock pattern as
+-- appointment_counter, but a separate table so reporting's day counts stay clean.
+CREATE TABLE IF NOT EXISTS person_counter (
+    seq_key   VARCHAR(32) NOT NULL,   -- e.g. PAT-20260904
+    counter_value INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (seq_key)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

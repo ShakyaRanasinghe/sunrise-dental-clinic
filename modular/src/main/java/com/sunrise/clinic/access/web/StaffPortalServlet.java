@@ -28,6 +28,8 @@ public class StaffPortalServlet extends PageServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // GAP-ADM-14: an unadvertised staff page — the bare branded bar, no public links.
+        request.setAttribute("hidePublicNav", true);
         render(request, response, "access/staff-portal");
     }
 }

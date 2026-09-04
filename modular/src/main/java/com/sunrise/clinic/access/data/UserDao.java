@@ -14,8 +14,10 @@ import java.util.Optional;
 /** MySQL-backed {@link UserRepository}. */
 public class UserDao extends JdbcDao<UserAccount, String> implements UserRepository {
 
+    // GAP-ADM-11: account_no is the readable number; assigned once, never rewritten.
+    // GAP-ADM-12: username is the staff sign-in name; NULL for patients.
     private static final String COLUMNS =
-            "uid, email, password_hash, display_name, role, active, failed_attempts, locked, created_at";
+            "uid, account_no, username, email, password_hash, display_name, role, active, failed_attempts, locked, created_at";
 
     public UserDao(Database db) {
         super(db);
@@ -24,9 +26,9 @@ public class UserDao extends JdbcDao<UserAccount, String> implements UserReposit
     @Override
     public UserAccount save(UserAccount user) {
         update("""
-                INSERT INTO user_account (uid, email, password_hash, display_name, role,
+                INSERT INTO user_account (uid, account_no, username, email, password_hash, display_name, role,
                                           active, failed_attempts, locked, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     email = VALUES(email),
                     password_hash = VALUES(password_hash),
@@ -50,6 +52,13 @@ public class UserDao extends JdbcDao<UserAccount, String> implements UserReposit
     public Optional<UserAccount> findByEmail(String email) {
         return queryOne("SELECT " + COLUMNS + " FROM user_account WHERE email = ?",
                 statement -> statement.setString(1, email),
+                UserDao::mapUser);
+    }
+
+    @Override
+    public Optional<UserAccount> findByUsername(String username) {
+        return queryOne("SELECT " + COLUMNS + " FROM user_account WHERE username = ?",
+                statement -> statement.setString(1, username),
                 UserDao::mapUser);
     }
 
@@ -78,19 +87,23 @@ public class UserDao extends JdbcDao<UserAccount, String> implements UserReposit
 
     private static void bindUser(PreparedStatement statement, UserAccount u) throws SQLException {
         statement.setString(1, u.getUid());
-        statement.setString(2, u.getEmail());
-        statement.setString(3, u.getPasswordHash());
-        statement.setString(4, u.getDisplayName());
-        statement.setString(5, enumName(u.getRole()));
-        statement.setBoolean(6, u.isActive());
-        statement.setInt(7, u.getFailedAttempts());
-        statement.setBoolean(8, u.isLocked());
-        statement.setTimestamp(9, toSqlTimestamp(u.getCreatedAt()));
+        statement.setString(2, u.getAccountNo());
+        statement.setString(3, u.getUsername());
+        statement.setString(4, u.getEmail());
+        statement.setString(5, u.getPasswordHash());
+        statement.setString(6, u.getDisplayName());
+        statement.setString(7, enumName(u.getRole()));
+        statement.setBoolean(8, u.isActive());
+        statement.setInt(9, u.getFailedAttempts());
+        statement.setBoolean(10, u.isLocked());
+        statement.setTimestamp(11, toSqlTimestamp(u.getCreatedAt()));
     }
 
     private static UserAccount mapUser(ResultSet rs) throws SQLException {
         return UserAccount.builder()
                 .uid(rs.getString("uid"))
+                .accountNo(rs.getString("account_no"))
+                .username(rs.getString("username"))
                 .email(rs.getString("email"))
                 .passwordHash(rs.getString("password_hash"))
                 .displayName(rs.getString("display_name"))

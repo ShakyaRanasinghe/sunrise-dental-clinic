@@ -57,6 +57,14 @@
             <label for="to">To</label>
             <input type="date" id="to" name="to">
         </div>
+        <%-- GAP-ADM-13: newest first by default, reversible to oldest. --%>
+        <div class="field">
+            <label for="sort">Order</label>
+            <select id="sort" name="sort">
+                <option value="newest"<c:if test="${sort ne 'oldest'}"> selected</c:if>>Newest first</option>
+                <option value="oldest"<c:if test="${sort eq 'oldest'}"> selected</c:if>>Oldest first</option>
+            </select>
+        </div>
         <div class="form-actions">
             <button type="submit" class="btn">Filter</button>
             <a class="btn btn-secondary" href="${ctx}/admin/complaints">Clear</a>
@@ -90,8 +98,10 @@
                     <c:out value="${c.categoryLabel()}" />
                 </span>
                 <span class="complaint-card__who">
-                    <c:out value="${c.patientName()}" />
+                    <%-- GAP-PAT-32: general concerns arrive with neither identity. --%>
+                    <c:choose><c:when test="${empty c.patientName()}">Anonymous</c:when><c:otherwise><c:out value="${c.patientName()}" /></c:otherwise></c:choose>
                     <c:if test="${not empty c.dentistName()}"> &middot; named <c:out value="${c.dentistName()}" /></c:if>
+                    <c:if test="${empty c.dentistName()}"> &middot; general concern</c:if>
                 </span>
                 <span class="complaint-card__status pill <c:if test='${c.isOpen()}'>error</c:if>">
                     <c:out value="${c.statusLabel()}" /></span>
@@ -161,7 +171,7 @@
                         <span class="pill"><c:out value="${c.statusLabel()}" /></span>
                     </div>
                     <div class="complaint-card__who">
-                        <c:out value="${c.patientName()}" />
+                        <c:choose><c:when test="${empty c.patientName()}">Anonymous &middot; general concern</c:when><c:otherwise><c:out value="${c.patientName()}" /></c:otherwise></c:choose>
                         <c:if test="${not empty c.resolution()}">
                             <span class="complaint-card__resolution"><c:out value="${c.resolution()}" /></span>
                         </c:if>
