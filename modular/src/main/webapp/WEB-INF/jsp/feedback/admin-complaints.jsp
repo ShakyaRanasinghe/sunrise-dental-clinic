@@ -13,8 +13,18 @@
 <h1 class="page-title">Complaints</h1>
 <p class="page-subtitle">Concerns raised by patients. The dentist named in one never sees it.</p>
 
+<%-- GAP-FTB-14: resolving confirms in a sub-window. --%>
 <c:if test="${not empty done}">
-    <div class="notice">Updated.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="complaint-done-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="complaint-done-title">Successfully updated</h3>
+            <p class="page-subtitle">The concern was reviewed.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/admin/complaints">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">

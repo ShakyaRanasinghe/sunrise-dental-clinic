@@ -285,7 +285,8 @@ class ReportServiceTest {
 
         assertTrue(csv.contains("Summary"), csv);
         assertTrue(csv.contains("Earnings by dentist"), csv);
-        assertTrue(csv.contains("Earnings by receptionist"), csv);
+        // GAP-ADM-10: reception earns no commission, so the export carries no trace.
+        assertFalse(csv.contains("eceptionist"), csv);
         assertTrue(csv.contains("Daily takings"), csv);
         assertTrue(csv.contains("Daily footfall"), csv);
         assertTrue(csv.contains("5200.00"), "the gross should appear: " + csv);

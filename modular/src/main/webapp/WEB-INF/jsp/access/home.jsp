@@ -64,11 +64,8 @@
                         <span class="page-subtitle">(${rating.reviews()} review${rating.reviews() != 1 ? 's' : ''})</span>
                     </p>
                 </c:if>
-                <c:if test="${not empty rating and not rating.isPublishable() and rating.reviews() > 0}">
-                    <p class="dentist-card__rating">
-                        <span class="page-subtitle">${rating.reviewsUntilPublishable()} more review${rating.reviewsUntilPublishable() != 1 ? 's' : ''} needed to show rating</span>
-                    </p>
-                </c:if>
+                <%-- Below the publishable threshold (FR-RVW-12) no rating metric
+                     shows at all — neither stars nor a "more reviews needed" hint. --%>
                 <c:if test="${not empty d.phone()}">
                     <p class="dentist-card__phone">
                         <c:out value="${d.phone()}" />

@@ -17,8 +17,19 @@
 <h1 class="page-title">Publish availability</h1>
 <p class="page-subtitle">Set the hours a dentist works; the bookable times are generated for you.</p>
 
+<%-- GAP-FTB-14: publishing confirms in a sub-window. Warnings and errors stay
+     inline notices — they need the form context beneath them. --%>
 <c:if test="${not empty confirmation}">
-    <div class="notice"><c:out value="${confirmation}" /></div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="published-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="published-title">Successfully published</h3>
+            <p><c:out value="${confirmation}" /></p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/reception/availability">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 <c:if test="${not empty warning}">
     <div class="notice error"><c:out value="${warning}" /></div>

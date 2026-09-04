@@ -14,8 +14,18 @@
 <h1 class="page-title">My schedule</h1>
 <p class="page-subtitle">Your patients for the day, and where you record what you treated.</p>
 
+<%-- GAP-FTB-14: recording confirms in a sub-window; Close keeps the viewed day. --%>
 <c:if test="${not empty completed}">
-    <div class="notice">Recorded for <strong><c:out value="${completed}" /></strong>.</div>
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="recorded-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="recorded-title">Successfully recorded</h3>
+            <p>Treatment recorded for <strong><c:out value="${completed}" /></strong>.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/dentist/schedule?date=${date}">Close</a>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <div class="card">
@@ -51,78 +61,106 @@
         </div>
     </c:when>
     <c:otherwise>
-        <c:forEach var="row" items="${pending}">
+        <%--
+            GAP-DEN-12: one expandable card per patient instead of a full details
+            card each. The summary row (time, patient, status, critical flag) is
+            all a busy day shows; the details table and the record form render
+            only inside the opened card. The first — the next patient to treat —
+            starts open. No script, like the done list below.
+        --%>
+        <c:forEach var="row" items="${pending}" varStatus="s">
             <c:set var="a" value="${row.appointment()}" />
-            <div class="card">
-                <h2>
-                    ${a.time()} &mdash; <c:out value="${a.patientName()}" />
-                    <span class="count">${a.status()}</span>
-                </h2>
-
-                <%--
-                    FR-NOTE-08: the warning comes before the appointment is opened. A flag
-                    rather than the notes themselves — reading every patient's notes to
-                    render a day would be a great deal of medical information fetched to
-                    print one line.
-                --%>
-                <c:if test="${row.hasCriticalNotes()}">
-                    <div class="notice error">
-                        <strong>This patient has declared something important.</strong>
-                        Open the appointment below to read it before treating.
+            <details class="card pending-list"<c:if test="${s.first}"> open</c:if>>
+                <summary>
+                    <span>${a.time()} &mdash; <c:out value="${a.patientName()}" /></span>
+                    <span>
+                        <c:if test="${row.hasCriticalNotes()}">
+                            <span class="count" title="This patient declared something important">&#9888;</span>
+                        </c:if>
+                        <span class="count">${a.status()}</span>
+                    </span>
+                </summary>
+                <div class="pending-list__body">
+                    <%--
+                        FR-NOTE-08: the warning comes before the appointment is opened. A flag
+                        rather than the notes themselves — reading every patient's notes to
+                        render a day would be a great deal of medical information fetched to
+                        print one line.
+                    --%>
+                    <c:if test="${row.hasCriticalNotes()}">
+                        <div class="notice error">
+                            <strong>This patient has declared something important.</strong>
+                            Open the appointment below to read it before treating.
+                        </div>
+                    </c:if>
+                    <div class="table-wrap">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th>Treatment</th>
+                                    <td>
+                                        <c:out value="${a.treatmentName()}" />
+                                        <c:if test="${not empty row.treatmentCost()}">
+                                            &mdash; Rs <fmt:formatNumber value="${row.treatmentCost()}"
+                                                                         minFractionDigits="2"
+                                                                         maxFractionDigits="2" />
+                                        </c:if>
+                                    </td>
+                                </tr>
+                                <tr><th>Appointment</th><td><code>${a.appointmentNo()}</code></td></tr>
+                                <tr>
+                                    <th>Declared by the patient</th>
+                                    <td>
+                                        <a href="${ctx}/dentist/appointment?appointmentNo=${a.appointmentNo()}">
+                                            See what they declared</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </c:if>
-                <div class="table-wrap">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>Treatment</th>
-                                <td>
-                                    <c:out value="${a.treatmentName()}" />
-                                    <c:if test="${not empty row.treatmentCost()}">
-                                        &mdash; Rs <fmt:formatNumber value="${row.treatmentCost()}"
-                                                                     minFractionDigits="2"
-                                                                     maxFractionDigits="2" />
-                                    </c:if>
-                                </td>
-                            </tr>
-                            <tr><th>Appointment</th><td><code>${a.appointmentNo()}</code></td></tr>
-                            <tr>
-                                <th>Declared by the patient</th>
-                                <td>
-                                    <a href="${ctx}/dentist/appointment?appointmentNo=${a.appointmentNo()}">
-                                        See what they declared</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
 
-                <c:choose>
-                    <c:when test="${a.status() eq 'CONFIRMED' and a.date() gt today}">
-                        <%-- GAP-DEN-06: a visit that has not happened yet cannot be
-                             completed. The service refuses it too; this simply does
-                             not offer a button that would fail. --%>
-                        <p class="page-subtitle">
-                            Scheduled for ${a.date()}. Treatment is recorded on the day
-                            of the appointment.
-                        </p>
-                    </c:when>
-                    <c:otherwise>
-                        <form method="post" action="${ctx}/dentist/schedule">
-                            <input type="hidden" name="appointmentNo" value="${a.appointmentNo()}">
-                            <input type="hidden" name="date" value="${date}">
+                    <c:choose>
+                        <c:when test="${a.status() eq 'CONFIRMED' and a.date() gt today}">
+                            <%-- GAP-DEN-06: a visit that has not happened yet cannot be
+                                 completed. The service refuses it too; this simply does
+                                 not offer a button that would fail. --%>
+                            <p class="page-subtitle">
+                                Scheduled for ${a.date()}. Treatment is recorded on the day
+                                of the appointment.
+                            </p>
+                        </c:when>
+                        <c:otherwise>
+                            <form method="post" action="${ctx}/dentist/schedule">
+                                <input type="hidden" name="appointmentNo" value="${a.appointmentNo()}">
+                                <input type="hidden" name="date" value="${date}">
                             <div class="field">
                                 <label for="d-${a.appointmentNo()}">What you treated</label>
                                 <input type="text" id="d-${a.appointmentNo()}" name="diagnosis"
                                        placeholder="Diagnosis and what was done" required>
                             </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn">Record and complete</button>
-                            </div>
-                        </form>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+                            <%--
+                                GAP-DEN-13: no catalog treatment on this visit, so the
+                                visit has nothing to price it from — the dentist enters
+                                the price for this specific work here. Named-treatment
+                                visits price from the catalog and show no field.
+                            --%>
+                            <c:if test="${empty a.treatmentId}">
+                                <div class="field">
+                                    <label for="p-${a.appointmentNo()}">Price for this work (Rs)</label>
+                                    <input type="text" id="p-${a.appointmentNo()}" name="customPrice"
+                                           placeholder="e.g. 4500.00" required
+                                           pattern="[0-9]+(\.[0-9]{1,2})?"
+                                           title="A price in rupees, like 4500.00">
+                                </div>
+                            </c:if>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn">Record and complete</button>
+                                </div>
+                            </form>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </details>
         </c:forEach>
     </c:otherwise>
 </c:choose>
@@ -160,11 +198,12 @@
 </c:if>
 
 <%--
-    FR-DEN-15: the week ahead. The picker above answers "what is happening on a day I
-    name"; this section answers "what is coming", which a one-day view never could -
-    a booking made for tomorrow was invisible until tomorrow was picked.
+    FR-DEN-15: upcoming appointments for the next seven days. The picker above
+    answers "what is happening on a day I name"; this section answers "what is
+    coming", which a one-day view never could - a booking made for tomorrow was
+    invisible until tomorrow was picked.
 --%>
-<h2 class="page-title">The week ahead</h2>
+<h2 class="page-title">Upcoming appointments</h2>
 <c:choose>
     <c:when test="${not hasWeekAppointments}">
         <div class="card">

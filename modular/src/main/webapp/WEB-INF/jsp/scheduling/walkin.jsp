@@ -5,6 +5,20 @@
 <h1 class="page-title">Walk-in booking</h1>
 <p class="page-subtitle">Find or register the patient, then pick an open slot for them. <a href="${ctx}/help/reception">How does this screen work?</a></p>
 
+<%-- GAP-FTB-14: registering confirms in a sub-window; Close keeps the patient. --%>
+<c:if test="${param.registered == '1' and not empty patientId}">
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="walkin-registered-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="walkin-registered-title">Successfully registered</h3>
+            <p class="page-subtitle">The walk-in patient was added. Pick an open slot for them below.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/reception/walkin?patientId=<c:out value='${patientId}' />&date=${date}">Close</a>
+            </div>
+        </div>
+    </div>
+</c:if>
+
 <%-- ── Step 1: Find or register patient ───────────────────────────── --%>
 <div class="grid two">
     <div class="card">
@@ -113,6 +127,14 @@
             <a href="${ctx}/reception/dentists">See all consultation fees</a>.
         </div>
 
+        <%-- GAP-PAT-31: no active doctors at all reads differently from a full
+             day — say so plainly instead of only reporting the empty diary. --%>
+        <c:if test="${empty dentists}">
+            <div class="notice" style="margin-top:1rem;">
+                There are no available doctors today. Please check later or publish
+                availability first.
+            </div>
+        </c:if>
         <c:choose>
             <c:when test="${empty slots}">
                 <p class="page-subtitle" style="margin-top:1rem;">

@@ -40,6 +40,13 @@
                     <tr><th>Patient</th><td><c:out value="${bill.patientName()}" /></td></tr>
                     <tr><th>Dentist</th><td><c:out value="${bill.dentistName()}" /></td></tr>
                     <tr><th>Treatment</th><td><c:out value="${bill.treatmentName()}" /></td></tr>
+                    <%--
+                        GAP-PAT-30: what the dentist recorded, printed only on the
+                        patient's own copy — never where reception or admin reads it.
+                    --%>
+                    <c:if test="${showClinical and not empty bill.diagnosis()}">
+                        <tr><th>Dentist's note</th><td><c:out value="${bill.diagnosis()}" /></td></tr>
+                    </c:if>
                     <tr><th>Issued</th><td>${bill.issuedAt()}</td></tr>
                 </tbody>
             </table>

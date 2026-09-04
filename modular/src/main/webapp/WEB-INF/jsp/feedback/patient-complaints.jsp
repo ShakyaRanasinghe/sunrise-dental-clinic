@@ -13,9 +13,17 @@
 <p class="page-subtitle">If something was not right, tell us. It is read by the clinic's
     administrator.</p>
 
+<%-- GAP-FTB-14: sending confirms in a sub-window. --%>
 <c:if test="${not empty raised}">
-    <div class="notice">
-        Thank you. Your concern has been received and will be looked at.
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="raised-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="raised-title">Successfully sent</h3>
+            <p class="page-subtitle">Thank you. Your concern has been received and will be looked at.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/patient/complaints">Close</a>
+            </div>
+        </div>
     </div>
 </c:if>
 

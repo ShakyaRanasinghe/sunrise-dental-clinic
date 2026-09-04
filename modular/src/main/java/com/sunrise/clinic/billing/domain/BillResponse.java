@@ -25,14 +25,19 @@ public record BillResponse(String id,
                            BigDecimal discount,
                            BigDecimal tax,
                            BigDecimal total,
-                           Instant issuedAt) {
+                           Instant issuedAt,
+                           // GAP-PAT-30: the dentist's recorded description, for the
+                           // patient-facing receipt views only. Never rendered where
+                           // reception or admin can see it (receipt.jsp gates on the
+                           // viewer); the revenue split stays absent as before.
+                           String diagnosis) {
 
     public static BillResponse of(Bill bill, String patientName, String dentistName,
-                                  String treatmentName) {
+                                  String treatmentName, String diagnosis) {
         return new BillResponse(bill.getId(), bill.getAppointmentNo(),
                 patientName, dentistName, treatmentName,
                 bill.getConsultationFee(), bill.getTreatmentCost(), bill.getServiceCharge(),
                 bill.getDiscount(), bill.getTax(), bill.getTotal(),
-                bill.getIssuedAt());
+                bill.getIssuedAt(), diagnosis);
     }
 }

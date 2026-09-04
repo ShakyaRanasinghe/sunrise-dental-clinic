@@ -16,6 +16,7 @@
     <h2>Help topics</h2>
     <div class="help-toc__links">
         <a class="help-toc__item" href="#schedule">Your schedule</a>
+        <a class="help-toc__item" href="#profile">Your details</a>
         <a class="help-toc__item" href="#availability">Publishing availability</a>
         <a class="help-toc__item" href="#offered">Treatments you offer</a>
         <a class="help-toc__item" href="#treating">Recording treatment</a>
@@ -25,7 +26,12 @@
 
 <div class="card" id="schedule">
     <h2>Your schedule</h2>
-    <p>Open <a href="${ctx}/dentist/schedule">Schedule</a> to see today's patients first, finished visits folded below, and the week ahead last. An empty day says plainly that nothing is booked. Open an appointment to record the visit.</p>
+    <p>Open <a href="${ctx}/dentist/schedule">Schedule</a> to see today's patients first, finished visits folded below, and upcoming appointments last. An empty day says plainly that nothing is booked. Open an appointment to record the visit.</p>
+</div>
+
+<div class="card" id="profile">
+    <h2>Your details</h2>
+    <p>Open <strong>My details</strong> from the account menu to see your profile as patients see it. Choose <strong>Edit details</strong> to change your name, specialisation or phone number, then save — a confirmation window tells you it is stored. Your consultation fee is set by the administrator and cannot be changed here. The same screen states your share of each treatment price.</p>
 </div>
 
 <div class="card" id="availability">
@@ -37,11 +43,7 @@
         </li>
         <li class="help-steps__item">
             <span class="help-steps__no" aria-hidden="true">2</span>
-            <span class="help-steps__text">Set the <strong>phone number</strong> on the same screen to publish a public number on your "Our dentists" card, so patients can reach you directly.</span>
-        </li>
-        <li class="help-steps__item">
-            <span class="help-steps__no" aria-hidden="true">3</span>
-            <span class="help-steps__text">After saving, a confirmation window tells you the change is stored.</span>
+            <span class="help-steps__text">After saving, a confirmation window tells you the change is stored. Your public <strong>phone number</strong> lives on <strong>My details</strong>, not here.</span>
         </li>
     </ol>
 </div>

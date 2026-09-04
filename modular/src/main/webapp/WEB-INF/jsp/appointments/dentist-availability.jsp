@@ -11,47 +11,76 @@
 <h1 class="page-title">My availability</h1>
 <p class="page-subtitle">Time windows reception published for you. Patients can book the open slots shown here.</p>
 
-<%-- GAP-FTB-04: the dentist sets the phone number shown to patients on the public
-     "Our dentists" page. GAP-FTB-14: shown read-only with an Edit control that
-     reveals the field, and a saved change confirms in a sub-window. --%>
-<div class="card">
-    <h2>Contact details</h2>
-    <p class="page-subtitle">
-        This number is shown to patients on the clinic's public "Our dentists" page.
-        Leave it blank if the front desk should take calls instead.
-    </p>
-    <c:if test="${not empty phoneSaved}">
-        <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="phone-saved-title">
-            <div class="dialog">
-                <span class="success-tick" aria-hidden="true">&#10003;</span>
-                <h3 id="phone-saved-title">Successfully updated</h3>
-                <p class="page-subtitle">Your phone number was saved.</p>
-                <div class="form-actions">
-                    <a class="btn" href="${ctx}/dentist/availability">Close</a>
-                </div>
+<%-- The phone number used to be edited here (GAP-FTB-04); it now lives on the
+     dentist's profile (GAP-DEN-14), so this screen keeps only availability and
+     the offered-treatments list. --%>
+
+<%-- GAP-FTB-14: a flipped toggle confirms in a sub-window. --%>
+<c:if test="${param.toggled == '1'}">
+    <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="toggled-title">
+        <div class="dialog">
+            <span class="success-tick" aria-hidden="true">&#10003;</span>
+            <h3 id="toggled-title">Successfully updated</h3>
+            <p class="page-subtitle">Your offered treatments were saved.</p>
+            <div class="form-actions">
+                <a class="btn" href="${ctx}/dentist/availability#treatments">Close</a>
             </div>
         </div>
-    </c:if>
-    <div class="table-wrap">
-        <table>
-            <tbody>
-                <tr><th>Phone number</th><td><c:out value="${dentist.phone}" /></td></tr>
-            </tbody>
-        </table>
     </div>
-    <details class="confirm-cancel">
-        <summary class="btn small secondary">Edit</summary>
-        <div class="confirm-cancel__panel">
-            <form method="post" action="${pageContext.request.contextPath}/dentist/availability" class="form-row">
-                <input type="hidden" name="action" value="phone">
-                <label for="phone">Phone number</label>
-                <input type="text" id="phone" name="phone" value="${dentist.phone}"
-                       placeholder="+94 77 000 0000" size="24" />
-                <div class="form-actions"><button type="submit" class="btn">Save</button></div>
-            </form>
+</c:if>
+<%--
+    GAP-DEN-16: the time windows come first — they are what the dentist checks daily —
+    with the treatments list below. Each day headlines its booked/open totals so the
+    state of the day reads at a glance, and a window with nothing left shows Full.
+--%>
+<c:choose>
+    <c:when test="${not hasAvailability}">
+        <div class="card">
+            <p class="page-subtitle">No published availability yet. Reception will create time windows for you.</p>
         </div>
-    </details>
-</div>
+    </c:when>
+    <c:otherwise>
+        <c:forEach var="entry" items="${byDate}">
+            <c:set var="dayBooked" value="0" />
+            <c:set var="dayOpen" value="0" />
+            <c:forEach var="info" items="${entry.value}">
+                <c:set var="dayBooked" value="${dayBooked + info.booked()}" />
+                <c:set var="dayOpen" value="${dayOpen + info.open()}" />
+            </c:forEach>
+            <div class="card">
+                <h2>${entry.key}</h2>
+                <p class="page-subtitle">${dayBooked} booked &middot; ${dayOpen} still open</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>From</th><th>To</th><th>Open</th><th>Booked</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="info" items="${entry.value}">
+                                <tr>
+                                    <td>${info.startTime()}</td>
+                                    <td>${info.endTime()}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${info.open() gt 0}">
+                                                <span class="pill open">${info.open()} open</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="pill booked">Full</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td><span class="count">${info.booked()}</span></td>
+                                    <td><span class="count">${info.total()}</span></td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </c:forEach>
+    </c:otherwise>
+</c:choose>
 
 <%-- GAP-FTB-07: the treatments this dentist offers. A toggle list; patients booking
      with this dentist see only the checked treatments. "Other (describe…)" is always
@@ -84,38 +113,5 @@
         </form>
     </c:forEach>
 </div>
-
-<c:choose>
-    <c:when test="${not hasAvailability}">
-        <div class="card">
-            <p class="page-subtitle">No published availability yet. Reception will create time windows for you.</p>
-        </div>
-    </c:when>
-    <c:otherwise>
-        <c:forEach var="entry" items="${byDate}">
-            <div class="card">
-                <h2>${entry.key}</h2>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr><th>From</th><th>To</th><th>Open</th><th>Booked</th><th>Total</th></tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="info" items="${entry.value}">
-                                <tr>
-                                    <td>${info.startTime()}</td>
-                                    <td>${info.endTime()}</td>
-                                    <td><span class="count">${info.open()}</span></td>
-                                    <td><span class="count">${info.booked()}</span></td>
-                                    <td><span class="count">${info.total()}</span></td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </c:forEach>
-    </c:otherwise>
-</c:choose>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>

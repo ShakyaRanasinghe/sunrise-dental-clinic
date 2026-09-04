@@ -168,6 +168,9 @@ CREATE TABLE IF NOT EXISTS appointment (
     patient_reason   TEXT,                    -- GAP-FTB-06: the reason a patient states when
                                               -- they book "Other (describe…)" rather than a
                                               -- listed procedure. NULL for a named treatment.
+    custom_price     DECIMAL(10, 2) NULL,     -- GAP-DEN-13: the price the dentist enters when
+                                              -- completing a visit with no catalog treatment.
+                                              -- NULL for a named treatment (catalog rules).
     created_by_uid   VARCHAR(64),
     created_by_role  ENUM('PATIENT','RECEPTIONIST','DENTIST','ADMIN'),
     created_at       TIMESTAMP   NULL,

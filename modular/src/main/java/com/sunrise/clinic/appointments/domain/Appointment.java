@@ -2,6 +2,7 @@ package com.sunrise.clinic.appointments.domain;
 
 import com.sunrise.clinic.access.domain.Role;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -38,6 +39,9 @@ public class Appointment {
      * listed procedure. GAP-FTB-06. NULL for a named treatment.
      */
     private String patientReason;
+    /** GAP-DEN-13: the price the dentist enters when completing a visit with no
+     * catalog treatment. NULL for a named treatment (the catalog rules). */
+    private BigDecimal customPrice;
     private String createdByUid;
     private Role createdByRole;
     private Instant createdAt;
@@ -50,6 +54,10 @@ public class Appointment {
     }
 
     public Appointment(String appointmentNo, String patientId, String dentistId, String slotId, String treatmentId, LocalDate date, LocalTime time, AppointmentStatus status, String diagnosis, String patientReason, String createdByUid, Role createdByRole, Instant createdAt) {
+        this(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, patientReason, null, createdByUid, createdByRole, createdAt);
+    }
+
+    public Appointment(String appointmentNo, String patientId, String dentistId, String slotId, String treatmentId, LocalDate date, LocalTime time, AppointmentStatus status, String diagnosis, String patientReason, BigDecimal customPrice, String createdByUid, Role createdByRole, Instant createdAt) {
         this.appointmentNo = appointmentNo;
         this.patientId = patientId;
         this.dentistId = dentistId;
@@ -60,6 +68,7 @@ public class Appointment {
         this.status = status;
         this.diagnosis = diagnosis;
         this.patientReason = patientReason;
+        this.customPrice = customPrice;
         this.createdByUid = createdByUid;
         this.createdByRole = createdByRole;
         this.createdAt = createdAt;
@@ -145,6 +154,14 @@ public class Appointment {
         this.patientReason = patientReason;
     }
 
+    public BigDecimal getCustomPrice() {
+        return customPrice;
+    }
+
+    public void setCustomPrice(BigDecimal customPrice) {
+        this.customPrice = customPrice;
+    }
+
     public String getCreatedByUid() {
         return createdByUid;
     }
@@ -195,8 +212,21 @@ public class Appointment {
      *         completing is legal - a cancelled or already-billed appointment
      */
     public void complete(String diagnosis) {
+        complete(diagnosis, null);
+    }
+
+    /**
+     * Record the diagnosis and mark the visit done, carrying the dentist-entered
+     * price for work with no catalog treatment (GAP-DEN-13). A price on a visit
+     * that names a treatment is dropped — the catalog rules there.
+     *
+     * @throws IllegalStateException if the appointment is not in a status from which
+     *         completing is legal - a cancelled or already-billed appointment
+     */
+    public void complete(String diagnosis, BigDecimal customPrice) {
         moveTo(AppointmentStatus.COMPLETED);
         this.diagnosis = diagnosis == null || diagnosis.isBlank() ? null : diagnosis.trim();
+        this.customPrice = treatmentId == null ? customPrice : null;
     }
 
     /**
@@ -256,6 +286,7 @@ public class Appointment {
         private AppointmentStatus status = AppointmentStatus.CONFIRMED;
         private String diagnosis;
         private String patientReason;
+        private BigDecimal customPrice;
         private String createdByUid;
         private Role createdByRole;
         private Instant createdAt;
@@ -310,6 +341,11 @@ public class Appointment {
             return this;
         }
 
+        public Builder customPrice(BigDecimal customPrice) {
+            this.customPrice = customPrice;
+            return this;
+        }
+
         public Builder createdByUid(String createdByUid) {
             this.createdByUid = createdByUid;
             return this;
@@ -326,7 +362,7 @@ public class Appointment {
         }
 
         public Appointment build() {
-            return new Appointment(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, patientReason, createdByUid, createdByRole, createdAt);
+            return new Appointment(appointmentNo, patientId, dentistId, slotId, treatmentId, date, time, status, diagnosis, patientReason, customPrice, createdByUid, createdByRole, createdAt);
         }
     }
 }

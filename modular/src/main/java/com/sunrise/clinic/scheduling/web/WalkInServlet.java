@@ -39,7 +39,7 @@ public class WalkInServlet extends PageServlet {
             request.setAttribute("dentists",
                     app().referenceService().activeDentists(currentUser(request)));
             request.setAttribute("serviceCharge",
-                    app().config().getDecimal("clinic.billing.service-charge", "200"));
+                    app().clinicIdentity().serviceCharge());
             request.setAttribute("treatments",
                     app().referenceService().activeTreatments(currentUser(request)));
 
@@ -76,8 +76,9 @@ public class WalkInServlet extends PageServlet {
                             field(request, "address"),
                             field(request, "email"),
                             field(request, "dob")));
+            // GAP-FTB-14: confirm the registration in a sub-window on return.
             redirect(request, response,
-                    "/reception/walkin?patientId=" + created.patient().id());
+                    "/reception/walkin?patientId=" + created.patient().id() + "&registered=1");
         });
     }
 }

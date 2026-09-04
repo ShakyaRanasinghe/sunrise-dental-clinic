@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 
@@ -61,9 +62,26 @@ public class DentistScheduleServlet extends PageServlet {
             String appointmentNo = requiredField(request, "appointmentNo", "Appointment number");
             LocalDate date = dateField(request, "date", LocalDate.now());
             app().appointmentService().complete(currentUser(request), appointmentNo,
-                    requiredField(request, "diagnosis", "Diagnosis"));
+                    requiredField(request, "diagnosis", "Diagnosis"),
+                    optionalPrice(request));
             redirect(request, response,
                     "/dentist/schedule?date=" + date + "&completed=" + appointmentNo);
         });
+    }
+
+    /**
+     * The dentist-entered price for treatment-less work (GAP-DEN-13), blank when the
+     * visit names a treatment. The service requires it exactly where it matters.
+     */
+    private static BigDecimal optionalPrice(HttpServletRequest request) {
+        String raw = request.getParameter("customPrice");
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(raw.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Price must be a number, like 4500.00");
+        }
     }
 }

@@ -25,6 +25,10 @@ public record AppointmentResponse(String appointmentNo,
                                   String slotId,
                                   String treatmentId,
                                   String treatmentName,
+                                  // GAP-REC-13: the patient's stated reason for an "Other"
+                                  // booking — non-clinical, so the reception type may carry
+                                  // it as the treatment fallback.
+                                  String patientReason,
                                   LocalDate date,
                                   LocalTime time,
                                   AppointmentStatus status) {
@@ -37,6 +41,7 @@ public record AppointmentResponse(String appointmentNo,
                 appointment.getDentistId(), dentistName,
                 appointment.getSlotId(),
                 appointment.getTreatmentId(), treatmentName,
+                appointment.getPatientReason(),
                 appointment.getDate(), appointment.getTime(),
                 appointment.getStatus());
     }

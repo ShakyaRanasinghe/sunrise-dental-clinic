@@ -40,7 +40,7 @@ public class BookAppointmentServlet extends PageServlet {
             request.setAttribute("date", date);
             request.setAttribute("patientId", patientId);
             request.setAttribute("serviceCharge",
-                    app().config().getDecimal("clinic.billing.service-charge", "200"));
+                    app().clinicIdentity().serviceCharge());
 
             // FR-PAT-17: availability overview when no dentist is selected yet.
             if (dentistId == null || dentistId.isBlank()) {

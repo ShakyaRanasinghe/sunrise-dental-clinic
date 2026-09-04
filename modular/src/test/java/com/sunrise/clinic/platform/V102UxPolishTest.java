@@ -32,6 +32,55 @@ class V102UxPolishTest {
                 "the removed call-to-action must leave no class behind");
     }
 
+    // Dentist cards fill evenly: the grey body stretches so a dentist without a
+    // phone number never ends with a white stump.
+    @Test
+    void dentistCardsFillEvenly() {
+        String css = read(CSS);
+        assertTrue(css.contains(".dentist-card__body"),
+                "the card body style must exist");
+        int card = css.indexOf(".dentist-card {");
+        assertTrue(card >= 0 && css.indexOf("flex-direction: column", card) > card,
+                "the card must stack as a flex column");
+        int body = css.indexOf(".dentist-card__body {");
+        assertTrue(body >= 0 && css.indexOf("flex: 1", body) > body,
+                "the grey body must stretch to fill short cards");
+    }
+
+    // Public dentist cards: below the publishable threshold no rating metric
+    // shows at all — neither stars nor a "more reviews needed" hint.
+    @Test
+    void unratedDentistsShowNoRatingHint() {
+        String home = read(JSP.resolve("access/home.jsp"));
+        assertFalse(home.contains("needed to show rating"),
+                "a dentist without a publishable rating must show no rating hint");
+        assertTrue(home.contains("rating.isPublishable()"),
+                "dentists with a publishable rating must still show it");
+    }
+
+    // Compact register search: no heading, no guide texts, tight card.
+    @Test
+    void registerSearchIsCompact() {
+        String page = read(JSP.resolve("patients/register.jsp"));
+        assertFalse(page.contains("One field covers all three"),
+                "the search guide text must be gone");
+        assertFalse(page.contains("Name, contact number or email"),
+                "the long field label must be gone");
+        assertTrue(page.contains("search-card"),
+                "the search card must use the compact style");
+    }
+
+    // GAP-PAT-31: booking with nothing to offer says so instead of blank.
+    @Test
+    void bookingNamesNoDoctors() {
+        String book = read(JSP.resolve("appointments/book.jsp"));
+        assertTrue(book.contains("No doctors available"),
+                "an empty overview must render a no-doctors card");
+        String walkin = read(JSP.resolve("scheduling/walkin.jsp"));
+        assertTrue(walkin.contains("There are no available doctors today"),
+                "walk-in with no active doctors must say so");
+    }
+
     // GAP-PAT-23: dentist cards render whole, with no expand toggle.
     @Test
     void dentistCardsAreFullyDisplayed() {
@@ -198,10 +247,153 @@ class V102UxPolishTest {
                 "patients/profile.jsp",
                 "appointments/dentist-availability.jsp",
                 "reporting/clinic-identity.jsp",
-                "reporting/treatments.jsp"}) {
-            assertTrue(read(JSP.resolve(page)).contains("Successfully updated"),
+                "reporting/treatments.jsp",
+                "appointments/patient-home.jsp",
+                "appointments/reception-day.jsp",
+                "appointments/dentist-schedule.jsp",
+                "patients/register.jsp",
+                "feedback/patient-complaints.jsp",
+                "feedback/admin-complaints.jsp",
+                "scheduling/availability.jsp",
+                "scheduling/walkin.jsp",
+                "reporting/accounts.jsp"}) {
+            assertTrue(read(JSP.resolve(page)).contains("sub-window open"),
                     page + " must confirm a save in a sub-window");
         }
+    }
+
+    // The schedule's coming-week section reads "Upcoming appointments".
+    @Test
+    void scheduleWeekSectionIsPlainlyLabelled() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("Upcoming appointments"),
+                "the coming-week section must say what it is");
+        assertFalse(schedule.contains("<h2 class=\"page-title\">The week ahead</h2>"),
+                "the vague heading must be gone");
+    }
+
+    // GAP-DEN-13: completing a treatment-less visit asks the dentist for the price.
+    @Test
+    void scheduleAsksPriceForTreatmentLessVisits() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("name=\"customPrice\""),
+                "the record form must accept the dentist-entered price");
+        assertTrue(schedule.contains("empty a.treatmentId"),
+                "the price field must show only where no catalog treatment exists");
+    }
+
+    // GAP-REC-13: desk screens fall back to the patient's stated reason.
+    @Test
+    void deskScreensFallBackToPatientReason() {
+        assertTrue(read(JSP.resolve("billing/billing.jsp")).contains("patientReason()"),
+                "the billing list must name the reason on treatment-less rows");
+    }
+
+    // GAP-PAT-30: the patient's own receipt views show the dentist's description,
+    // gated so reception and admin never see it on the shared receipt page.
+    @Test
+    void patientReceiptViewsShowDentistNote() {
+        String receipt = read(JSP.resolve("billing/receipt.jsp"));
+        assertTrue(receipt.contains("showClinical"),
+                "the shared receipt must gate the clinical row on the viewer");
+        assertTrue(receipt.contains("bill.diagnosis()"),
+                "the patient's copy must print the dentist's note");
+        assertTrue(read(JSP.resolve("appointments/patient-home.jsp")).contains("a.diagnosis()"),
+                "the dashboard receipt view must print the dentist's note");
+    }
+
+    // The phone editor lives on the dentist profile now, not on availability.
+    @Test
+    void availabilityCarriesNoPhoneCard() {
+        String page = read(JSP.resolve("appointments/dentist-availability.jsp"));
+        assertFalse(page.contains("Contact details"),
+                "the phone card moved to My details");
+        assertFalse(page.contains("name=\"phone\""),
+                "no phone field may remain on the availability screen");
+    }
+
+    // GAP-DEN-14: the dentist's own profile — read-only with an Edit gate that
+    // tests the Boolean (cf. the old profile bug), fee view-only, saves confirm.
+    @Test
+    void dentistProfileIsReadOnlyWithAnEditGate() {
+        String profile = read(JSP.resolve("scheduling/dentist-profile.jsp"));
+        assertTrue(profile.contains("<c:when test=\"${editing}\">"),
+                "the edit form must render only when editing is true");
+        assertFalse(profile.contains("not empty editing"),
+                "`not empty` on a Boolean never gates anything");
+        assertTrue(profile.contains("Successfully updated"),
+                "a saved profile must confirm in a sub-window");
+        assertTrue(read(JSP.resolve("shared/header.jspf")).contains("/dentist/profile"),
+                "the account menu must offer the dentist My details");
+        assertTrue(read(WEB_XML).contains("<url-pattern>/dentist/profile</url-pattern>"),
+                "web.xml must map the dentist profile");
+    }
+
+    // GAP-ADM-10: the Pricing tab exists, is wired, and carries no reception dial.
+    @Test
+    void pricingTabExists() {
+        assertTrue(read(JSP.resolve("reporting/pricing.jsp")).contains("dentistSharePercent"),
+                "the Pricing tab must edit the dentist share");
+        assertTrue(read(JSP.resolve("reporting/pricing.jsp")).contains("Successfully updated"),
+                "a saved pricing must confirm in a sub-window");
+        assertTrue(read(WEB_XML).contains("<url-pattern>/admin/pricing</url-pattern>"),
+                "web.xml must map the Pricing tab");
+    }
+
+    // GAP-ADM-10: reception earns no commission, so Reports shows no trace.
+    @Test
+    void reportsCarryNoReceptionMetric() {
+        String reports = read(JSP.resolve("reporting/reports.jsp"));
+        assertFalse(reports.contains("Reception handling"),
+                "the handling stat must be gone");
+        assertFalse(reports.contains("Per receptionist"),
+                "the per-receptionist table must be gone");
+    }
+
+    // GAP-DEN-15: the dentist's profile states the configured share.
+    @Test
+    void dentistProfileStatesShare() {
+        assertTrue(read(JSP.resolve("scheduling/dentist-profile.jsp"))
+                        .contains("dentistSharePercent"),
+                "the dentist profile must state the configured share");
+    }
+
+    // GAP-DEN-16: windows first with day totals and Full pills, treatments below.
+    @Test
+    void availabilityLeadsWithFriendlyWindows() {
+        String page = read(JSP.resolve("appointments/dentist-availability.jsp"));
+        int windows = page.indexOf("still open");
+        int treatments = page.indexOf("Treatments I offer");
+        assertTrue(windows >= 0 && windows < treatments,
+                "the time windows must come before the treatments list");
+        assertTrue(page.contains("pill open") && page.contains(">Full<"),
+                "open windows read as pills and exhausted ones as Full");
+    }
+
+    // GAP-DEN-12: pending patients are expandable cards; the record form lives
+    // only inside the opened card, with the first one open.
+    @Test
+    void schedulePendingPatientsAreExpandable() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("<details class=\"card pending-list\""),
+                "each pending patient must be an expandable card");
+        assertTrue(schedule.contains("pending-list__body"),
+                "details and form must render inside the opened card only");
+        assertTrue(read(CSS).contains(".pending-list"),
+                "the expandable cards need their style");
+    }
+
+    // GAP-FTB-14: the two silent updates now carry a confirmation flag.
+    @Test
+    void silentUpdatesCarryConfirmationFlags() {
+        String availability = read(JAVA.resolve(
+                "com/sunrise/clinic/appointments/web/DentistAvailabilityServlet.java"));
+        assertTrue(availability.contains("toggled=1"),
+                "a flipped treatment toggle must redirect with a confirmation flag");
+        String walkin = read(JAVA.resolve(
+                "com/sunrise/clinic/scheduling/web/WalkInServlet.java"));
+        assertTrue(walkin.contains("registered=1"),
+                "a walk-in registration must redirect with a confirmation flag");
     }
 
     private static String read(Path file) {
