@@ -70,6 +70,12 @@ class DentistProfileTest {
     }
 
     @Test
+    void shareDefaultsToSixtyPercent() {
+        // The 3-arg service carries the shipped default until wired live.
+        assertEquals(60, reference.dentistSharePercent());
+    }
+
+    @Test
     void unknownAccountHasNoProfile() {
         assertTrue(reference.ownProfile("u-nobody").isEmpty());
         assertThrows(ResourceNotFoundException.class, () ->

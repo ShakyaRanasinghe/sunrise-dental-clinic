@@ -54,8 +54,11 @@ import java.math.RoundingMode;
  */
 public class DefaultRevenueSplitStrategy implements RevenueSplitStrategy {
 
-    private final BigDecimal dentistTreatmentShare;
-    private final BigDecimal receptionistServiceShare;
+    // GAP-ADM-10: suppliers, not fixed values, so a Pricing-tab save applies to the
+    // next bill without restart. Each read is validated — a bad row falls back rather
+    // than mispricing a bill.
+    private final java.util.function.Supplier<BigDecimal> dentistTreatmentShare;
+    private final java.util.function.Supplier<BigDecimal> receptionistServiceShare;
 
     /**
      * @param dentistTreatmentShare    the dentist's fraction of the treatment cost, 0..1
@@ -65,14 +68,22 @@ public class DefaultRevenueSplitStrategy implements RevenueSplitStrategy {
      */
     public DefaultRevenueSplitStrategy(BigDecimal dentistTreatmentShare,
                                        BigDecimal receptionistServiceShare) {
-        this.dentistTreatmentShare = requireFraction(dentistTreatmentShare, "dentist treatment");
-        this.receptionistServiceShare = requireFraction(receptionistServiceShare, "receptionist service");
+        this(() -> dentistTreatmentShare, () -> receptionistServiceShare);
+    }
+
+    public DefaultRevenueSplitStrategy(
+            java.util.function.Supplier<BigDecimal> dentistTreatmentShare,
+            java.util.function.Supplier<BigDecimal> receptionistServiceShare) {
+        this.dentistTreatmentShare = dentistTreatmentShare;
+        this.receptionistServiceShare = receptionistServiceShare;
     }
 
     @Override
     public RevenueSplit split(BillBreakdown breakdown) {
-        BigDecimal dentistFromTreatment = share(breakdown.treatmentCost(), dentistTreatmentShare);
-        BigDecimal receptionistEarning = share(breakdown.serviceCharge(), receptionistServiceShare);
+        BigDecimal dentistFromTreatment =
+                share(breakdown.treatmentCost(), fraction(dentistTreatmentShare, "0.60"));
+        BigDecimal receptionistEarning =
+                share(breakdown.serviceCharge(), fraction(receptionistServiceShare, "0"));
 
         BigDecimal dentistEarning = breakdown.consultationFee().add(dentistFromTreatment);
         // Exactly what is left of each charge, so the three always sum to the bill.
@@ -86,13 +97,20 @@ public class DefaultRevenueSplitStrategy implements RevenueSplitStrategy {
         return amount.multiply(fraction).setScale(BillBreakdown.SCALE, RoundingMode.HALF_UP);
     }
 
-    private static BigDecimal requireFraction(BigDecimal value, String what) {
-        if (value == null
-                || value.compareTo(BigDecimal.ZERO) < 0
-                || value.compareTo(BigDecimal.ONE) > 0) {
-            throw new IllegalArgumentException(
-                    "The " + what + " share must be between 0 and 1, not " + value);
+    /** The supplied fraction, or the fallback when the row is missing or corrupt. */
+    private static BigDecimal fraction(java.util.function.Supplier<BigDecimal> read,
+                                       String fallback) {
+        try {
+            BigDecimal value = read.get();
+            if (value == null
+                    || value.compareTo(BigDecimal.ZERO) < 0
+                    || value.compareTo(BigDecimal.ONE) > 0) {
+                return new BigDecimal(fallback);
+            }
+            return value;
+        } catch (RuntimeException e) {
+            return new BigDecimal(fallback);
         }
-        return value;
     }
+
 }

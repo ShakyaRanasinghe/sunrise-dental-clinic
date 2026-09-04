@@ -76,6 +76,12 @@
                             <tr><th>Phone number</th><td><c:out value="${profile.phone()}" /></td></tr>
                             <tr><th>Consultation fee</th><td>Rs <fmt:formatNumber value="${profile.consultationFee()}"
                                     minFractionDigits="2" maxFractionDigits="2" /></td></tr>
+                            <%--
+                                GAP-DEN-15: the configured share, stated plainly. A rate
+                                only — never an earnings figure (srs-dentist.md §9).
+                            --%>
+                            <tr><th>Your share</th><td>You receive ${dentistSharePercent}% of each
+                                treatment price, plus your full consultation fee.</td></tr>
                         </tbody>
                     </table>
                 </div>

@@ -98,13 +98,7 @@
                 <span class="stat__share"><fmt:formatNumber value="${report.income().shareOf(report.income().clinicEarnings())}"
                         maxFractionDigits="0" />% of takings</span>
             </div>
-            <div class="stat stat--reception">
-                <span class="stat__label">Reception handling</span>
-                <span class="stat__value money"><fmt:formatNumber value="${report.income().receptionistEarnings()}"
-                        minFractionDigits="2" maxFractionDigits="2" /></span>
-                <span class="stat__share"><fmt:formatNumber value="${report.income().shareOf(report.income().receptionistEarnings())}"
-                        maxFractionDigits="0" />% of takings</span>
-            </div>
+            <%-- GAP-ADM-10: reception earns no commission, so no handling metric. --%>
             <div class="stat stat--total">
                 <span class="stat__label">Gross takings</span>
                 <span class="stat__value money"><fmt:formatNumber value="${report.income().gross()}"
@@ -160,32 +154,7 @@
             </p>
         </div>
 
-        <div class="card">
-            <h2>Per receptionist</h2>
-            <c:choose>
-                <c:when test="${empty report.byReceptionist()}">
-                    <p class="page-subtitle">No bills in this period.</p>
-                </c:when>
-                <c:otherwise>
-                    <div class="person-list">
-                        <c:forEach var="row" items="${report.byReceptionist()}">
-                            <div class="person-row">
-                                <div class="person-row__main">
-                                    <span class="person-row__name"><c:out value="${row.name()}" /></span>
-                                    <span class="person-row__meta">${row.count()} bill${row.count() eq 1 ? '' : 's'}</span>
-                                </div>
-                                <span class="person-row__value money"><fmt:formatNumber value="${row.amount()}"
-                                        minFractionDigits="2" maxFractionDigits="2" /></span>
-                            </div>
-                        </c:forEach>
-                    </div>
-                </c:otherwise>
-            </c:choose>
-            <p class="page-subtitle">
-                <strong>Supports:</strong> how the front-desk workload divides. The earned
-                column is zero unless the clinic pays handling commission.
-            </p>
-        </div>
+        <%-- GAP-ADM-10: the per-receptionist earnings table is gone with the metric. --%>
     </div>
 
     <div class="card">

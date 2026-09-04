@@ -121,6 +121,15 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       header menu entry; `web.xml` mapping; `servlets.md` 41 servlets / 46 routes.
       347 green, verified live.
 
+- [x] **GAP-DEN-15** — a dentist never sees the revenue share the administrator configured:
+      the dashboard shows the consultation fee but nothing says what fraction of each
+      treatment price comes to them.
+      **Accept:** the dentist's details screen states the configured share (e.g. "You
+      receive 60% of each treatment price, plus your full consultation fee"), reading
+      the live setting.
+      **Done:** profile prints the live share (`ReferenceService.dentistSharePercent`,
+      rate only per §9). Verified live (60→70→60 with no restart).
+
 - [x] **GAP-DEN-13** — completing an **"Other (describe…)"** visit records the diagnosis but
       **no price**: there is no catalog treatment to price it from, so the visit can never
       be billed.
@@ -330,6 +339,23 @@ live, and each SRS row is marked **Fixed**.
       day-view cancels + walk-in register (`?registered=1`) + published availability,
       admin clinic identity + treatment catalogue (`?saved=1`) + resolved concerns +
       issued accounts. Warnings and errors stay inline. 332 tests green.
+
+---
+
+## Admin — `srs-admin.md`
+
+- [x] **GAP-ADM-10** — the revenue dials live in `clinic.properties`/env and need a rebuild +
+      restart to change: the administrator cannot configure the dentist's treatment-share
+      percentage (or the service charge) from the dashboard, and the Reports screen still
+      shows a "Reception handling" metric for a commission that is always zero.
+      **Accept:** a **Pricing** tab (`/admin/pricing`) edits the dentist share % and the
+      service charge with validation, applying to the next bill without restart; the
+      reception metric is gone from Reports (dashboard and CSV); historical bills keep
+      the split they were issued with.
+      **Done:** `PricingServlet` + `pricing.jsp` + nav (42 servlets/47 routes); keys in
+      `clinic_setting` via `ClinicIdentityService` (percent↔fraction, validated);
+      strategy + charge read per bill (supplier wiring); reception stat/table/CSV gone.
+      Verified live (70% bill split 4650/1550/0, then restored). 355 tests green.
 
 ---
 

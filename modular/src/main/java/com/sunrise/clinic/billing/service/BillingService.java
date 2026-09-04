@@ -62,7 +62,8 @@ public class BillingService {
     private final ClinicAccess clinicAccess;
     private final BillingStrategy pricing;
     private final RevenueSplitStrategy revenueSplit;
-    private final BigDecimal serviceCharge;
+    // GAP-ADM-10: read per bill, so a Pricing-tab save applies without restart.
+    private final java.util.function.Supplier<BigDecimal> serviceCharge;
     private final TransactionRunner transaction;
 
     public BillingService(BillRepository bills,
@@ -73,13 +74,25 @@ public class BillingService {
                           RevenueSplitStrategy revenueSplit,
                           BigDecimal serviceCharge,
                           TransactionRunner transaction) {
+        this(bills, appointments, reference, clinicAccess, pricing, revenueSplit,
+                () -> serviceCharge, transaction);
+    }
+
+    public BillingService(BillRepository bills,
+                          AppointmentService appointments,
+                          ReferenceService reference,
+                          ClinicAccess clinicAccess,
+                          BillingStrategy pricing,
+                          RevenueSplitStrategy revenueSplit,
+                          java.util.function.Supplier<BigDecimal> serviceCharge,
+                          TransactionRunner transaction) {
         this.bills = bills;
         this.appointments = appointments;
         this.reference = reference;
         this.clinicAccess = clinicAccess;
         this.pricing = pricing;
         this.revenueSplit = revenueSplit;
-        this.serviceCharge = BillBreakdown.money(serviceCharge);
+        this.serviceCharge = serviceCharge;
         this.transaction = transaction;
     }
 
@@ -117,7 +130,8 @@ public class BillingService {
         Dentist dentist = reference.requireDentist(appointment.getDentistId());
 
         BillBreakdown breakdown = pricing.calculate(
-                dentist.getConsultationFee(), treatmentCost(appointment), serviceCharge);
+                dentist.getConsultationFee(), treatmentCost(appointment),
+                BillBreakdown.money(serviceCharge.get()));
         RevenueSplit split = revenueSplit.split(breakdown);
 
         Bill bill = Bill.builder()

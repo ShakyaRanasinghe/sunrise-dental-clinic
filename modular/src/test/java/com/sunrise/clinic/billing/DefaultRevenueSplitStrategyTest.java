@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Moved from {@code layered/} in step 5, rewritten for {@code BigDecimal}, and revised when
@@ -132,29 +131,16 @@ class DefaultRevenueSplitStrategyTest {
     // --- misconfiguration ----------------------------------------------
 
     @Test
-    void aShareOutsideZeroToOneIsRefusedAtConstruction() {
-        // A misconfigured share would attribute more than the bill, silently, on every bill
-        // until somebody reconciled the ledger.
-        assertThrows(IllegalArgumentException.class,
-                () -> new DefaultRevenueSplitStrategy(new BigDecimal("1.5"), BigDecimal.ZERO));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DefaultRevenueSplitStrategy(new BigDecimal("-0.1"), BigDecimal.ZERO));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DefaultRevenueSplitStrategy(new BigDecimal("0.6"), new BigDecimal("1.01")));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DefaultRevenueSplitStrategy(new BigDecimal("0.6"), null));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DefaultRevenueSplitStrategy(null, BigDecimal.ZERO));
-    }
+    void aCorruptLiveShareFallsBackInsteadOfMispricing() {
+        // GAP-ADM-10: the dials are read live from the settings table, so a corrupt
+        // row must fall back to the shipped defaults rather than misprice a bill —
+        // and validation moved to the Pricing tab, which refuses bad values outright.
+        DefaultRevenueSplitStrategy corrupt = new DefaultRevenueSplitStrategy(
+                () -> new BigDecimal("1.5"), () -> null);
+        RevenueSplit split = corrupt.split(breakdown("1500.00", "3500.00", "200.00"));
 
-    @Test
-    void theErrorNamesWhichShareIsWrong() {
-        // Two dials, so "the share must be between 0 and 1" would leave the reader to
-        // guess which property to fix.
-        assertEquals("The receptionist service share must be between 0 and 1, not 2",
-                assertThrows(IllegalArgumentException.class,
-                        () -> new DefaultRevenueSplitStrategy(new BigDecimal("0.6"),
-                                new BigDecimal("2"))).getMessage());
+        assertEquals(new BigDecimal("3600.00"), split.dentistEarning());
+        assertEquals(new BigDecimal("0.00"), split.receptionistEarning());
     }
 
     @Test

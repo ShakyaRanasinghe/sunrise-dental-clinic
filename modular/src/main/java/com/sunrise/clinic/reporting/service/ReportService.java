@@ -85,13 +85,12 @@ public class ReportService {
 
         csv.append("Summary\n");
         csv.append("Bills issued,Gross takings,Dentist earnings,Clinic earnings,")
-           .append("Receptionist earnings,Patients seen,Registered patients,")
+           .append("Patients seen,Registered patients,")
            .append("Attended,No-shows,No-show rate %\n");
         csv.append(report.income().bills()).append(',')
            .append(report.income().gross()).append(',')
            .append(report.income().dentistEarnings()).append(',')
            .append(report.income().clinicEarnings()).append(',')
-           .append(report.income().receptionistEarnings()).append(',')
            .append(report.patientsSeen()).append(',')
            .append(report.registeredPatients()).append(',')
            .append(report.attendance().attended()).append(',')
@@ -99,7 +98,7 @@ public class ReportService {
            .append(report.attendance().noShowRate()).append("\n\n");
 
         appendEarnings(csv, "Earnings by dentist", report.byDentist());
-        appendEarnings(csv, "Earnings by receptionist", report.byReceptionist());
+        // GAP-ADM-10: no reception commission, so no reception section.
 
         csv.append("Daily takings\nDate,Bills,Amount\n");
         for (DailyPoint point : report.takings()) {

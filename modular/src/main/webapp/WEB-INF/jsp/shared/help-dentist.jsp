@@ -31,7 +31,7 @@
 
 <div class="card" id="profile">
     <h2>Your details</h2>
-    <p>Open <strong>My details</strong> from the account menu to see your profile as patients see it. Choose <strong>Edit details</strong> to change your name, specialisation or phone number, then save — a confirmation window tells you it is stored. Your consultation fee is set by the administrator and cannot be changed here.</p>
+    <p>Open <strong>My details</strong> from the account menu to see your profile as patients see it. Choose <strong>Edit details</strong> to change your name, specialisation or phone number, then save — a confirmation window tells you it is stored. Your consultation fee is set by the administrator and cannot be changed here. The same screen states your share of each treatment price.</p>
 </div>
 
 <div class="card" id="availability">

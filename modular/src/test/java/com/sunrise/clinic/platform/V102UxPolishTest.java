@@ -281,6 +281,35 @@ class V102UxPolishTest {
                 "web.xml must map the dentist profile");
     }
 
+    // GAP-ADM-10: the Pricing tab exists, is wired, and carries no reception dial.
+    @Test
+    void pricingTabExists() {
+        assertTrue(read(JSP.resolve("reporting/pricing.jsp")).contains("dentistSharePercent"),
+                "the Pricing tab must edit the dentist share");
+        assertTrue(read(JSP.resolve("reporting/pricing.jsp")).contains("Successfully updated"),
+                "a saved pricing must confirm in a sub-window");
+        assertTrue(read(WEB_XML).contains("<url-pattern>/admin/pricing</url-pattern>"),
+                "web.xml must map the Pricing tab");
+    }
+
+    // GAP-ADM-10: reception earns no commission, so Reports shows no trace.
+    @Test
+    void reportsCarryNoReceptionMetric() {
+        String reports = read(JSP.resolve("reporting/reports.jsp"));
+        assertFalse(reports.contains("Reception handling"),
+                "the handling stat must be gone");
+        assertFalse(reports.contains("Per receptionist"),
+                "the per-receptionist table must be gone");
+    }
+
+    // GAP-DEN-15: the dentist's profile states the configured share.
+    @Test
+    void dentistProfileStatesShare() {
+        assertTrue(read(JSP.resolve("scheduling/dentist-profile.jsp"))
+                        .contains("dentistSharePercent"),
+                "the dentist profile must state the configured share");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

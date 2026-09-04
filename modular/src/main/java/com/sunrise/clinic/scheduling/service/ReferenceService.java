@@ -36,12 +36,38 @@ public class ReferenceService {
     private final DentistRepository dentists;
     private final TreatmentRepository treatments;
     private final DentistTreatmentRepository dentistTreatments;
+    // GAP-DEN-15: read per call, so the profile always states the live share.
+    private final java.util.function.Supplier<java.math.BigDecimal> dentistShare;
 
     public ReferenceService(DentistRepository dentists, TreatmentRepository treatments,
                             DentistTreatmentRepository dentistTreatments) {
+        this(dentists, treatments, dentistTreatments, () -> new java.math.BigDecimal("0.60"));
+    }
+
+    public ReferenceService(DentistRepository dentists, TreatmentRepository treatments,
+                            DentistTreatmentRepository dentistTreatments,
+                            java.util.function.Supplier<java.math.BigDecimal> dentistShare) {
         this.dentists = dentists;
         this.treatments = treatments;
         this.dentistTreatments = dentistTreatments;
+        this.dentistShare = dentistShare;
+    }
+
+    /**
+     * The configured dentist share as a whole percent (GAP-DEN-15) — "60", not
+     * "0.60" — for the dentist's own profile screen. A rate, never an earnings
+     * figure (srs-dentist.md §9).
+     */
+    public int dentistSharePercent() {
+        try {
+            java.math.BigDecimal share = dentistShare.get();
+            if (share == null) {
+                return 60;
+            }
+            return share.multiply(new java.math.BigDecimal("100")).intValue();
+        } catch (RuntimeException e) {
+            return 60;
+        }
     }
 
     /** Dentists currently practising, for a booking screen. */

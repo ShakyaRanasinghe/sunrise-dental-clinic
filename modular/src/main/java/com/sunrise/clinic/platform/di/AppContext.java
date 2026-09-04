@@ -174,7 +174,12 @@ public class AppContext implements AutoCloseable {
         // book immediately rather than signing in to an account with no profile behind it.
         this.selfRegistrationService = new SelfRegistrationService(accountFactory, patients,
                 transactionRunner);
-        this.referenceService = new ReferenceService(dentists, treatments, dentistTreatments);
+        // Built here — before the services below — so the revenue dials read the
+        // settings table live (GAP-ADM-10): a Pricing-tab save applies to the next
+        // bill with no restart, falling back to the shipped defaults when unseeded.
+        this.clinicIdentity = new com.sunrise.clinic.platform.service.ClinicIdentityService(clinicSettings, config);
+        this.referenceService = new ReferenceService(dentists, treatments, dentistTreatments,
+                () -> clinicIdentity.dentistShare());
         this.slotService = new SlotService(sessions, slots, referenceService);
         this.clinicAccess = new ClinicAccess(patients, dentists);
 
@@ -198,9 +203,9 @@ public class AppContext implements AutoCloseable {
         this.billingService = new BillingService(bills, appointmentService, referenceService,
                 clinicAccess, new StandardBillingStrategy(),
                 new DefaultRevenueSplitStrategy(
-                        config.getDecimal("clinic.revenue.dentist-treatment-share", "0.60"),
-                        config.getDecimal("clinic.revenue.receptionist-service-share", "0")),
-                config.getDecimal("clinic.billing.service-charge", "200"),
+                        () -> clinicIdentity.dentistShare(),
+                        () -> config.getDecimal("clinic.revenue.receptionist-service-share", "0")),
+                () -> clinicIdentity.serviceCharge(),
                 transactionRunner);
 
         // The clinic's zone, not the server's. A clock injected rather than
@@ -210,7 +215,6 @@ public class AppContext implements AutoCloseable {
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
                 dentists, auditEvents);
         this.treatmentAdminService = new TreatmentAdminService(treatments);
-        this.clinicIdentity = new com.sunrise.clinic.platform.service.ClinicIdentityService(clinicSettings, config);
         this.complaintService = new ComplaintService(complaints, appointmentService, clinicAccess,
                 referenceService, auditEvents);
         // The clinic's zone again: the review window is measured in the clinic's days.

@@ -49,6 +49,10 @@ public class DentistProfileServlet extends PageServlet {
             throws ServletException, IOException {
         request.setAttribute("profile", app().referenceService()
                 .ownProfile(currentUser(request).uid()).orElse(null));
+        // GAP-DEN-15: the configured share, so the dentist knows what each
+        // treatment price brings them. A rate, never an earnings figure (§9).
+        request.setAttribute("dentistSharePercent",
+                app().referenceService().dentistSharePercent());
         request.setAttribute("saved", field(request, "saved"));
         request.setAttribute("editing", "1".equals(request.getParameter("edit")));
         render(request, response, "scheduling/dentist-profile");

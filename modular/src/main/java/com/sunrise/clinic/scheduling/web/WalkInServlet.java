@@ -39,7 +39,7 @@ public class WalkInServlet extends PageServlet {
             request.setAttribute("dentists",
                     app().referenceService().activeDentists(currentUser(request)));
             request.setAttribute("serviceCharge",
-                    app().config().getDecimal("clinic.billing.service-charge", "200"));
+                    app().clinicIdentity().serviceCharge());
             request.setAttribute("treatments",
                     app().referenceService().activeTreatments(currentUser(request)));
 

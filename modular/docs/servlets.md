@@ -10,10 +10,10 @@ mapping conflicts in §5 went unnoticed.
 
 | | |
 |---|---|
-| Servlets | **41** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
+| Servlets | **42** concrete across 8 modules, plus 2 abstract bases in `platform/web` |
 | Filters | 1 — `AuthenticationFilter`, mapped `/*` |
 | Requirement prefix | `FR-WEB-` |
-| Mappings | **45** declared, plus `/css/*` served by Tomcat's default servlet = 46 routes |
+| Mappings | **46** declared, plus `/css/*` served by Tomcat's default servlet = 47 routes |
 | Declared in | [`../src/main/webapp/WEB-INF/web.xml`](../src/main/webapp/WEB-INF/web.xml) — written, and verified against §6 by script |
 
 ---
@@ -90,10 +90,11 @@ middle. That constraint is what produces both conflicts in §5.
 | reporting | `CsvExportServlet` | `GET /admin/export` | — *(streams CSV)* | `ADMIN` | FR-ADM-18 |
 | reporting | `AccountsServlet` | `GET`·`POST` `/admin/accounts` | `reporting/accounts.jsp` | `ADMIN` | FR-ADM-20…27 |
 | reporting | `AuditTrailServlet` | `GET /admin/audit` | `reporting/audit.jsp` | `ADMIN` | FR-ADM-30…33 |
+| reporting | `PricingServlet` | `GET`·`POST` `/admin/pricing` | `reporting/pricing.jsp` | `ADMIN` | GAP-ADM-10 |
 | feedback | `PatientComplaintsServlet` | `GET`·`POST` `/patient/complaints` | `feedback/patient-complaints.jsp` | `PATIENT` | FR-PAT-50…57 |
 | feedback | `AdminComplaintsServlet` | `GET`·`POST` `/admin/complaints` | `feedback/admin-complaints.jsp` | `ADMIN` | FR-ADM-50…58 |
 
-**25 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
+**26 page servlets**, one of which (`HelpServlet`) lives in `platform/web` and is listed in §2. `AbstractLoginServlet` is abstract and declares no mapping — the four
 concrete portals each declare their own, which is the whole point of the hierarchy.
 
 ---
@@ -199,6 +200,7 @@ each appears once.
 /admin/export                       CsvExportServlet           reporting
 /admin/accounts                     AccountsServlet            reporting
 /admin/audit                        AuditTrailServlet          reporting
+/admin/pricing                      PricingServlet             reporting
 /admin/complaints                   AdminComplaintsServlet     feedback
 /api/auth/*                         AuthApiServlet             access
 /api/accounts                       AccountApiServlet          access

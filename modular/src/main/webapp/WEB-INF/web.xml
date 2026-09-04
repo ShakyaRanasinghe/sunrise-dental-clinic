@@ -404,6 +404,19 @@
         <url-pattern>/admin/audit</url-pattern>
     </servlet-mapping>
 
+    <!--
+        GAP-ADM-10: pricing — the dentist's treatment-share percentage and the
+        flat service charge, editable at runtime and read live on every bill.
+    -->
+    <servlet>
+        <servlet-name>Pricing</servlet-name>
+        <servlet-class>com.sunrise.clinic.reporting.web.PricingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Pricing</servlet-name>
+        <url-pattern>/admin/pricing</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  feedback — complaints and reviews                           -->
     <!-- ============================================================ -->
