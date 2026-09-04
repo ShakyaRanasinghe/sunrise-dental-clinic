@@ -36,7 +36,7 @@ classDiagram
             +findByNo(no) Appointment
             +findForPatient(patientId) List~Appointment~
             +findForDentist(dentistId, date) List~Appointment~
-            +complete(no, diagnosis, dentistId) Appointment
+            +complete(no, diagnosis, customPrice) Appointment
             +cancel(no, actor) Appointment
         }
         class AppointmentNumberGenerator {
@@ -98,6 +98,8 @@ classDiagram
         class AppointmentDetailResponse {
             <<record>>
             +appointmentNo : String
+            +treatmentId : String
+            +patientReason : String
             +diagnosis : String
             +patientNotes : List~PatientNoteResponse~
         }

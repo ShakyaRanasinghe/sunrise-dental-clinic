@@ -27,12 +27,14 @@ rectangle "Sunrise Dental Clinic System" {
   usecase "Mark Note Critical" as UC_CRIT
   usecase "Raise Concern" as UC_CMP
   usecase "Attach Appointment" as UC_ATTACH
+  usecase "Raise General\nConcern" as UC_GEN
   usecase "Rate Visit" as UC_RATE
   usecase "Add Comment" as UC_COMMENT
 }
 
 PT --> UC_NOTES
 PT --> UC_CMP
+PT --> UC_GEN
 PT --> UC_RATE
 
 UC_CRIT    ..> UC_NOTES : <<extend>>
@@ -48,5 +50,11 @@ end note
 note bottom of UC_CMP
   Read by the administrator.
   Never by the dentist named.
+end note
+
+note bottom of UC_GEN
+  No dentist, no visit, raisable
+  before any appointment. Stored
+  and shown anonymously.
 end note
 @enduml

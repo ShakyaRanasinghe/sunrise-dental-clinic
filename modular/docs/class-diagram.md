@@ -123,12 +123,17 @@ The entities, grouped by the module that owns them. This is the diagram the asse
 "class diagram" criterion refers to.
 
 ```mermaid
+%% Sunrise Dental Clinic - class design: 2-domain-model
+%% Source of truth: modular/docs/class-diagram.md
+
 classDiagram
     direction TB
 
     namespace access {
         class UserAccount {
             -uid : String
+            -accountNo : String
+            -username : String
             -email : String
             -passwordHash : String
             -displayName : String
@@ -230,6 +235,8 @@ classDiagram
             -contactNumber : String
             -email : String
             -dob : LocalDate
+            -diagnosisDetails : String
+            -patientNo : String
             +getId() String
             +getName() String
             +getContactNumber() String
@@ -243,6 +250,7 @@ classDiagram
             -userUid : String
             -name : String
             -specialization : String
+            -phone : String
             -consultationFee : double
             -active : boolean
             +getConsultationFee() double
@@ -297,12 +305,14 @@ classDiagram
             -time : LocalTime
             -status : AppointmentStatus
             -diagnosis : String
+            -patientReason : String
+            -customPrice : double
             -createdByUid : String
             -createdByRole : Role
             -createdAt : Instant
             +getAppointmentNo() String
             +getDiagnosis() String
-            +complete(diagnosis) void
+            +complete(diagnosis, customPrice) void
             +cancel() void
             +canTransitionTo(status) boolean
         }
@@ -466,6 +476,9 @@ Two hierarchies. The servlet hierarchy removes the duplication of four sign-in p
 hierarchy removes 28 conditionals.
 
 ```mermaid
+%% Sunrise Dental Clinic - class design: 3-access
+%% Source of truth: modular/docs/class-diagram.md
+
 classDiagram
     direction TB
 
@@ -491,6 +504,21 @@ classDiagram
             #viewName()* String
             #allowsSelfRegistration() boolean
             #auditFailedAttempts() boolean
+            -usernamePortal() boolean
+        }
+        class StaffPortalServlet {
+            +doGet(req, res) void
+        }
+        class RegisterServlet {
+            +doGet(req, res) void
+            +doPost(req, res) void
+        }
+        class HelpServlet {
+            +doGet(req, res) void
+        }
+        class LogoutServlet {
+            +doGet(req, res) void
+            +doPost(req, res) void
         }
         class PatientLoginServlet {
             #acceptedRole() Role
@@ -510,9 +538,6 @@ classDiagram
             #viewName() String
             #auditFailedAttempts() boolean
         }
-        class PortalChooserServlet {
-            +doGet(req, res) void
-        }
         class AuthenticationFilter {
             -PUBLIC_PREFIXES : List~String~$
             +doFilter(req, res, chain) void
@@ -526,14 +551,15 @@ classDiagram
             -users : UserRepository
             -hasher : PasswordHasher
             -attempts : LoginAttemptService
-            +login(email, password) LoginResult
+            +login(identifier, password) LoginResult
             +unlock(email) void
         }
         class UserAccountFactory {
             -users : UserRepository
             -patients : PatientRepository
             -dentists : DentistRepository
-            +create(role, details) UserAccount
+            +createStaff(email, password, displayName, role, username) UserAccount
+            +validUsername(username) String
         }
         class PasswordHasher {
             -ITERATIONS : int$
@@ -556,6 +582,7 @@ classDiagram
             +role()* Role
             +homePath()* String
             +loginPath()* String
+            +navigation() List~NavItem~
             +permits(action)* boolean
         }
         class PatientPolicy
@@ -570,9 +597,13 @@ classDiagram
             REGISTER_PATIENT
             PUBLISH_AVAILABILITY
             RECORD_DIAGNOSIS
+            COMPLETE_TREATMENT
+            EDIT_OWN_PROFILE
+            RAISE_CONCERN
             ISSUE_BILL
             READ_REPORTS
             MANAGE_ACCOUNTS
+            MANAGE_CLINIC_SETTINGS
             READ_AUDIT
         }
         class ClinicPrincipal {
@@ -588,12 +619,14 @@ classDiagram
         class UserRepository {
             <<interface>>
             +findByEmail(email) Optional~UserAccount~
+            +findByUsername(username) Optional~UserAccount~
             +findStaff() List~UserAccount~
         }
         class UserDao {
             -db : Database
             +save(user) UserAccount
             +findByEmail(email) Optional~UserAccount~
+            +findByUsername(username) Optional~UserAccount~
         }
     }
 
@@ -603,7 +636,10 @@ classDiagram
     AbstractLoginServlet <|-- ReceptionLoginServlet
     AbstractLoginServlet <|-- DentistLoginServlet
     AbstractLoginServlet <|-- AdminLoginServlet
-    PageServlet <|-- PortalChooserServlet
+    PageServlet <|-- StaffPortalServlet
+    PageServlet <|-- RegisterServlet
+    PageServlet <|-- HelpServlet
+    PageServlet <|-- LogoutServlet
 
     RolePolicy <|-- PatientPolicy
     RolePolicy <|-- ReceptionPolicy
@@ -649,6 +685,9 @@ Shown in full because it is the module that demonstrates the architecture: prese
 and data inside one feature, with no sibling module's internals reached into.
 
 ```mermaid
+%% Sunrise Dental Clinic - class design: 4-appointments
+%% Source of truth: modular/docs/class-diagram.md
+
 classDiagram
     direction TB
 
@@ -684,7 +723,7 @@ classDiagram
             +findByNo(no) Appointment
             +findForPatient(patientId) List~Appointment~
             +findForDentist(dentistId, date) List~Appointment~
-            +complete(no, diagnosis, dentistId) Appointment
+            +complete(no, diagnosis, customPrice) Appointment
             +cancel(no, actor) Appointment
         }
         class AppointmentNumberGenerator {
@@ -746,6 +785,8 @@ classDiagram
         class AppointmentDetailResponse {
             <<record>>
             +appointmentNo : String
+            +treatmentId : String
+            +patientReason : String
             +diagnosis : String
             +patientNotes : List~PatientNoteResponse~
         }
@@ -809,6 +850,9 @@ authorised for one and not the other. Reception and the administrator receive
 Both modules exist to show the same idea: behaviour that varies is an object, not a branch.
 
 ```mermaid
+%% Sunrise Dental Clinic - class design: 5-billing-notifications
+%% Source of truth: modular/docs/class-diagram.md
+
 classDiagram
     direction TB
 
@@ -818,8 +862,8 @@ classDiagram
             -appointments : AppointmentRepository
             -pricing : BillingStrategy
             -split : RevenueSplitStrategy
-            -serviceCharge : double
-            +generateBill(no, issuedByUid) Bill
+            -serviceCharge : Supplier~BigDecimal~
+            +issue(no, issuedByUid) Bill
             +findForAppointment(no) Optional~Bill~
         }
         class BillingStrategy {
@@ -834,7 +878,8 @@ classDiagram
             +split(breakdown)* RevenueSplit
         }
         class DefaultRevenueSplitStrategy {
-            -dentistShare : double
+            -dentistShare : Supplier~BigDecimal~
+            -receptionistShare : Supplier~BigDecimal~
             +split(breakdown) RevenueSplit
         }
     }
@@ -1014,7 +1059,7 @@ Recorded because the marking criteria ask for diagrams "supported by relevant as
 | 7 | The audit trail outlives the accounts it names | `AuditEvent → UserAccount` is `0..1`, not `1` |
 | 8 | Medical notes are written by the patient, not by staff | `PatientNote` has no author field — the owning `patientId` *is* the author. A staff-authored clinical note is `appointment.diagnosis`, a separate field on a separate entity |
 | 9 | A note applies to the patient, not to one visit | `PatientNote` hangs off `Patient`, not `Appointment`, so an allergy declared once is visible at every future appointment |
-| 10 | A complaint is attributed, never anonymous | `Complaint` holds `patientId` as a required field. Anonymity was rejected because the clinic cannot investigate what it cannot follow up |
+| 10 | A named complaint is attributed; a general concern is anonymous | `Complaint` holds `patientId` for a named concern so it can be followed up. A general concern about the clinic names no dentist and stores NULL identities precisely because there is nobody to follow up with — only the account itself to act on |
 | 11 | Only the state and resolution of a complaint are staff-writable | `detail` has no setter; `resolve()` writes only `status`, `resolution` and `reviewedByUid` (**FR-ADM-55**) |
 | 12 | A rating belongs to a visit, not to a dentist | `DentistReview` keys on `appointmentNo`, so a second visit is a second rating and the mean reflects visits rather than opinions |
 | 13 | The dentist's view of reviews is a different type, not a filtered one | `RatingSummary` is a separate record rather than `DentistReview` with fields nulled — a nulled field can be un-nulled by a later edit; a missing field cannot |
@@ -1054,4 +1099,12 @@ Recorded because the marking criteria ask for diagrams "supported by relevant as
 
 Each diagram is Mermaid, which GitHub renders inline, so a design change is a reviewable text
 diff. Standalone sources are in [`class-diagram/`](class-diagram/) alongside rendered PNGs for
-the report.
+the report. Render locally with the Mermaid CLI (needs a Chrome binary for its headless
+browser; without one, `https://mermaid.ink` renders the same sources — minify to fit URL
+limits on the two largest). The PlantUML use-case and sequence sources render with
+`java -jar plantuml.jar`, which needs no extra tooling:
+
+```bash
+java -jar plantuml.jar -o renders/use-case use-case/*.puml
+java -jar plantuml.jar -o renders/sequence sequence/*.puml
+```

@@ -35,23 +35,30 @@ box "Data tier" #FBFCFD
   database "MySQL" as DB
 end box
 
-U -> SV : POST /login/reception\n(email, password)
+U -> SV : POST /login/reception\n(username-or-email, password)
 activate SV
 
-SV -> AS : login(email, password)
+SV -> AS : login(identifier, password)
 activate AS
 
-AS -> LA : isLocked(email)
+AS -> LA : isLocked(identifier)
 activate LA
 LA --> AS : false
 deactivate LA
 
-AS -> UR : findByEmail(email)
+AS -> UR : findByUsername(identifier)\nthen findByEmail(identifier)
 activate UR
-UR -> DB : SELECT ... FROM user_account\nWHERE email = ?
+UR -> DB : SELECT ... FROM user_account\nWHERE username = ? OR email = ?
 DB --> UR : row
 UR --> AS : Optional<UserAccount>
 deactivate UR
+note right of UR
+  Usernames hold no @, so an address
+  goes straight to the email lookup.
+  Patients hold no username, so the
+  patient portal behaves exactly
+  as before.
+end note
 
 AS -> PH : matches(password, storedHash)
 activate PH
@@ -63,7 +70,7 @@ end note
 PH --> AS : true
 deactivate PH
 
-AS -> LA : recordSuccess(email)
+AS -> LA : recordSuccess(identifier)
 AS --> SV : LoginResult(success, account)
 deactivate AS
 
@@ -82,10 +89,10 @@ else role does not match this portal
     Re-render with the **same** generic
     message and comparable timing, so a
     portal cannot be used to discover
-    which role an email belongs to
+    which role an identity belongs to
     (FR-AUTH-03)
   end note
-  SV --> U : 200 login-reception.jsp\n"Incorrect email or password."
+  SV --> U : 200 login-reception.jsp\n"Incorrect username or password."
 end
 
 deactivate SV

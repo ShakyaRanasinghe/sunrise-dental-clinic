@@ -30,9 +30,12 @@ rectangle "Sunrise Dental Clinic System" {
   usecase "Export CSV" as UC_CSV
   usecase "Create Staff\nAccount" as UC_NEW
   usecase "Validate Account\nDetails" as UC_VACC
+  usecase "Assign Sign-In\nUsername" as UC_USER
   usecase "Create Dentist\nProfile" as UC_DENT
   usecase "Unlock Account" as UC_UNLOCK
   usecase "Deactivate Account" as UC_DEACT
+  usecase "Configure Pricing" as UC_PRICE
+  usecase "Validate Pricing\nValues" as UC_VPRICE
 }
 
 AD --> UC_LOGIN
@@ -40,10 +43,13 @@ AD --> UC_REP
 AD --> UC_NEW
 AD --> UC_UNLOCK
 AD --> UC_DEACT
+AD --> UC_PRICE
 
-UC_LOGIN ..> UC_AUTH : <<include>>
+UC_LOGIN ..> UC_AUTH  : <<include>>
 UC_REP   ..> UC_AGG  : <<include>>
 UC_NEW   ..> UC_VACC : <<include>>
+UC_NEW   ..> UC_USER : <<include>>
+UC_PRICE ..> UC_VPRICE : <<include>>
 
 UC_CSV  ..> UC_REP : <<extend>>
 UC_DENT ..> UC_NEW : <<extend>>
@@ -51,7 +57,17 @@ UC_DENT ..> UC_NEW : <<extend>>
 note bottom of UC_NEW
   Creates reception, dentist and
   administrator accounts only.
-  Unlock and deactivate apply to
-  every account, patients included.
+  Every account gets a readable
+  number and the staff get a
+  username. Unlock and deactivate
+  apply to every account,
+  patients included.
+end note
+
+note bottom of UC_PRICE
+  Dentist share percent and
+  service charge, live for the
+  next bill. Issued bills keep
+  the split they went out with.
 end note
 @enduml
