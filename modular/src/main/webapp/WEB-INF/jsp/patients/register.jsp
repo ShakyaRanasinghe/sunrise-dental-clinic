@@ -54,13 +54,13 @@
     </c:if>
 </c:if>
 
-<div class="card">
-    <h2>Search</h2>
+<%-- Compact search: one row, no guide texts — the placeholder says it all. --%>
+<div class="card search-card">
     <form method="get" action="${ctx}/reception/patients" class="search-form">
         <div class="field grow">
-            <label for="q">Name, contact number or email</label>
+            <label for="q">Search</label>
             <input type="search" id="q" name="q" value="<c:out value='${q}' />"
-                   placeholder="e.g. Perera or 077&hellip;">
+                   placeholder="Name, number or email">
         </div>
         <div class="form-actions inline">
             <button type="submit" class="btn">Search</button>
@@ -69,7 +69,6 @@
             </c:if>
         </div>
     </form>
-    <p class="page-subtitle">One field covers all three &mdash; type whatever the patient gives you.</p>
 </div>
 
 <details class="card walkin">

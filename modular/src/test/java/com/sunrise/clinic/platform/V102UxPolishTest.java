@@ -58,6 +58,18 @@ class V102UxPolishTest {
                 "dentists with a publishable rating must still show it");
     }
 
+    // Compact register search: no heading, no guide texts, tight card.
+    @Test
+    void registerSearchIsCompact() {
+        String page = read(JSP.resolve("patients/register.jsp"));
+        assertFalse(page.contains("One field covers all three"),
+                "the search guide text must be gone");
+        assertFalse(page.contains("Name, contact number or email"),
+                "the long field label must be gone");
+        assertTrue(page.contains("search-card"),
+                "the search card must use the compact style");
+    }
+
     // GAP-PAT-31: booking with nothing to offer says so instead of blank.
     @Test
     void bookingNamesNoDoctors() {

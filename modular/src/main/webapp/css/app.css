@@ -653,6 +653,8 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* Inline search: the field stretches to fill the row, actions sit beside it. */
 .search-form { display: flex; gap: 14px; align-items: flex-end; }
+/* Compact register search: heading and hints removed, so tighten the card. */
+.search-card { padding-top: 14px; padding-bottom: 14px; }
 .search-form .field { flex: 1; margin-bottom: 0; }
 .search-form .form-actions.inline { margin-top: 0; padding-bottom: 1px; }
 
