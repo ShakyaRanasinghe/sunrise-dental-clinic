@@ -36,8 +36,27 @@ public class BillingPageServlet extends PageServlet {
             throws ServletException, IOException {
         page(request, response, () -> {
             LocalDate date = dateField(request, "date", LocalDate.now());
+            // GAP-ADM-13: sortable table — time order by default, as before.
+            String sort = field(request, "sort");
+            if (!"time_desc".equals(sort) && !"dentist".equals(sort)) {
+                sort = "time_asc";
+            }
+            java.util.List<Billable> billables = new java.util.ArrayList<>(billablesOn(request, date));
+            final String order = sort;
+            billables.sort((x, y) -> {
+                int byTime = x.appointment().time().compareTo(y.appointment().time());
+                if ("time_desc".equals(order)) {
+                    return -byTime;
+                }
+                if ("dentist".equals(order)) {
+                    int byDentist = dentistOf(x).compareTo(dentistOf(y));
+                    return byDentist != 0 ? byDentist : byTime;
+                }
+                return byTime;
+            });
             request.setAttribute("date", date);
-            request.setAttribute("billables", billablesOn(request, date));
+            request.setAttribute("sort", sort);
+            request.setAttribute("billables", billables);
             request.setAttribute("issued", field(request, "issued"));
             render(request, response, "billing/billing");
         });
@@ -70,5 +89,10 @@ public class BillingPageServlet extends PageServlet {
             }
         }
         return billables;
+    }
+
+    private static String dentistOf(Billable billable) {
+        String name = billable.appointment().dentistName();
+        return name == null ? "" : name;
     }
 }

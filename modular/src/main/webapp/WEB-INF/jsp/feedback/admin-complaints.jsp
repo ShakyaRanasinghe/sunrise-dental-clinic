@@ -57,6 +57,14 @@
             <label for="to">To</label>
             <input type="date" id="to" name="to">
         </div>
+        <%-- GAP-ADM-13: newest first by default, reversible to oldest. --%>
+        <div class="field">
+            <label for="sort">Order</label>
+            <select id="sort" name="sort">
+                <option value="newest"<c:if test="${sort ne 'oldest'}"> selected</c:if>>Newest first</option>
+                <option value="oldest"<c:if test="${sort eq 'oldest'}"> selected</c:if>>Oldest first</option>
+            </select>
+        </div>
         <div class="form-actions">
             <button type="submit" class="btn">Filter</button>
             <a class="btn btn-secondary" href="${ctx}/admin/complaints">Clear</a>

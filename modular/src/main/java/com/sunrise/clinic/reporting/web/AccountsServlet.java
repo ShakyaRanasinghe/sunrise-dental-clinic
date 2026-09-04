@@ -60,7 +60,21 @@ public class AccountsServlet extends PageServlet {
     private void show(HttpServletRequest request, HttpServletResponse response,
                       AccountAdminService.NewAccount created)
             throws ServletException, IOException {
-        request.setAttribute("accounts", app().accountAdminService().list(currentUser(request)));
+        // GAP-ADM-13: role filter for the table. Named roleFilter (not role) so it
+        // cannot collide with the create form's role field on POST.
+        String filter = field(request, "roleFilter");
+        java.util.List<AccountAdminService.AccountRow> accounts =
+                app().accountAdminService().list(currentUser(request));
+        if (filter != null && !filter.isBlank() && !"ALL".equals(filter)) {
+            try {
+                Role want = Role.valueOf(filter.trim().toUpperCase());
+                accounts = accounts.stream().filter(a -> a.role() == want).toList();
+            } catch (IllegalArgumentException e) {
+                // Unknown value: fall through unfiltered rather than failing the page.
+            }
+        }
+        request.setAttribute("accounts", accounts);
+        request.setAttribute("roleFilter", filter == null ? "ALL" : filter);
         request.setAttribute("created", created);
         request.setAttribute("roles", java.util.List.of(
                 Role.RECEPTIONIST, Role.DENTIST, Role.ADMIN));

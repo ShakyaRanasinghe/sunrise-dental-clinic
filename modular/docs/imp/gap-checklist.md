@@ -385,6 +385,15 @@ live, and each SRS row is marked **Fixed**.
 
 ## Admin — `srs-admin.md`
 
+- [x] **GAP-ADM-13** — the Accounts table has no role filter, and the appointments tables
+      (reception day view, billing day list, admin complaints) sort one fixed way with no
+      control.
+      **Accept:** Accounts filters by role; the day tables sort by time asc/desc (and by
+      dentist where useful); complaints sort newest/oldest; all server-side links, no script.
+      **Done:** `roleFilter` on Accounts; `sort` on day (`time_asc/desc`, `dentist`,
+      kept across cancel), billing and complaints (`newest/oldest`); header links and
+      filter form. 382 green, verified live.
+
 - [x] **GAP-ADM-12** — staff sign in with email addresses; the desk wants username logins.
       Only staff change — patients keep email sign-in.
       **Accept:** reception/dentist/admin portals ask for a username (email still works as

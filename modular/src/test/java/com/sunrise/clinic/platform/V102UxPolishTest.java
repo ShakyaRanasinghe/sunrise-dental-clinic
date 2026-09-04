@@ -444,6 +444,24 @@ class V102UxPolishTest {
                 "the Accounts table must show usernames");
     }
 
+    // GAP-ADM-13: role filter on Accounts; sortable day/billing tables; newest /
+    // oldest complaints — all server-side links.
+    @Test
+    void tablesFilterAndSort() {
+        String accounts = read(JSP.resolve("reporting/accounts.jsp"));
+        assertTrue(accounts.contains("name=\"roleFilter\""),
+                "the Accounts table needs a role filter");
+        String day = read(JSP.resolve("appointments/reception-day.jsp"));
+        assertTrue(day.contains("sort=") && day.contains("time_desc"),
+                "the day view needs time asc/desc links");
+        String billing = read(JSP.resolve("billing/billing.jsp"));
+        assertTrue(billing.contains("sort="),
+                "the billing list needs sort links");
+        String complaints = read(JSP.resolve("feedback/admin-complaints.jsp"));
+        assertTrue(complaints.contains("name=\"sort\""),
+                "the complaints queue needs a newest/oldest control");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

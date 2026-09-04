@@ -37,7 +37,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Time</th><th>Patient</th><th>Dentist</th><th>Treatment</th>
+                            <%-- GAP-ADM-13: sortable columns — plain links, no script. --%>
+                            <th><a href="${ctx}/reception/billing?date=${date}&sort=${sort eq 'time_desc' ? 'time_asc' : 'time_desc'}">Time ${sort eq 'time_desc' ? '&#9660;' : '&#9650;'}</a></th><th>Patient</th><th><a href="${ctx}/reception/billing?date=${date}&sort=dentist">Dentist</a></th><th>Treatment</th>
                             <th>Number</th><th class="right">Total</th><th></th>
                         </tr>
                     </thead>

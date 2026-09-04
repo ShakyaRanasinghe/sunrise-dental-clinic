@@ -56,9 +56,16 @@ public class AdminComplaintsServlet extends PageServlet {
         }
         // Open (still to act on) first, closed/reviewed folded below. A concern the
         // admin has not yet touched matters more than one resolved this morning.
-        var complaints = app().complaintService().search(currentUser(request),
-                status, field(request, "dentistId"),
-                dateField(request, "from", null), dateField(request, "to", null));
+        // GAP-ADM-13: newest first by default, reversible to oldest.
+        var complaints = new java.util.ArrayList<>(app().complaintService().search(
+                currentUser(request), status, field(request, "dentistId"),
+                dateField(request, "from", null), dateField(request, "to", null)));
+        String sort = field(request, "sort");
+        if ("oldest".equals(sort)) {
+            complaints.sort(java.util.Comparator.comparing(ComplaintResponse::submittedAt,
+                    java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())));
+        }
+        request.setAttribute("sort", "oldest".equals(sort) ? "oldest" : "newest");
         request.setAttribute("open", complaints.stream()
                 .filter(ComplaintResponse::isOpen)
                 .toList());

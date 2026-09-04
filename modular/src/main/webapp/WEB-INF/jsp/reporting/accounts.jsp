@@ -105,8 +105,22 @@
     </form>
 </div>
 
+<%-- GAP-ADM-13: role filter for the table. --%>
 <div class="card">
     <h2>All accounts <span class="count">${fn:length(accounts)}</span></h2>
+    <form method="get" action="${ctx}/admin/accounts" class="form-row">
+        <div class="field">
+            <label for="roleFilter">Role</label>
+            <select id="roleFilter" name="roleFilter">
+                <option value="ALL"<c:if test="${roleFilter eq 'ALL'}"> selected</c:if>>All roles</option>
+                <option value="RECEPTIONIST"<c:if test="${roleFilter eq 'RECEPTIONIST'}"> selected</c:if>>Receptionist</option>
+                <option value="DENTIST"<c:if test="${roleFilter eq 'DENTIST'}"> selected</c:if>>Dentist</option>
+                <option value="ADMIN"<c:if test="${roleFilter eq 'ADMIN'}"> selected</c:if>>Administrator</option>
+                <option value="PATIENT"<c:if test="${roleFilter eq 'PATIENT'}"> selected</c:if>>Patient</option>
+            </select>
+        </div>
+        <div class="form-actions"><button type="submit" class="btn">Filter</button></div>
+    </form>
     <div class="table-wrap">
         <table>
             <thead>
