@@ -12,6 +12,9 @@ import java.util.Objects;
  */
 public class UserAccount {
     private String uid;   // primary key
+    // GAP-ADM-11: the readable account number (YYMMDD + ROLE + NNNN). The uuid
+    // stays the primary key; this is what people quote.
+    private String accountNo;
     private String email;
     private String passwordHash;   // PBKDF2 hash, never the plaintext
     private String displayName;
@@ -25,7 +28,12 @@ public class UserAccount {
     }
 
     public UserAccount(String uid, String email, String passwordHash, String displayName, Role role, boolean active, int failedAttempts, boolean locked, Instant createdAt) {
+        this(uid, null, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
+    }
+
+    public UserAccount(String uid, String accountNo, String email, String passwordHash, String displayName, Role role, boolean active, int failedAttempts, boolean locked, Instant createdAt) {
         this.uid = uid;
+        this.accountNo = accountNo;
         this.email = email;
         this.passwordHash = passwordHash;
         this.displayName = displayName;
@@ -42,6 +50,14 @@ public class UserAccount {
 
     public void setUid(String uid) {
         this.uid = uid;
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
     }
 
     public String getEmail() {
@@ -132,6 +148,7 @@ public class UserAccount {
     /** Hand-written Builder — replaces Lombok's {@code @Builder}. */
     public static class Builder {
         private String uid;
+        private String accountNo;
         private String email;
         private String passwordHash;
         private String displayName;
@@ -143,6 +160,11 @@ public class UserAccount {
 
         public Builder uid(String uid) {
             this.uid = uid;
+            return this;
+        }
+
+        public Builder accountNo(String accountNo) {
+            this.accountNo = accountNo;
             return this;
         }
 
@@ -187,7 +209,7 @@ public class UserAccount {
         }
 
         public UserAccount build() {
-            return new UserAccount(uid, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
+            return new UserAccount(uid, accountNo, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
         }
     }
 }

@@ -168,12 +168,18 @@ public class AppContext implements AutoCloseable {
 
         this.loginAttempts = new LoginAttemptService(users);
         this.authService = new AuthService(users, loginAttempts);
-        this.accountFactory = new UserAccountFactory(users);
-        this.patientService = new PatientService(patients);
+        // GAP-PAT-33/ADM-11: one readable-number source for every person created,
+        // wired into each creation path below.
+        com.sunrise.clinic.platform.data.PersonSequenceRepository personSequences =
+                new com.sunrise.clinic.platform.data.JdbcPersonSequenceRepository(database);
+        com.sunrise.clinic.platform.service.PersonNumberGenerator personNumbers =
+                new com.sunrise.clinic.platform.service.PersonNumberGenerator(personSequences);
+        this.accountFactory = new UserAccountFactory(users, personNumbers);
+        this.patientService = new PatientService(patients, personNumbers);
         // The account and the patient row are written together, so a registered patient can
         // book immediately rather than signing in to an account with no profile behind it.
         this.selfRegistrationService = new SelfRegistrationService(accountFactory, patients,
-                transactionRunner);
+                transactionRunner, personNumbers);
         // Built here — before the services below — so the revenue dials read the
         // settings table live (GAP-ADM-10): a Pricing-tab save applies to the next
         // bill with no restart, falling back to the shipped defaults when unseeded.
@@ -213,7 +219,7 @@ public class AppContext implements AutoCloseable {
         // derivation is checkable.
         this.reportService = new ReportService(reports, java.time.Clock.system(clinicZone()));
         this.accountAdminService = new AccountAdminService(users, accountFactory, authService,
-                dentists, auditEvents);
+                dentists, auditEvents, personNumbers);
         this.treatmentAdminService = new TreatmentAdminService(treatments);
         this.complaintService = new ComplaintService(complaints, appointmentService, clinicAccess,
                 referenceService, auditEvents);

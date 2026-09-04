@@ -101,11 +101,12 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Name</th><th>Email</th><th>Role</th><th>State</th><th></th></tr>
+                <tr><th>Account ID</th><th>Name</th><th>Email</th><th>Role</th><th>State</th><th></th></tr>
             </thead>
             <tbody>
                 <c:forEach var="a" items="${accounts}">
                     <tr>
+                        <td><code><c:out value="${a.accountNumber()}" /></code></td>
                         <td><c:out value="${a.displayName()}" /></td>
                         <td><c:out value="${a.email()}" /></td>
                         <td>${a.role()}</td>

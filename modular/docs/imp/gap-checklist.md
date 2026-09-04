@@ -57,6 +57,12 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       cell is now the leftmost column of `patients/register.jsp` and the walk-in search table
       (`scheduling/walkin.jsp`).
 
+- [x] **GAP-REC-14** — reception works off the same unreadable patient ids (GAP-PAT-33).
+      **Accept:** the register, walk-in search and booking show the readable patient number
+      and the desk can search by it.
+      **Done:** `PatientDao` search covers `patient_no` (SQL + in-memory); displays flow
+      through `patientNumber()`. Verified live (search by number finds the row).
+
 - [x] **GAP-REC-13** — an **"Other (describe…)"** booking has no catalog treatment, so
       `BillingService` throws "nothing to price" and reception **cannot bill the visit at
       all**, even though the dentist did the work.
@@ -249,6 +255,16 @@ live, and each SRS row is marked **Fixed**.
       General card on the page (works with no history); admin queue labels Anonymous +
       general concern; `own()` can never return them. 366 green, verified live.
 
+- [x] **GAP-PAT-33** — patient ids are database UUIDs, unreadable over the phone and
+      unquotable at the desk.
+      **Accept:** every new patient gets a readable number `YYMMDDPATNNNN` (enrol date +
+      role + daily sequence, same family as `APT-…`); the Patients register, walk-in
+      search and booking show it and it is searchable; existing rows are backfilled.
+      **Done:** `patient.patient_no` + `PersonNumberGenerator` (DB row-lock sequence,
+      UUID PKs untouched); minted on self-reg and walk-in; `patientNumber()` falls back
+      to the id for unnumbered seeds; register/search show and find it. 375 green,
+      verified live.
+
 - [x] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
       service on the public home page.
       **Accept:** a service description is shown with no "Book" call-to-action inviting a
@@ -368,6 +384,15 @@ live, and each SRS row is marked **Fixed**.
 ---
 
 ## Admin — `srs-admin.md`
+
+- [x] **GAP-ADM-11** — staff accounts and new dentists carry database UUIDs (or name slugs):
+      the administrator's people screens show no quotable identifier.
+      **Accept:** every new account gets a readable number `YYMMDD + ROLE + NNNN`
+      (PAT/REC/DEN/ADM) and every new dentist id follows the same family; the Accounts
+      table lists the number leftmost; existing rows are backfilled.
+      **Done:** `user_account.account_no` minted in `UserAccountFactory` per role;
+      dentist ids minted `YYMMDDDENNNNN`; Accounts lists Account ID leftmost
+      (`AccountRow.accountNumber`). 375 green, verified live (create → DEN numbers).
 
 - [x] **GAP-ADM-10** — the revenue dials live in `clinic.properties`/env and need a rebuild +
       restart to change: the administrator cannot configure the dentist's treatment-share

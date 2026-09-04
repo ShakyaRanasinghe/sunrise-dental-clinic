@@ -416,6 +416,15 @@ class V102UxPolishTest {
                 "the admin queue must label identity-less concerns");
     }
 
+    // GAP-PAT-33/REC-14/ADM-11: quotable numbers where people are listed.
+    @Test
+    void peopleScreensListQuotableNumbers() {
+        assertTrue(read(JSP.resolve("reporting/accounts.jsp")).contains("Account ID"),
+                "the Accounts table must list the number leftmost");
+        assertTrue(read(JSP.resolve("patients/register.jsp")).contains("patientNumber()"),
+                "the register must show the desk number");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

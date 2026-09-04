@@ -48,12 +48,20 @@ public class SelfRegistrationService {
     private final UserAccountFactory accounts;
     private final PatientRepository patients;
     private final TransactionRunner transaction;
+    private final com.sunrise.clinic.platform.service.PersonNumberGenerator numbers;
 
     public SelfRegistrationService(UserAccountFactory accounts, PatientRepository patients,
                                    TransactionRunner transaction) {
+        this(accounts, patients, transaction, null);
+    }
+
+    public SelfRegistrationService(UserAccountFactory accounts, PatientRepository patients,
+                                   TransactionRunner transaction,
+                                   com.sunrise.clinic.platform.service.PersonNumberGenerator numbers) {
         this.accounts = accounts;
         this.patients = patients;
         this.transaction = transaction;
+        this.numbers = numbers;
     }
 
     /** What somebody types on the registration form. */
@@ -99,6 +107,9 @@ public class SelfRegistrationService {
                     // Linked, which is what makes this account able to book. The walk-in path
                     // deliberately leaves this null; self-registration is the one place it is set.
                     .userUid(account.getUid())
+                    // GAP-PAT-33: inside the transaction, so a rollback reclaims the number.
+                    .patientNo(numbers == null ? null
+                            : numbers.next(java.time.LocalDate.now(), "PAT"))
                     .name(name)
                     .email(email)
                     .contactNumber(contact)

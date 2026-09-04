@@ -38,9 +38,16 @@ public class UserAccountFactory {
     private static final Logger log = Logger.getLogger(UserAccountFactory.class.getName());
 
     private final UserRepository users;
+    private final com.sunrise.clinic.platform.service.PersonNumberGenerator numbers;
 
     public UserAccountFactory(UserRepository users) {
+        this(users, null);
+    }
+
+    public UserAccountFactory(UserRepository users,
+                              com.sunrise.clinic.platform.service.PersonNumberGenerator numbers) {
         this.users = users;
+        this.numbers = numbers;
     }
 
     /** Creates a patient account. The role is fixed here and nowhere else. */
@@ -64,6 +71,10 @@ public class UserAccountFactory {
         }
         UserAccount account = UserAccount.builder()
                 .uid(UUID.randomUUID().toString())
+                // GAP-ADM-11: every account gets a quotable number; unwired callers
+                // (older tests) leave it null and are backfilled by migration.
+                .accountNo(numbers == null ? null
+                        : numbers.next(java.time.LocalDate.now(), roleCode(role)))
                 .email(key)
                 .passwordHash(PasswordHasher.hash(password))
                 .displayName(displayName)
@@ -76,6 +87,11 @@ public class UserAccountFactory {
         users.save(account);
         log.log(Level.INFO, "account_created email={0} role={1}", new Object[]{key, role});
         return account;
+    }
+
+    /** PATIENT → PAT, RECEPTIONIST → REC, DENTIST → DEN, ADMIN → ADM. */
+    static String roleCode(Role role) {
+        return role.name().substring(0, 3);
     }
 
     private static String normalise(String email) {

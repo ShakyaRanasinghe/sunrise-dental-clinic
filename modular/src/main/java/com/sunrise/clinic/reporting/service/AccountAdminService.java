@@ -44,24 +44,38 @@ public class AccountAdminService {
     private final AuthService auth;
     private final DentistRepository dentists;
     private final AuditRepository audit;
+    private final com.sunrise.clinic.platform.service.PersonNumberGenerator numbers;
 
     public AccountAdminService(UserRepository users, UserAccountFactory factory, AuthService auth,
                                DentistRepository dentists, AuditRepository audit) {
+        this(users, factory, auth, dentists, audit, null);
+    }
+
+    public AccountAdminService(UserRepository users, UserAccountFactory factory, AuthService auth,
+                               DentistRepository dentists, AuditRepository audit,
+                               com.sunrise.clinic.platform.service.PersonNumberGenerator numbers) {
         this.users = users;
         this.factory = factory;
         this.auth = auth;
         this.dentists = dentists;
         this.audit = audit;
+        this.numbers = numbers;
     }
 
     /** An account as the administration screen lists it. Never carries the hash. */
-    public record AccountRow(String uid, String email, String displayName, Role role,
-                             boolean active, boolean locked, int failedAttempts) {
+    public record AccountRow(String uid, String accountNo, String email, String displayName,
+                             Role role, boolean active, boolean locked, int failedAttempts) {
 
         public static AccountRow of(UserAccount account) {
-            return new AccountRow(account.getUid(), account.getEmail(), account.getDisplayName(),
+            return new AccountRow(account.getUid(), account.getAccountNo(), account.getEmail(),
+                    account.getDisplayName(),
                     account.getRole(), account.isActive(), account.isLocked(),
                     account.getFailedAttempts());
+        }
+
+        /** GAP-ADM-11: the quotable number, falling back to the uid where unassigned. */
+        public String accountNumber() {
+            return accountNo != null ? accountNo : uid;
         }
     }
 
@@ -205,8 +219,15 @@ public class AccountAdminService {
         return password.toString();
     }
 
-    /** {@code Dr. Ranil Silva} becomes {@code d-ranil-silva}, with a suffix if taken. */
+    /**
+     * GAP-ADM-11: new dentists join the readable family ({@code YYMMDDDENNNNN});
+     * seeded friendly ids stay untouched. Falls back to the old slug only where no
+     * generator was wired (older tests).
+     */
     private String dentistIdFor(String displayName) {
+        if (numbers != null) {
+            return numbers.next(java.time.LocalDate.now(), "DEN");
+        }
         String base = "d-" + displayName.toLowerCase()
                 .replaceAll("^dr\\.?\\s+", "")
                 .replaceAll("[^a-z0-9]+", "-")
