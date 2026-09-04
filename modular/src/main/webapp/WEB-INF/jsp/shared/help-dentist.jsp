@@ -43,11 +43,7 @@
         </li>
         <li class="help-steps__item">
             <span class="help-steps__no" aria-hidden="true">2</span>
-            <span class="help-steps__text">Set the <strong>phone number</strong> on the same screen to publish a public number on your "Our dentists" card, so patients can reach you directly.</span>
-        </li>
-        <li class="help-steps__item">
-            <span class="help-steps__no" aria-hidden="true">3</span>
-            <span class="help-steps__text">After saving, a confirmation window tells you the change is stored.</span>
+            <span class="help-steps__text">After saving, a confirmation window tells you the change is stored. Your public <strong>phone number</strong> lives on <strong>My details</strong>, not here.</span>
         </li>
     </ol>
 </div>

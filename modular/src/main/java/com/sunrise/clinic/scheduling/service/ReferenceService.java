@@ -174,22 +174,6 @@ public class ReferenceService {
      * @param userUid  the caller's account uid, used to locate their dentist record
      * @param phone    the new number (may be null/blank to clear it)
      */
-    public void updateOwnPhone(ClinicPrincipal caller, String userUid, String phone) {
-        Dentist dentist = dentists.findByUserUid(userUid)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No dentist record for this account"));
-        Dentist updated = Dentist.builder()
-                .id(dentist.getId())
-                .userUid(dentist.getUserUid())
-                .name(dentist.getName())
-                .specialization(dentist.getSpecialization())
-                .phone(phone == null || phone.isBlank() ? null : phone.trim())
-                .consultationFee(dentist.getConsultationFee())
-                .active(dentist.isActive())
-                .build();
-        dentists.save(updated);
-    }
-
     /**
      * The dentist record behind a portal account, for the dentist's own profile
      * screen (GAP-DEN-14). Resolved from the uid, so a dentist reads only their own.

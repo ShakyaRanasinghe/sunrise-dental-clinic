@@ -264,6 +264,16 @@ class V102UxPolishTest {
                 "the dashboard receipt view must print the dentist's note");
     }
 
+    // The phone editor lives on the dentist profile now, not on availability.
+    @Test
+    void availabilityCarriesNoPhoneCard() {
+        String page = read(JSP.resolve("appointments/dentist-availability.jsp"));
+        assertFalse(page.contains("Contact details"),
+                "the phone card moved to My details");
+        assertFalse(page.contains("name=\"phone\""),
+                "no phone field may remain on the availability screen");
+    }
+
     // GAP-DEN-14: the dentist's own profile — read-only with an Edit gate that
     // tests the Boolean (cf. the old profile bug), fee view-only, saves confirm.
     @Test

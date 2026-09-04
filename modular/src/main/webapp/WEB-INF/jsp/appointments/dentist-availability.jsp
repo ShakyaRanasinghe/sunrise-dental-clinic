@@ -11,47 +11,9 @@
 <h1 class="page-title">My availability</h1>
 <p class="page-subtitle">Time windows reception published for you. Patients can book the open slots shown here.</p>
 
-<%-- GAP-FTB-04: the dentist sets the phone number shown to patients on the public
-     "Our dentists" page. GAP-FTB-14: shown read-only with an Edit control that
-     reveals the field, and a saved change confirms in a sub-window. --%>
-<div class="card">
-    <h2>Contact details</h2>
-    <p class="page-subtitle">
-        This number is shown to patients on the clinic's public "Our dentists" page.
-        Leave it blank if the front desk should take calls instead.
-    </p>
-    <c:if test="${not empty phoneSaved}">
-        <div class="sub-window open" role="dialog" aria-modal="true" aria-labelledby="phone-saved-title">
-            <div class="dialog">
-                <span class="success-tick" aria-hidden="true">&#10003;</span>
-                <h3 id="phone-saved-title">Successfully updated</h3>
-                <p class="page-subtitle">Your phone number was saved.</p>
-                <div class="form-actions">
-                    <a class="btn" href="${ctx}/dentist/availability">Close</a>
-                </div>
-            </div>
-        </div>
-    </c:if>
-    <div class="table-wrap">
-        <table>
-            <tbody>
-                <tr><th>Phone number</th><td><c:out value="${dentist.phone}" /></td></tr>
-            </tbody>
-        </table>
-    </div>
-    <details class="confirm-cancel">
-        <summary class="btn small secondary">Edit</summary>
-        <div class="confirm-cancel__panel">
-            <form method="post" action="${pageContext.request.contextPath}/dentist/availability" class="form-row">
-                <input type="hidden" name="action" value="phone">
-                <label for="phone">Phone number</label>
-                <input type="text" id="phone" name="phone" value="${dentist.phone}"
-                       placeholder="+94 77 000 0000" size="24" />
-                <div class="form-actions"><button type="submit" class="btn">Save</button></div>
-            </form>
-        </div>
-    </details>
-</div>
+<%-- The phone number used to be edited here (GAP-FTB-04); it now lives on the
+     dentist's profile (GAP-DEN-14), so this screen keeps only availability and
+     the offered-treatments list. --%>
 
 <%-- GAP-FTB-14: a flipped toggle confirms in a sub-window. --%>
 <c:if test="${param.toggled == '1'}">
