@@ -26,6 +26,15 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       it"** submit — no script. Applied to the patient dashboard and the reception day view
       (`patient-home.jsp`, `reception-day.jsp`, `app.css`). No servlet change.
 
+- [x] **GAP-PAT-30** — a finished visit's info shows charges but not **what the dentist did**:
+      opening a finished appointment (dashboard receipt view, full receipt page) never shows
+      the dentist's recorded description.
+      **Accept:** a finished visit's info shows the dentist's description to the patient it
+      belongs to (never to reception/admin).
+      **Done:** `BillResponse` carries `diagnosis`; the dashboard receipt view prints it from
+      the gated detail row and `billing/receipt.jsp` prints it only when the viewer is the
+      patient (`showClinical`; reception/admin copies stay clinical-free). Verified live.
+
 ---
 
 ## Reception — `srs-reception.md`
@@ -47,6 +56,16 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Done:** `PatientResponse.patientNumber()` exposes the unique stored `id`; a **Patient ID**
       cell is now the leftmost column of `patients/register.jsp` and the walk-in search table
       (`scheduling/walkin.jsp`).
+
+- [x] **GAP-REC-13** — an **"Other (describe…)"** booking has no catalog treatment, so
+      `BillingService` throws "nothing to price" and reception **cannot bill the visit at
+      all**, even though the dentist did the work.
+      **Accept:** reception can issue the bill for a treatment-less visit, priced at the
+      amount the dentist recorded when completing it; the receipt names the patient's
+      stated reason as the Treatment line.
+      **Done:** billing prices treatment-less visits from `appointment.custom_price`
+      (still refuses when no price was recorded); receipt/billing-list/day-view/slip
+      fall back to the patient's reason. Verified live (8000 priced, 9700 total).
 
 ---
 
@@ -89,6 +108,16 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       **Done:** pending rows are `<details class="card pending-list">` (first `open`),
       styled like the done list (`app.css`); summary carries time, patient, status and
       the flag. Tests green, verified live.
+
+- [x] **GAP-DEN-13** — completing an **"Other (describe…)"** visit records the diagnosis but
+      **no price**: there is no catalog treatment to price it from, so the visit can never
+      be billed.
+      **Accept:** completing a treatment-less visit requires the dentist to enter the price
+      for that specific work; it is stored on the appointment and used at billing.
+      **Done:** `appointment.custom_price` (`schema.sql`, migrated live); `complete()`
+      requires a positive price exactly when treatment-less (named visits ignore it);
+      schedule form shows the price field only there; API accepts `customPrice`.
+      Verified live (refused without, completed with 8000).
 
 ---
 

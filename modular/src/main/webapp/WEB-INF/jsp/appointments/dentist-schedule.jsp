@@ -133,11 +133,26 @@
                             <form method="post" action="${ctx}/dentist/schedule">
                                 <input type="hidden" name="appointmentNo" value="${a.appointmentNo()}">
                                 <input type="hidden" name="date" value="${date}">
+                            <div class="field">
+                                <label for="d-${a.appointmentNo()}">What you treated</label>
+                                <input type="text" id="d-${a.appointmentNo()}" name="diagnosis"
+                                       placeholder="Diagnosis and what was done" required>
+                            </div>
+                            <%--
+                                GAP-DEN-13: no catalog treatment on this visit, so the
+                                visit has nothing to price it from — the dentist enters
+                                the price for this specific work here. Named-treatment
+                                visits price from the catalog and show no field.
+                            --%>
+                            <c:if test="${empty a.treatmentId}">
                                 <div class="field">
-                                    <label for="d-${a.appointmentNo()}">What you treated</label>
-                                    <input type="text" id="d-${a.appointmentNo()}" name="diagnosis"
-                                           placeholder="Diagnosis and what was done" required>
+                                    <label for="p-${a.appointmentNo()}">Price for this work (Rs)</label>
+                                    <input type="text" id="p-${a.appointmentNo()}" name="customPrice"
+                                           placeholder="e.g. 4500.00" required
+                                           pattern="[0-9]+(\.[0-9]{1,2})?"
+                                           title="A price in rupees, like 4500.00">
                                 </div>
+                            </c:if>
                                 <div class="form-actions">
                                     <button type="submit" class="btn">Record and complete</button>
                                 </div>

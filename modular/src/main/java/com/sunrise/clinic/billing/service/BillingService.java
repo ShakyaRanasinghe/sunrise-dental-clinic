@@ -115,10 +115,9 @@ public class BillingService {
         }
 
         Dentist dentist = reference.requireDentist(appointment.getDentistId());
-        Treatment treatment = requireTreatment(appointment);
 
         BillBreakdown breakdown = pricing.calculate(
-                dentist.getConsultationFee(), treatment.getBaseCost(), serviceCharge);
+                dentist.getConsultationFee(), treatmentCost(appointment), serviceCharge);
         RevenueSplit split = revenueSplit.split(breakdown);
 
         Bill bill = Bill.builder()
@@ -203,13 +202,23 @@ public class BillingService {
         AccessControl.require(caller, Action.ISSUE_BILL);
     }
 
-    private Treatment requireTreatment(Appointment appointment) {
-        if (appointment.getTreatmentId() == null) {
-            throw new IllegalStateException(
-                    appointment.getAppointmentNo() + " has no treatment recorded, so there is"
-                            + " nothing to price.");
+    /**
+     * What the treatment line prices from. A named treatment prices from the
+     * catalog; a treatment-less ("Other") visit prices from the amount the
+     * dentist recorded when completing it (GAP-DEN-13, GAP-REC-13).
+     */
+    private BigDecimal treatmentCost(Appointment appointment) {
+        if (appointment.getTreatmentId() != null) {
+            Treatment treatment = reference.requireTreatment(appointment.getTreatmentId());
+            return treatment.getBaseCost();
         }
-        return reference.requireTreatment(appointment.getTreatmentId());
+        if (appointment.getCustomPrice() != null) {
+            return appointment.getCustomPrice();
+        }
+        throw new IllegalStateException(
+                appointment.getAppointmentNo() + " has no treatment and no recorded price,"
+                        + " so there is nothing to price. The dentist records the price"
+                        + " when completing the visit.");
     }
 
     private BillResponse describe(Bill bill, Appointment appointment) {
@@ -217,7 +226,19 @@ public class BillingService {
                 clinicAccess.patientById(appointment.getPatientId())
                         .map(Patient::getName).orElse(null),
                 reference.requireDentist(appointment.getDentistId()).getName(),
-                appointment.getTreatmentId() == null ? null
-                        : reference.requireTreatment(appointment.getTreatmentId()).getName());
+                treatmentName(appointment),
+                appointment.getDiagnosis());
+    }
+
+    /**
+     * What the receipt names as the Treatment line. A named treatment uses the
+     * catalog name; a treatment-less visit names the patient's own stated reason
+     * (GAP-REC-13) — non-clinical, so it is safe on every receipt.
+     */
+    private String treatmentName(Appointment appointment) {
+        if (appointment.getTreatmentId() != null) {
+            return reference.requireTreatment(appointment.getTreatmentId()).getName();
+        }
+        return appointment.getPatientReason() != null ? appointment.getPatientReason() : "Other";
     }
 }

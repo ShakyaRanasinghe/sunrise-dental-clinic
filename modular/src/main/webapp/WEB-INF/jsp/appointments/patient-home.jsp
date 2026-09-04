@@ -213,6 +213,14 @@
                             <tr><th>Patient</th><td><c:out value="${bill.patientName()}" /></td></tr>
                             <tr><th>Dentist</th><td><c:out value="${bill.dentistName()}" /></td></tr>
                             <tr><th>Treatment</th><td><c:out value="${bill.treatmentName()}" /></td></tr>
+                            <%--
+                                GAP-PAT-30: what the dentist recorded, on the patient's
+                                own copy only — this modal renders for the treated
+                                patient, whose detail row already carries it gated.
+                            --%>
+                            <c:if test="${not empty a.diagnosis()}">
+                                <tr><th>Dentist's note</th><td><c:out value="${a.diagnosis()}" /></td></tr>
+                            </c:if>
                             <tr><th>Issued</th><td>${bill.issuedAt()}</td></tr>
                         </tbody>
                     </table>

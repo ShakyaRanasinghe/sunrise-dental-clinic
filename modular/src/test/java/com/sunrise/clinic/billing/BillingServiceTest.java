@@ -303,4 +303,43 @@ class BillingServiceTest {
         assertThrows(IllegalStateException.class,
                 () -> other.issue(AppointmentTestFixture.reception(), no));
     }
+
+    // GAP-DEN-13 / GAP-REC-13: an "Other" visit carries the dentist's own price.
+
+    @Test
+    void completingAnOtherVisitWithoutAPriceIsRefused() {
+        appointments.addSlot("s2", LocalTime.of(10, 0));
+        String no = appointments.service.book(nimal, "s2", null, null, "sore wisdom tooth").appointmentNo();
+
+        assertThrows(IllegalArgumentException.class, () ->
+                appointments.service.complete(AppointmentTestFixture.silva(), no, "Wisdom tooth out"));
+    }
+
+    @Test
+    void anOtherVisitIsBilledAtTheDentistRecordedPrice() {
+        appointments.addSlot("s2", LocalTime.of(10, 0));
+        String no = appointments.service.book(nimal, "s2", null, null, "sore wisdom tooth").appointmentNo();
+        appointments.service.complete(AppointmentTestFixture.silva(), no,
+                "Wisdom tooth extracted", new BigDecimal("8000.00"));
+
+        BillResponse bill = billing.issue(AppointmentTestFixture.reception(), no);
+
+        assertEquals(new BigDecimal("8000.00"), bill.treatmentCost());
+        assertEquals(new BigDecimal("9700.00"), bill.total());
+        // GAP-REC-13: the receipt names the patient's stated reason…
+        assertEquals("sore wisdom tooth", bill.treatmentName());
+        // …GAP-PAT-30: and carries the dentist's description for patient views.
+        assertEquals("Wisdom tooth extracted", bill.diagnosis());
+    }
+
+    @Test
+    void aNamedTreatmentPricesFromTheCatalogNotThePassedPrice() {
+        appointments.service.complete(AppointmentTestFixture.silva(), appointmentNo,
+                "Scaling done", new BigDecimal("9999.00"));
+
+        BillResponse bill = billing.issue(AppointmentTestFixture.reception(), appointmentNo);
+
+        assertEquals(new BigDecimal("3500.00"), bill.treatmentCost());
+        assertEquals("Scaling & polishing", bill.treatmentName());
+    }
 }

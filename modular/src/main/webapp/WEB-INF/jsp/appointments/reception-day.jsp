@@ -62,7 +62,8 @@
                                 <td>${a.time()}</td>
                                 <td><c:out value="${a.patientName()}" /></td>
                                 <td><c:out value="${a.dentistName()}" /></td>
-                                <td><c:out value="${a.treatmentName()}" /></td>
+                                <%-- GAP-REC-13: an "Other" visit names the patient's stated reason. --%>
+                                <td><c:out value="${not empty a.treatmentName() ? a.treatmentName() : a.patientReason()}" /></td>
                                 <td><code>${a.appointmentNo()}</code></td>
                                 <td>
                                     <c:choose>

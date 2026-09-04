@@ -49,9 +49,12 @@ public class AppointmentApiServlet extends BaseServlet {
             switch (path.get(1)) {
                 case "cancel" -> writeJson(response,
                         app().appointmentService().cancel(currentUser(request), appointmentNo));
-                case "complete" -> writeJson(response, app().appointmentService().complete(
-                        currentUser(request), appointmentNo,
-                        Json.string(readBody(request), "diagnosis")));
+                case "complete" -> {
+                    Map<String, Object> body = readBody(request);
+                    writeJson(response, app().appointmentService().complete(
+                            currentUser(request), appointmentNo,
+                            Json.string(body, "diagnosis"), optionalPrice(body)));
+                }
                 case "bill" -> writeJson(response, HttpServletResponse.SC_CREATED,
                         app().billingService().issue(currentUser(request), appointmentNo));
                 default -> throw new IllegalArgumentException("Unknown endpoint");
@@ -108,5 +111,18 @@ public class AppointmentApiServlet extends BaseServlet {
             throw new IllegalArgumentException(field + " is required");
         }
         return value.trim();
+    }
+
+    /** GAP-DEN-13: optional ad-hoc price for treatment-less work; blank absorbs. */
+    private static java.math.BigDecimal optionalPrice(Map<String, Object> body) {
+        String raw = Json.string(body, "customPrice");
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return new java.math.BigDecimal(raw.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Price must be a number, like 4500.00");
+        }
     }
 }

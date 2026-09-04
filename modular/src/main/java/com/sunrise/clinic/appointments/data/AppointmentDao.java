@@ -17,9 +17,11 @@ import java.util.Optional;
 /** MySQL-backed {@link AppointmentRepository}. */
 public class AppointmentDao extends JdbcDao<Appointment, String> implements AppointmentRepository {
 
+    // GAP-DEN-13: custom_price carries the dentist-entered price for work with
+    // no catalog treatment.
     private static final String COLUMNS =
             "appointment_no, patient_id, dentist_id, slot_id, treatment_id, appointment_date, "
-                    + "appointment_time, status, diagnosis, patient_reason, created_by_uid, created_by_role, created_at";
+                    + "appointment_time, status, diagnosis, patient_reason, custom_price, created_by_uid, created_by_role, created_at";
 
     public AppointmentDao(Database db) {
         super(db);
@@ -56,7 +58,7 @@ public class AppointmentDao extends JdbcDao<Appointment, String> implements Appo
                     UPDATE appointment
                        SET patient_id = ?, dentist_id = ?, slot_id = ?, treatment_id = ?,
                            appointment_date = ?, appointment_time = ?, status = ?, diagnosis = ?,
-                           patient_reason = ?
+                           patient_reason = ?, custom_price = ?
                      WHERE appointment_no = ?
                     """, statement -> {
                 statement.setString(1, appointment.getPatientId());
@@ -68,15 +70,16 @@ public class AppointmentDao extends JdbcDao<Appointment, String> implements Appo
                 statement.setString(7, enumName(appointment.getStatus()));
                 statement.setString(8, appointment.getDiagnosis());
                 statement.setString(9, appointment.getPatientReason());
-                statement.setString(10, appointment.getAppointmentNo());
+                statement.setBigDecimal(10, appointment.getCustomPrice());
+                statement.setString(11, appointment.getAppointmentNo());
             });
             return appointment;
         }
         update("""
                 INSERT INTO appointment (appointment_no, patient_id, dentist_id, slot_id, treatment_id,
                                          appointment_date, appointment_time, status, diagnosis,
-                                         patient_reason, created_by_uid, created_by_role, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                         patient_reason, custom_price, created_by_uid, created_by_role, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, statement -> bindAppointment(statement, appointment));
         return appointment;
     }
@@ -167,9 +170,10 @@ public class AppointmentDao extends JdbcDao<Appointment, String> implements Appo
         statement.setString(8, enumName(a.getStatus()));
         statement.setString(9, a.getDiagnosis());
         statement.setString(10, a.getPatientReason());
-        statement.setString(11, a.getCreatedByUid());
-        statement.setString(12, enumName(a.getCreatedByRole()));
-        statement.setTimestamp(13, toSqlTimestamp(a.getCreatedAt()));
+        statement.setBigDecimal(11, a.getCustomPrice());
+        statement.setString(12, a.getCreatedByUid());
+        statement.setString(13, enumName(a.getCreatedByRole()));
+        statement.setTimestamp(14, toSqlTimestamp(a.getCreatedAt()));
     }
 
     private static Appointment mapAppointment(ResultSet rs) throws SQLException {
@@ -184,6 +188,7 @@ public class AppointmentDao extends JdbcDao<Appointment, String> implements Appo
                 .status(readEnum(rs, "status", AppointmentStatus.class))
                 .diagnosis(rs.getString("diagnosis"))
                 .patientReason(rs.getString("patient_reason"))
+                .customPrice(rs.getBigDecimal("custom_price"))
                 .createdByUid(rs.getString("created_by_uid"))
                 .createdByRole(readEnum(rs, "created_by_role", Role.class))
                 .createdAt(readInstant(rs, "created_at"))

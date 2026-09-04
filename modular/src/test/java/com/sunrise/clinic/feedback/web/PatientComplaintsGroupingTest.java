@@ -22,7 +22,7 @@ class PatientComplaintsGroupingTest {
     private AppointmentResponse visit(String no, String dentistId, String dentistName,
                                       String date, String treatment) {
         return new AppointmentResponse(no, "p-nimal", "Nimal", dentistId, dentistName,
-                "slot", "t-1", treatment, LocalDate.parse(date), LocalTime.of(10, 0),
+                "slot", "t-1", treatment, null, LocalDate.parse(date), LocalTime.of(10, 0),
                 AppointmentStatus.COMPLETED);
     }
 

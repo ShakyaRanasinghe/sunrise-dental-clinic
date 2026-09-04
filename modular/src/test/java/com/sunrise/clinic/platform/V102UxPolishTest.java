@@ -234,6 +234,36 @@ class V102UxPolishTest {
                 "the vague heading must be gone");
     }
 
+    // GAP-DEN-13: completing a treatment-less visit asks the dentist for the price.
+    @Test
+    void scheduleAsksPriceForTreatmentLessVisits() {
+        String schedule = read(JSP.resolve("appointments/dentist-schedule.jsp"));
+        assertTrue(schedule.contains("name=\"customPrice\""),
+                "the record form must accept the dentist-entered price");
+        assertTrue(schedule.contains("empty a.treatmentId"),
+                "the price field must show only where no catalog treatment exists");
+    }
+
+    // GAP-REC-13: desk screens fall back to the patient's stated reason.
+    @Test
+    void deskScreensFallBackToPatientReason() {
+        assertTrue(read(JSP.resolve("billing/billing.jsp")).contains("patientReason()"),
+                "the billing list must name the reason on treatment-less rows");
+    }
+
+    // GAP-PAT-30: the patient's own receipt views show the dentist's description,
+    // gated so reception and admin never see it on the shared receipt page.
+    @Test
+    void patientReceiptViewsShowDentistNote() {
+        String receipt = read(JSP.resolve("billing/receipt.jsp"));
+        assertTrue(receipt.contains("showClinical"),
+                "the shared receipt must gate the clinical row on the viewer");
+        assertTrue(receipt.contains("bill.diagnosis()"),
+                "the patient's copy must print the dentist's note");
+        assertTrue(read(JSP.resolve("appointments/patient-home.jsp")).contains("a.diagnosis()"),
+                "the dashboard receipt view must print the dentist's note");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test
