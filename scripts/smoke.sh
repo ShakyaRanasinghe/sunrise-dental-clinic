@@ -68,9 +68,9 @@ lacks() {
   esac
 }
 
-signin() {  # signin <portal> <email> -> writes a cookie jar, echoes its path
+signin() {  # signin <portal> <identity> -> writes a cookie jar, echoes its path
   local jar="$JARS/$1-$2"
-  curl -sS -o /dev/null -c "$jar" -d "email=$2&password=$PASSWORD" "$BASE/login/$1"
+  curl -sS -o /dev/null -c "$jar" -d "identity=$2&password=$PASSWORD" "$BASE/login/$1"
   echo "$jar"
 }
 
@@ -91,21 +91,22 @@ contains "every page carries a doctype" '<!doctype html>' "$(curl -sS "$BASE/")"
 # ---------------------------------------------------------------- sign in
 bold "1. the four portals"
 PATIENT=$(signin patient   nimal@example.lk)
-RECEPTION=$(signin reception reception@sunrisedental.lk)
-DENTIST=$(signin dentist   silva@sunrisedental.lk)
-OTHER_DENTIST=$(signin dentist jayasuriya@sunrisedental.lk)
-ADMIN=$(signin admin       admin@sunrisedental.lk)
+RECEPTION=$(signin reception reception)
+DENTIST=$(signin dentist   silva)
+OTHER_DENTIST=$(signin dentist jayasuriya)
+ADMIN=$(signin admin       admin)
 
 check "a patient lands on their own page"     200 "$(status "$PATIENT" /patient/home)"
 check "a receptionist lands on the day view"  200 "$(status "$RECEPTION" /reception/home)"
 check "a dentist lands on their schedule"     200 "$(status "$DENTIST" /dentist/schedule)"
 check "an administrator lands on reports"     200 "$(status "$ADMIN" /admin/reports)"
 
-WRONG_PASSWORD=$(curl -sS -d "email=nimal@example.lk&password=Wrong999" "$BASE/login/patient" \
+WRONG_PASSWORD=$(curl -sS -d "identity=nimal@example.lk&password=Wrong999" "$BASE/login/patient" \
   | grep -o 'Incorrect email or password.' | head -1)
-WRONG_PORTAL=$(curl -sS -d "email=admin@sunrisedental.lk&password=$PASSWORD" "$BASE/login/patient" \
+WRONG_PORTAL=$(curl -sS -d "identity=admin@sunrisedental.lk&password=$PASSWORD" "$BASE/login/patient" \
   | grep -o 'Incorrect email or password.' | head -1)
 check "a wrong portal reads like a wrong password" "$WRONG_PASSWORD" "$WRONG_PORTAL"
+check "a dentist lands on their schedule by email too" 200 "$(status "$(signin dentist silva@sunrisedental.lk)" /dentist/schedule)"
 
 # ---------------------------------------------------------------- registering
 bold "1a. a new patient registers"

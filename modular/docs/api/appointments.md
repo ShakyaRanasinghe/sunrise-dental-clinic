@@ -356,14 +356,14 @@ BASE=http://localhost:8080
 
 # Reception books
 curl -s -c r.txt -X POST $BASE/api/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"reception@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"reception","password":"Password123"}'
 APT=$(curl -s -b r.txt -X POST $BASE/api/appointments -H 'Content-Type: application/json' \
   -d '{"patientId":"p-nimal","slotId":"d-silva_2026-08-20_09:00","treatmentId":"t-scaling"}' \
   | grep -o '"appointmentNo":"[^"]*"' | cut -d'"' -f4)
 
 # The dentist completes it and records the diagnosis
 curl -s -c d.txt -X POST $BASE/api/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"silva@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"silva","password":"Password123"}'
 curl -s -b d.txt -X POST $BASE/api/appointments/$APT/complete \
   -H 'Content-Type: application/json' -d '{"diagnosis":"Scaling completed."}'
 

@@ -412,6 +412,9 @@ live, and each SRS row is marked **Fixed**.
       username-then-email with per-screen messages; portals derive label/field from role
       (subclasses untouched); admin form validates (3–32, unique) and lists it; seeds,
       local + prod backfilled. 381 green, verified live (username, fallback, validation).
+      Follow-up: demo credential references swept to usernames (`local-setup.md`,
+      `scenarios.md`, API docs, `dev-up.sh`); `smoke.sh` signs staff in by username with
+      an email-fallback check; JSON login accepts `identity` (email still accepted).
 
 - [x] **GAP-ADM-11** — staff accounts and new dentists carry database UUIDs (or name slugs):
       the administrator's people screens show no quotable identifier.

@@ -36,7 +36,7 @@ later call must send back.
 ```bash
 curl -i -c jar.txt -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"reception@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"reception","password":"Password123"}'
 ```
 
 **`200 OK`**

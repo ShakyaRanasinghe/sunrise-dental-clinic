@@ -24,13 +24,13 @@ starting from a known state is faster than unpicking what the last one did.
 
 **The accounts.** Every password is `Password123`.
 
-| Who | Portal | Email |
+| Who | Portal | Sign-in |
 |---|---|---|
 | Nimal Perera, a patient | `/login/patient` | `nimal@example.lk` |
-| Kumari Silva, reception | `/login/reception` | `reception@sunrisedental.lk` |
-| Dr. Ranil Silva | `/login/dentist` | `silva@sunrisedental.lk` |
-| Dr. Malini Jayasuriya | `/login/dentist` | `jayasuriya@sunrisedental.lk` |
-| Anoma Fernando, administrator | `/login/admin` | `admin@sunrisedental.lk` |
+| Kumari Silva, reception | `/login/reception` | username `reception` |
+| Dr. Ranil Silva | `/login/dentist` | username `silva` |
+| Dr. Malini Jayasuriya | `/login/dentist` | username `jayasuriya` |
+| Anoma Fernando, administrator | `/login/admin` | username `admin` |
 
 **How to read a scenario.** Each has a **Given** (what must already be true), numbered
 **When** steps in plain language, and a **Then** listing what you should be able to see. A
