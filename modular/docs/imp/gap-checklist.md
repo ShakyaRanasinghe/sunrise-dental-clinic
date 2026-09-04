@@ -233,6 +233,13 @@ live, and each SRS row is marked **Fixed**.
 
 ## Patient — `srs-patient.md`
 
+- [x] **GAP-PAT-31** — opening Book with no open slots anywhere renders a bare title:
+      the patient overview is empty and the walk-in flow names no doctors.
+      **Accept:** both booking entries say plainly that no doctor is available today and
+      to check later (patient card; walk-in notice when no active doctors).
+      **Done:** `book.jsp` no-doctors card; `walkin.jsp` no-doctors notice. Tests green,
+      verified live.
+
 - [x] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
       service on the public home page.
       **Accept:** a service description is shown with no "Book" call-to-action inviting a

@@ -127,6 +127,14 @@
             <a href="${ctx}/reception/dentists">See all consultation fees</a>.
         </div>
 
+        <%-- GAP-PAT-31: no active doctors at all reads differently from a full
+             day — say so plainly instead of only reporting the empty diary. --%>
+        <c:if test="${empty dentists}">
+            <div class="notice" style="margin-top:1rem;">
+                There are no available doctors today. Please check later or publish
+                availability first.
+            </div>
+        </c:if>
         <c:choose>
             <c:when test="${empty slots}">
                 <p class="page-subtitle" style="margin-top:1rem;">

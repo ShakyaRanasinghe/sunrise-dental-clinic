@@ -30,6 +30,18 @@
     Each dentist card shows their dates with open slots. Clicking a date pre-selects
     that dentist and date in the booking form below.
 --%>
+<%--
+    GAP-PAT-31: with no open slots anywhere the overview is empty and the page
+    would otherwise render nothing but its title — a blank page that reads as
+    broken. Say plainly that no doctor is available and what to do next.
+--%>
+<c:if test="${empty availabilityOverview and empty dentistId}">
+    <div class="card">
+        <h2>No doctors available</h2>
+        <p class="page-subtitle">There are no available doctors today. Please check
+            later or telephone the clinic — new times open as the diary is published.</p>
+    </div>
+</c:if>
 <c:if test="${not empty availabilityOverview}">
     <div class="card availability-overview">
         <h2>Open days in the next two weeks</h2>

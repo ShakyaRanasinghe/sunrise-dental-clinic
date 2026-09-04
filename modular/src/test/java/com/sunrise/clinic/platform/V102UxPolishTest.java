@@ -58,6 +58,17 @@ class V102UxPolishTest {
                 "dentists with a publishable rating must still show it");
     }
 
+    // GAP-PAT-31: booking with nothing to offer says so instead of blank.
+    @Test
+    void bookingNamesNoDoctors() {
+        String book = read(JSP.resolve("appointments/book.jsp"));
+        assertTrue(book.contains("No doctors available"),
+                "an empty overview must render a no-doctors card");
+        String walkin = read(JSP.resolve("scheduling/walkin.jsp"));
+        assertTrue(walkin.contains("There are no available doctors today"),
+                "walk-in with no active doctors must say so");
+    }
+
     // GAP-PAT-23: dentist cards render whole, with no expand toggle.
     @Test
     void dentistCardsAreFullyDisplayed() {
