@@ -425,6 +425,25 @@ class V102UxPolishTest {
                 "the register must show the desk number");
     }
 
+    // GAP-ADM-12: staff portals ask for a username (patient keeps email), and the
+    // administrator provisions and lists usernames.
+    @Test
+    void staffPortalsAskForUsernames() {
+        String form = read(JSP.resolve("access/login-form.jspf"));
+        assertTrue(form.contains("name=\"identity\""),
+                "the shared form must post the identity field");
+        assertTrue(form.contains("identityLabel"),
+                "the label must come from the portal (Username vs Email address)");
+        String base = read(JAVA.resolve("com/sunrise/clinic/access/web/AbstractLoginServlet.java"));
+        assertTrue(base.contains("\"Username\"") && base.contains("\"Email address\""),
+                "the base servlet must derive the label from the role");
+        String accounts = read(JSP.resolve("reporting/accounts.jsp"));
+        assertTrue(accounts.contains("name=\"username\""),
+                "staff creation must ask for a username");
+        assertTrue(accounts.contains("${a.username()}"),
+                "the Accounts table must show usernames");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

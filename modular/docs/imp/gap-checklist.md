@@ -385,6 +385,16 @@ live, and each SRS row is marked **Fixed**.
 
 ## Admin — `srs-admin.md`
 
+- [x] **GAP-ADM-12** — staff sign in with email addresses; the desk wants username logins.
+      Only staff change — patients keep email sign-in.
+      **Accept:** reception/dentist/admin portals ask for a username (email still works as
+      fallback); the administrator assigns the username when creating the account; existing
+      staff rows are backfilled; the Accounts table shows usernames.
+      **Done:** `user_account.username` (unique, NULL for patients); `AuthService` looks up
+      username-then-email with per-screen messages; portals derive label/field from role
+      (subclasses untouched); admin form validates (3–32, unique) and lists it; seeds,
+      local + prod backfilled. 381 green, verified live (username, fallback, validation).
+
 - [x] **GAP-ADM-11** — staff accounts and new dentists carry database UUIDs (or name slugs):
       the administrator's people screens show no quotable identifier.
       **Accept:** every new account gets a readable number `YYMMDD + ROLE + NNNN`

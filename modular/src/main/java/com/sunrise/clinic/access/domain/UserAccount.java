@@ -15,6 +15,9 @@ public class UserAccount {
     // GAP-ADM-11: the readable account number (YYMMDD + ROLE + NNNN). The uuid
     // stays the primary key; this is what people quote.
     private String accountNo;
+    // GAP-ADM-12: the staff sign-in name. NULL for patients (email-only);
+    // set at creation for staff, unique where present.
+    private String username;
     private String email;
     private String passwordHash;   // PBKDF2 hash, never the plaintext
     private String displayName;
@@ -28,12 +31,13 @@ public class UserAccount {
     }
 
     public UserAccount(String uid, String email, String passwordHash, String displayName, Role role, boolean active, int failedAttempts, boolean locked, Instant createdAt) {
-        this(uid, null, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
+        this(uid, null, null, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
     }
 
-    public UserAccount(String uid, String accountNo, String email, String passwordHash, String displayName, Role role, boolean active, int failedAttempts, boolean locked, Instant createdAt) {
+    public UserAccount(String uid, String accountNo, String username, String email, String passwordHash, String displayName, Role role, boolean active, int failedAttempts, boolean locked, Instant createdAt) {
         this.uid = uid;
         this.accountNo = accountNo;
+        this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
         this.displayName = displayName;
@@ -58,6 +62,14 @@ public class UserAccount {
 
     public void setAccountNo(String accountNo) {
         this.accountNo = accountNo;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -149,6 +161,7 @@ public class UserAccount {
     public static class Builder {
         private String uid;
         private String accountNo;
+        private String username;
         private String email;
         private String passwordHash;
         private String displayName;
@@ -165,6 +178,11 @@ public class UserAccount {
 
         public Builder accountNo(String accountNo) {
             this.accountNo = accountNo;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
             return this;
         }
 
@@ -209,7 +227,7 @@ public class UserAccount {
         }
 
         public UserAccount build() {
-            return new UserAccount(uid, accountNo, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
+            return new UserAccount(uid, accountNo, username, email, passwordHash, displayName, role, active, failedAttempts, locked, createdAt);
         }
     }
 }

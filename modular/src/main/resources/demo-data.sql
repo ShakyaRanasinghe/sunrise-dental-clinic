@@ -16,13 +16,13 @@
 USE sunrise_dental;
 
 -- --- Accounts -------------------------------------------------------
-INSERT INTO user_account (uid, email, password_hash, display_name, role, active, created_at) VALUES
-    ('u-admin', 'admin@sunrisedental.lk',      '120000:F5/mkW3ArrZkD4wL+n3IdQ==:e21fp1QzrNg01tsSh2aL7slJJ3vUCC97zPO+AgaHH3k=',  'Anoma Fernando', 'ADMIN',        TRUE, NOW()),
-    ('u-recep', 'reception@sunrisedental.lk',  '120000:Ry7JwtDQ2FRQ1dH/DHG8Ng==:HLCxZ9k4liUSuXLzzP8Tjfc5Jg/mXOG0PDKcCAQC7aM=',  'Kumari Silva',   'RECEPTIONIST', TRUE, NOW()),
-    ('u-dent1', 'silva@sunrisedental.lk',      '120000:6u8txaX78YBpXF35aTMIiw==:ib1+vyTMB1gtt6FsCouUn44yqyec9c+hXIKTWIlrSaI=',  'Dr. Ranil Silva','DENTIST',      TRUE, NOW()),
-    ('u-dent2', 'jayasuriya@sunrisedental.lk', '120000:mbphz/mRW/Hv58sZ6yYDGA==:azdmsHf3mfsHp71PV8qloweZV4UbxBcLcV6mdAERZ0w=',  'Dr. Malini Jayasuriya', 'DENTIST', TRUE, NOW()),
-    ('u-pat1',  'nimal@example.lk',            '120000:0jEt7Bx5pU0SFilh3zmVbg==:UudqzcEZZjEwYy5wKnyGghxKtVBEcL1LnGBec9dYCdo=',   'Nimal Perera',   'PATIENT',      TRUE, NOW())
-    AS new ON DUPLICATE KEY UPDATE password_hash = new.password_hash;
+INSERT INTO user_account (uid, username, email, password_hash, display_name, role, active, created_at) VALUES
+    ('u-admin', 'admin',      'admin@sunrisedental.lk',      '120000:F5/mkW3ArrZkD4wL+n3IdQ==:e21fp1QzrNg01tsSh2aL7slJJ3vUCC97zPO+AgaHH3k=',  'Anoma Fernando', 'ADMIN',        TRUE, NOW()),
+    ('u-recep', 'reception',  'reception@sunrisedental.lk',  '120000:Ry7JwtDQ2FRQ1dH/DHG8Ng==:HLCxZ9k4liUSuXLzzP8Tjfc5Jg/mXOG0PDKcCAQC7aM=',  'Kumari Silva',   'RECEPTIONIST', TRUE, NOW()),
+    ('u-dent1', 'silva',      'silva@sunrisedental.lk',      '120000:6u8txaX78YBpXF35aTMIiw==:ib1+vyTMB1gtt6FsCouUn44yqyec9c+hXIKTWIlrSaI=',  'Dr. Ranil Silva','DENTIST',      TRUE, NOW()),
+    ('u-dent2', 'jayasuriya', 'jayasuriya@sunrisedental.lk', '120000:mbphz/mRW/Hv58sZ6yYDGA==:azdmsHf3mfsHp71PV8qloweZV4UbxBcLcV6mdAERZ0w=',  'Dr. Malini Jayasuriya', 'DENTIST', TRUE, NOW()),
+    ('u-pat1',  NULL,         'nimal@example.lk',            '120000:0jEt7Bx5pU0SFilh3zmVbg==:UudqzcEZZjEwYy5wKnyGghxKtVBEcL1LnGBec9dYCdo=',   'Nimal Perera',   'PATIENT',      TRUE, NOW())
+    AS new ON DUPLICATE KEY UPDATE password_hash = new.password_hash, username = new.username;
 
 -- --- Dentists -------------------------------------------------------
 INSERT INTO dentist (id, user_uid, name, specialization, phone, consultation_fee, active) VALUES

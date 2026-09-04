@@ -28,6 +28,7 @@
                 <table>
                     <tbody>
                         <tr><th>Name</th><td><c:out value="${created.account().displayName()}" /></td></tr>
+                        <tr><th>Username</th><td><code><c:out value="${created.account().username()}" /></code></td></tr>
                         <tr><th>Email</th><td><c:out value="${created.account().email()}" /></td></tr>
                         <tr><th>Role</th><td>${created.account().role()}</td></tr>
                         <tr><th>One-time password</th>
@@ -68,6 +69,14 @@
                     </c:forEach>
                 </select>
             </div>
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required
+                       pattern="[a-z0-9._-]{3,32}"
+                       title="3 to 32 lowercase letters, digits, dots, dashes or underscores."
+                       placeholder="e.g. nimal.desk">
+                <p class="hint">How they sign in — email works too.</p>
+            </div>
         </div>
         <%--
             Only meaningful for a dentist, and harmless otherwise — the service ignores
@@ -101,12 +110,13 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Account ID</th><th>Name</th><th>Email</th><th>Role</th><th>State</th><th></th></tr>
+                <tr><th>Account ID</th><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>State</th><th></th></tr>
             </thead>
             <tbody>
                 <c:forEach var="a" items="${accounts}">
                     <tr>
                         <td><code><c:out value="${a.accountNumber()}" /></code></td>
+                        <td><c:out value="${a.username()}" /></td>
                         <td><c:out value="${a.displayName()}" /></td>
                         <td><c:out value="${a.email()}" /></td>
                         <td>${a.role()}</td>

@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS user_account (
     uid             VARCHAR(64)  NOT NULL,
     account_no      VARCHAR(16) NULL,      -- GAP-ADM-11: readable YYMMDD + ROLE + NNNN,
     UNIQUE KEY uq_account_no (account_no), -- backfilled; set on every new row.
+    username        VARCHAR(64) NULL,      -- GAP-ADM-12: staff sign-in name; NULL for
+    UNIQUE KEY uq_username (username),     -- patients (email-only). Backfilled for staff.
     email           VARCHAR(255) NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,   -- PBKDF2: iterations:salt:hash
     display_name    VARCHAR(255),

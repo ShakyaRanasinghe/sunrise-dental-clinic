@@ -41,7 +41,8 @@ public class AccountsServlet extends PageServlet {
                         requiredField(request, "displayName", "Name"),
                         role(request),
                         field(request, "specialization"),
-                        fee(request));
+                        fee(request),
+                        requiredField(request, "username", "Username"));
                 case "unlock" -> accounts.unlock(currentUser(request),
                         requiredField(request, "uid", "Account"));
                 case "deactivate" -> accounts.setActive(currentUser(request),

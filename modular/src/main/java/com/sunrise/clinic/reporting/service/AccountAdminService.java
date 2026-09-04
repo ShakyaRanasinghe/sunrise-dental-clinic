@@ -63,11 +63,13 @@ public class AccountAdminService {
     }
 
     /** An account as the administration screen lists it. Never carries the hash. */
-    public record AccountRow(String uid, String accountNo, String email, String displayName,
+    public record AccountRow(String uid, String accountNo, String username, String email,
+                             String displayName,
                              Role role, boolean active, boolean locked, int failedAttempts) {
 
         public static AccountRow of(UserAccount account) {
-            return new AccountRow(account.getUid(), account.getAccountNo(), account.getEmail(),
+            return new AccountRow(account.getUid(), account.getAccountNo(),
+                    account.getUsername(), account.getEmail(),
                     account.getDisplayName(),
                     account.getRole(), account.isActive(), account.isLocked(),
                     account.getFailedAttempts());
@@ -115,11 +117,13 @@ public class AccountAdminService {
      * work.</p>
      */
     public NewAccount createStaff(ClinicPrincipal caller, String email, String displayName,
-                                  Role role, String specialization, BigDecimal consultationFee) {
+                                  Role role, String specialization, BigDecimal consultationFee,
+                                  String username) {
         AccessControl.require(caller, Action.MANAGE_ACCOUNTS);
 
         String oneTimePassword = generatePassword();
-        UserAccount account = factory.createStaff(email, oneTimePassword, displayName, role);
+        UserAccount account = factory.createStaff(email, oneTimePassword, displayName, role,
+                username);
 
         if (role == Role.DENTIST) {
             Dentist dentist = Dentist.builder()

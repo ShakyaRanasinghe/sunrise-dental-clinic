@@ -43,8 +43,20 @@ public abstract class AbstractLoginServlet extends PageServlet {
 
     private static final Logger log = Logger.getLogger(AbstractLoginServlet.class.getName());
 
+    /**
+     * GAP-ADM-12: staff portals ask for a username, the patient portal for an email.
+     * Derived from the admitted role here — not overridden per subclass — so the four
+     * portals stay at two declared methods each (see AbstractLoginServletTest).
+     */
+    private boolean usernamePortal() {
+        return acceptedRole() != Role.PATIENT;
+    }
+
     /** Shown for a wrong password and for a wrong portal alike. */
-    private static final String REJECTED = "Incorrect email or password.";
+    private String rejectedMessage() {
+        return usernamePortal() ? "Incorrect username or password."
+                : "Incorrect email or password.";
+    }
 
     // ------------------------------------------------------------------
     //  What a subclass must supply
@@ -89,31 +101,33 @@ public abstract class AbstractLoginServlet extends PageServlet {
     @Override
     protected final void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, jakarta.servlet.ServletException {
-        String email = trim(request.getParameter("email"));
+        String identity = trim(request.getParameter("identity"));
         String password = request.getParameter("password");
 
-        if (email.isEmpty() || password == null || password.isEmpty()) {
-            renderForm(request, response, "Enter your email address and password.", email);
+        if (identity.isEmpty() || password == null || password.isEmpty()) {
+            renderForm(request, response, usernamePortal()
+                    ? "Enter your username and password."
+                    : "Enter your email address and password.", identity);
             return;
         }
 
-        AuthService.LoginResult result = app().authService().login(email, password);
+        AuthService.LoginResult result = app().authService().login(identity, password);
 
         if (!result.success()) {
             if (auditFailedAttempts()) {
-                log.log(Level.WARNING, "admin_portal_login_failed email={0}", email);
+                log.log(Level.WARNING, "admin_portal_login_failed identity={0}", identity);
             }
             // The service's own message is used here because it distinguishes a
             // locked account, which the holder needs to be told about.
-            renderForm(request, response, result.message(), email);
+            renderForm(request, response, result.message(), identity);
             return;
         }
 
         if (result.user().getRole() != acceptedRole()) {
             // Correct password, wrong portal. Same message, same work done.
-            log.log(Level.INFO, "wrong_portal email={0} role={1} portal={2}",
-                    new Object[]{email, result.user().getRole(), acceptedRole()});
-            renderForm(request, response, REJECTED, email);
+            log.log(Level.INFO, "wrong_portal identity={0} role={1} portal={2}",
+                    new Object[]{identity, result.user().getRole(), acceptedRole()});
+            renderForm(request, response, rejectedMessage(), identity);
             return;
         }
 
@@ -121,15 +135,18 @@ public abstract class AbstractLoginServlet extends PageServlet {
                 result.user().getUid(), result.user().getDisplayName(), result.user().getRole());
         AuthenticationFilter.establishSession(request, principal);
 
-        log.log(Level.INFO, "login_success email={0} role={1}",
-                new Object[]{email, acceptedRole()});
+        log.log(Level.INFO, "login_success identity={0} role={1}",
+                new Object[]{identity, acceptedRole()});
         redirect(request, response, RolePolicy.of(acceptedRole()).homePath());
     }
 
     private void renderForm(HttpServletRequest request, HttpServletResponse response,
-                            String error, String email) throws IOException, jakarta.servlet.ServletException {
+                            String error, String identity) throws IOException, jakarta.servlet.ServletException {
         request.setAttribute("error", error);
-        request.setAttribute("email", email == null ? "" : email);
+        request.setAttribute("identity", identity == null ? "" : identity);
+        request.setAttribute("identityLabel",
+                usernamePortal() ? "Username" : "Email address");
+        request.setAttribute("identityInputType", usernamePortal() ? "text" : "email");
         // Where the form posts back to. It cannot be read from the request: this
         // JSP is reached by a forward, so getServletPath() returns the view's own
         // path, and the form posted to /WEB-INF/jsp/access/login-dentist.jsp -

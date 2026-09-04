@@ -40,7 +40,8 @@ public class AccountApiServlet extends BaseServlet {
                     required(body, "email"),
                     required(body, "password"),
                     required(body, "displayName"),
-                    role);
+                    role,
+                    required(body, "username"));
 
             writeJson(response, HttpServletResponse.SC_CREATED, Map.of(
                     "uid", created.getUid(),

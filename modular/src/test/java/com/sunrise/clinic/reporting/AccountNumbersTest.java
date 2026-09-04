@@ -44,7 +44,7 @@ class AccountNumbersTest {
     void newDentistGetsANumberedId() {
         AccountAdminService.NewAccount created = accounts.createStaff(ADMIN,
                 "newdoc@example.lk", "Dr. New Doc", Role.DENTIST, "General Dentistry",
-                new BigDecimal("1500.00"));
+                new BigDecimal("1500.00"), "new.doc");
 
         assertTrue(created.account().accountNumber().matches("\\d{6}DEN\\d{4}"),
                 "dentist accounts get YYMMDDDENNNNN: " + created.account().accountNumber());
@@ -55,7 +55,7 @@ class AccountNumbersTest {
     @Test
     void newReceptionistGetsANumberedAccount() {
         AccountAdminService.NewAccount created = accounts.createStaff(ADMIN,
-                "desk@example.lk", "Desk Person", Role.RECEPTIONIST, null, null);
+                "desk@example.lk", "Desk Person", Role.RECEPTIONIST, null, null, "desk.person");
 
         assertTrue(created.account().accountNumber().matches("\\d{6}REC\\d{4}"),
                 "reception accounts get YYMMDDRECNNNN: " + created.account().accountNumber());

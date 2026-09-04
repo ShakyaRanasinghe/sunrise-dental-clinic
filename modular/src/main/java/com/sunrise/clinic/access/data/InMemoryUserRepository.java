@@ -25,4 +25,16 @@ public class InMemoryUserRepository
                 .filter(u -> u.getEmail() != null && normalised.equals(u.getEmail().toLowerCase()))
                 .findFirst();
     }
+
+    @Override
+    public Optional<UserAccount> findByUsername(String username) {
+        if (username == null) {
+            return Optional.empty();
+        }
+        String normalised = username.trim().toLowerCase();
+        return store.values().stream()
+                .filter(u -> u.getUsername() != null
+                        && normalised.equals(u.getUsername().toLowerCase()))
+                .findFirst();
+    }
 }

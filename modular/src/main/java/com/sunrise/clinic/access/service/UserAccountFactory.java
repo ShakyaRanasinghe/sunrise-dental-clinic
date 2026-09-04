@@ -56,18 +56,41 @@ public class UserAccountFactory {
     }
 
     /** Creates a staff account. Refuses {@code PATIENT}. */
-    public UserAccount createStaff(String email, String password, String displayName, Role role) {
+    public UserAccount createStaff(String email, String password, String displayName, Role role,
+                                   String username) {
         if (role == Role.PATIENT) {
             throw new IllegalArgumentException(
                     "Patients register themselves; an administrator does not create them.");
         }
-        return create(email, password, displayName, role);
+        return create(email, password, displayName, role, validUsername(username));
+    }
+
+    /**
+     * GAP-ADM-12: staff sign-in names — lowercase letters, digits, dot, dash and
+     * underscore, 3 to 32 long, unique. Stored lowercase so sign-in is case-blind.
+     */
+    public static String validUsername(String username) {
+        String clean = username == null ? "" : username.trim().toLowerCase();
+        if (!clean.matches("[a-z0-9._-]{3,32}")) {
+            throw new IllegalArgumentException(
+                    "Username must be 3 to 32 lowercase letters, digits, dots, dashes or underscores.");
+        }
+        return clean;
     }
 
     private UserAccount create(String email, String password, String displayName, Role role) {
+        return create(email, password, displayName, role, null);
+    }
+
+    private UserAccount create(String email, String password, String displayName, Role role,
+                               String username) {
         String key = normalise(email);
         if (users.findByEmail(key).isPresent()) {
             throw new IllegalArgumentException("An account already exists for " + key);
+        }
+        if (username != null && users.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException(
+                    "That username is taken. Choose another.");
         }
         UserAccount account = UserAccount.builder()
                 .uid(UUID.randomUUID().toString())
@@ -75,6 +98,7 @@ public class UserAccountFactory {
                 // (older tests) leave it null and are backfilled by migration.
                 .accountNo(numbers == null ? null
                         : numbers.next(java.time.LocalDate.now(), roleCode(role)))
+                .username(username)
                 .email(key)
                 .passwordHash(PasswordHasher.hash(password))
                 .displayName(displayName)
