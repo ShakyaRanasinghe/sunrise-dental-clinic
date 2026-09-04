@@ -320,6 +320,18 @@ class V102UxPolishTest {
                 "the dentist profile must state the configured share");
     }
 
+    // GAP-DEN-16: windows first with day totals and Full pills, treatments below.
+    @Test
+    void availabilityLeadsWithFriendlyWindows() {
+        String page = read(JSP.resolve("appointments/dentist-availability.jsp"));
+        int windows = page.indexOf("still open");
+        int treatments = page.indexOf("Treatments I offer");
+        assertTrue(windows >= 0 && windows < treatments,
+                "the time windows must come before the treatments list");
+        assertTrue(page.contains("pill open") && page.contains(">Full<"),
+                "open windows read as pills and exhausted ones as Full");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

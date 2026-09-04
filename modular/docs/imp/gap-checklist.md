@@ -121,6 +121,15 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       header menu entry; `web.xml` mapping; `servlets.md` 41 servlets / 46 routes.
       347 green, verified live.
 
+- [x] **GAP-DEN-16** — the availability screen leads with "Treatments I offer" while the
+      time windows sit below, and the windows table is bare counts — a dentist cannot see
+      at a glance what is booked and what remains.
+      **Accept:** the time windows come first with the treatments list below; each day
+      headlines booked/open totals and an exhausted window reads Full.
+      **Done:** sections swapped; day headlined "N booked · M still open"; open cells are
+      green pills, exhausted ones read Full (`dentist-availability.jsp`). Tests green,
+      verified live.
+
 - [x] **GAP-DEN-15** — a dentist never sees the revenue share the administrator configured:
       the dashboard shows the consultation fee but nothing says what fraction of each
       treatment price comes to them.

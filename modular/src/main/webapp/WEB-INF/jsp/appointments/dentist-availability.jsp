@@ -28,6 +28,60 @@
         </div>
     </div>
 </c:if>
+<%--
+    GAP-DEN-16: the time windows come first — they are what the dentist checks daily —
+    with the treatments list below. Each day headlines its booked/open totals so the
+    state of the day reads at a glance, and a window with nothing left shows Full.
+--%>
+<c:choose>
+    <c:when test="${not hasAvailability}">
+        <div class="card">
+            <p class="page-subtitle">No published availability yet. Reception will create time windows for you.</p>
+        </div>
+    </c:when>
+    <c:otherwise>
+        <c:forEach var="entry" items="${byDate}">
+            <c:set var="dayBooked" value="0" />
+            <c:set var="dayOpen" value="0" />
+            <c:forEach var="info" items="${entry.value}">
+                <c:set var="dayBooked" value="${dayBooked + info.booked()}" />
+                <c:set var="dayOpen" value="${dayOpen + info.open()}" />
+            </c:forEach>
+            <div class="card">
+                <h2>${entry.key}</h2>
+                <p class="page-subtitle">${dayBooked} booked &middot; ${dayOpen} still open</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>From</th><th>To</th><th>Open</th><th>Booked</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="info" items="${entry.value}">
+                                <tr>
+                                    <td>${info.startTime()}</td>
+                                    <td>${info.endTime()}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${info.open() gt 0}">
+                                                <span class="pill open">${info.open()} open</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="pill booked">Full</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td><span class="count">${info.booked()}</span></td>
+                                    <td><span class="count">${info.total()}</span></td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </c:forEach>
+    </c:otherwise>
+</c:choose>
+
 <%-- GAP-FTB-07: the treatments this dentist offers. A toggle list; patients booking
      with this dentist see only the checked treatments. "Other (describe…)" is always
      available, so disabling everything is never a dead end. --%>
@@ -59,38 +113,5 @@
         </form>
     </c:forEach>
 </div>
-
-<c:choose>
-    <c:when test="${not hasAvailability}">
-        <div class="card">
-            <p class="page-subtitle">No published availability yet. Reception will create time windows for you.</p>
-        </div>
-    </c:when>
-    <c:otherwise>
-        <c:forEach var="entry" items="${byDate}">
-            <div class="card">
-                <h2>${entry.key}</h2>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr><th>From</th><th>To</th><th>Open</th><th>Booked</th><th>Total</th></tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="info" items="${entry.value}">
-                                <tr>
-                                    <td>${info.startTime()}</td>
-                                    <td>${info.endTime()}</td>
-                                    <td><span class="count">${info.open()}</span></td>
-                                    <td><span class="count">${info.booked()}</span></td>
-                                    <td><span class="count">${info.total()}</span></td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </c:forEach>
-    </c:otherwise>
-</c:choose>
 
 <%@ include file="/WEB-INF/jsp/shared/footer.jspf" %>
