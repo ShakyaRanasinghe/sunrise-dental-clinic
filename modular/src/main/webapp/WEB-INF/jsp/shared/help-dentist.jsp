@@ -16,6 +16,7 @@
     <h2>Help topics</h2>
     <div class="help-toc__links">
         <a class="help-toc__item" href="#schedule">Your schedule</a>
+        <a class="help-toc__item" href="#profile">Your details</a>
         <a class="help-toc__item" href="#availability">Publishing availability</a>
         <a class="help-toc__item" href="#offered">Treatments you offer</a>
         <a class="help-toc__item" href="#treating">Recording treatment</a>
@@ -26,6 +27,11 @@
 <div class="card" id="schedule">
     <h2>Your schedule</h2>
     <p>Open <a href="${ctx}/dentist/schedule">Schedule</a> to see today's patients first, finished visits folded below, and upcoming appointments last. An empty day says plainly that nothing is booked. Open an appointment to record the visit.</p>
+</div>
+
+<div class="card" id="profile">
+    <h2>Your details</h2>
+    <p>Open <strong>My details</strong> from the account menu to see your profile as patients see it. Choose <strong>Edit details</strong> to change your name, specialisation or phone number, then save — a confirmation window tells you it is stored. Your consultation fee is set by the administrator and cannot be changed here.</p>
 </div>
 
 <div class="card" id="availability">

@@ -109,6 +109,18 @@ Status definitions used in the SRS tables: **Open** · **Fixed** — awaiting ve
       styled like the done list (`app.css`); summary carries time, patient, status and
       the flag. Tests green, verified live.
 
+- [x] **GAP-DEN-14** — only the patient has a **"My details"** profile section; a dentist has
+      nowhere to see or edit their own profile (name, specialisation, phone) as the public
+      cards show it.
+      **Accept:** the account menu offers the dentist "My details" (`/dentist/profile`),
+      read-only by default with an Edit control for name/specialisation/phone; the
+      consultation fee stays view-only (administrator-owned).
+      **Done:** `DentistProfileServlet` (`/dentist/profile`, `scheduling/dentist-profile.jsp`)
+      with the read-only + `${editing}`-gated form and success sub-window;
+      `ReferenceService.updateOwnDetails`/`ownProfile` (fee untouched, phone validated);
+      header menu entry; `web.xml` mapping; `servlets.md` 41 servlets / 46 routes.
+      347 green, verified live.
+
 - [x] **GAP-DEN-13** — completing an **"Other (describe…)"** visit records the diagnosis but
       **no price**: there is no catalog treatment to price it from, so the visit can never
       be billed.

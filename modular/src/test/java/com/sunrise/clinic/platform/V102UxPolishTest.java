@@ -264,6 +264,23 @@ class V102UxPolishTest {
                 "the dashboard receipt view must print the dentist's note");
     }
 
+    // GAP-DEN-14: the dentist's own profile — read-only with an Edit gate that
+    // tests the Boolean (cf. the old profile bug), fee view-only, saves confirm.
+    @Test
+    void dentistProfileIsReadOnlyWithAnEditGate() {
+        String profile = read(JSP.resolve("scheduling/dentist-profile.jsp"));
+        assertTrue(profile.contains("<c:when test=\"${editing}\">"),
+                "the edit form must render only when editing is true");
+        assertFalse(profile.contains("not empty editing"),
+                "`not empty` on a Boolean never gates anything");
+        assertTrue(profile.contains("Successfully updated"),
+                "a saved profile must confirm in a sub-window");
+        assertTrue(read(JSP.resolve("shared/header.jspf")).contains("/dentist/profile"),
+                "the account menu must offer the dentist My details");
+        assertTrue(read(WEB_XML).contains("<url-pattern>/dentist/profile</url-pattern>"),
+                "web.xml must map the dentist profile");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

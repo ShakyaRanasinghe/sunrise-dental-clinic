@@ -298,6 +298,19 @@
         <url-pattern>/dentist/availability</url-pattern>
     </servlet-mapping>
 
+    <!--
+        GAP-DEN-14: the dentist's own profile — name, specialisation and phone as
+        the public cards show them, editable from the dashboard.
+    -->
+    <servlet>
+        <servlet-name>DentistProfile</servlet-name>
+        <servlet-class>com.sunrise.clinic.scheduling.web.DentistProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DentistProfile</servlet-name>
+        <url-pattern>/dentist/profile</url-pattern>
+    </servlet-mapping>
+
     <!-- ============================================================ -->
     <!--  billing                                                     -->
     <!-- ============================================================ -->
