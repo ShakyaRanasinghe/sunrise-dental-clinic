@@ -147,6 +147,9 @@ public abstract class AbstractLoginServlet extends PageServlet {
         request.setAttribute("identityLabel",
                 usernamePortal() ? "Username" : "Email address");
         request.setAttribute("identityInputType", usernamePortal() ? "text" : "email");
+        // GAP-ADM-14: staff doors show the bare branded bar — theme and role label,
+        // no public navigation. The patient portal keeps the public bar.
+        request.setAttribute("hidePublicNav", usernamePortal());
         // Where the form posts back to. It cannot be read from the request: this
         // JSP is reached by a forward, so getServletPath() returns the view's own
         // path, and the form posted to /WEB-INF/jsp/access/login-dentist.jsp -

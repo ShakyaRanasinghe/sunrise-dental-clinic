@@ -385,6 +385,15 @@ live, and each SRS row is marked **Fixed**.
 
 ## Admin — `srs-admin.md`
 
+- [x] **GAP-ADM-14** — staff login pages wear the full public navigation (Services, Dentists,
+      Help, Sign in, Register) although staff never use it, and signing out drops every role
+      on the public home page instead of the staff doors.
+      **Accept:** staff logins and `/staff` show the bare branded bar (theme + role label,
+      no public links); signing out lands staff on `/staff` and patients on `/`.
+      **Done:** `hidePublicNav` from role (patient keeps bar) + `/staff`; header gates on
+      `not` (never `empty` on the Boolean); logout reads the role before clearing.
+      383 green, verified live.
+
 - [x] **GAP-ADM-13** — the Accounts table has no role filter, and the appointments tables
       (reception day view, billing day list, admin complaints) sort one fixed way with no
       control.

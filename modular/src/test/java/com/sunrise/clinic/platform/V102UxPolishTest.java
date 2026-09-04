@@ -462,6 +462,20 @@ class V102UxPolishTest {
                 "the complaints queue needs a newest/oldest control");
     }
 
+    // GAP-ADM-14: staff doors render the bare bar (flag set, nav gated with
+    // `not`, never `empty` on a Boolean); sign-out returns staff to /staff.
+    @Test
+    void staffDoorsAreBareAndSignOutReturns() {
+        String header = read(JSP.resolve("shared/header.jspf"));
+        assertTrue(header.contains("${not hidePublicNav}"),
+                "the public nav must gate on `not`, not `empty`");
+        assertFalse(header.contains("${empty hidePublicNav}"),
+                "`empty` on a Boolean flag hides the patient bar too");
+        String logout = read(JAVA.resolve("com/sunrise/clinic/access/web/LogoutServlet.java"));
+        assertTrue(logout.contains("\"/staff\""),
+                "sign-out must land staff on the staff portal");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test
