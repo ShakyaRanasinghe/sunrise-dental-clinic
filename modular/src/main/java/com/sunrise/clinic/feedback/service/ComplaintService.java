@@ -115,6 +115,36 @@ public class ComplaintService {
         return describe(complaint);
     }
 
+    /**
+     * Raise a general concern about the clinic (GAP-PAT-32) — no dentist, no visit,
+     * raisable before any appointment.
+     *
+     * <p>Stored and shown anonymously: patient and dentist are NULL, so neither the
+     * administrator's queue nor any later lookup can tie it to whoever wrote it. The
+     * caller must still be a signed-in patient (the page itself is the gate against
+     * drive-by abuse); anonymity is in what is stored, not in who may write.</p>
+     */
+    public ComplaintResponse raiseGeneral(ClinicPrincipal caller,
+                                          ComplaintCategory category, String detail) {
+        AccessControl.require(caller, Action.RAISE_CONCERN);
+
+        Complaint complaint = Complaint.builder()
+                .id(UUID.randomUUID().toString())
+                .patientId(null)
+                .dentistId(null)
+                .appointmentNo(null)
+                .category(requireCategory(category))
+                .detail(requireDetail(detail))
+                .status(ComplaintStatus.SUBMITTED)
+                .submittedAt(Instant.now())
+                .build();
+        complaints.save(complaint);
+
+        log.log(Level.INFO, "general_concern_raised id={0} category={1}",
+                new Object[] { complaint.getId(), complaint.getCategory() });
+        return describe(complaint);
+    }
+
     /** What this patient has raised, and where each stands - FR-CMP-04. */
     public List<ComplaintResponse> own(ClinicPrincipal caller) {
         String patientId = requireOwnPatientId(caller);
@@ -198,10 +228,13 @@ public class ComplaintService {
     }
 
     private ComplaintResponse describe(Complaint complaint) {
-        return ComplaintResponse.of(complaint,
-                clinicAccess.patientById(complaint.getPatientId())
-                        .map(Patient::getName).orElse(null),
-                reference.requireDentist(complaint.getDentistId()).getName());
+        // GAP-PAT-32: anonymous concerns carry neither identity.
+        String patientName = complaint.getPatientId() == null ? null
+                : clinicAccess.patientById(complaint.getPatientId())
+                        .map(Patient::getName).orElse(null);
+        String dentistName = complaint.getDentistId() == null ? null
+                : reference.requireDentist(complaint.getDentistId()).getName();
+        return ComplaintResponse.of(complaint, patientName, dentistName);
     }
 
     private void recordRead(ClinicPrincipal caller, String target) {

@@ -402,6 +402,20 @@ class V102UxPolishTest {
                 "an Other row must show the stated reason under its type");
     }
 
+    // GAP-PAT-32: a general concern needs no dentist and no history, and the
+    // admin queue names neither identity.
+    @Test
+    void generalConcernsAreAnonymous() {
+        String page = read(JSP.resolve("feedback/patient-complaints.jsp"));
+        assertTrue(page.contains("name=\"action\" value=\"general\""),
+                "the general form must post the general action");
+        assertTrue(page.contains("Anonymous"),
+                "the general form must say it is anonymous");
+        String admin = read(JSP.resolve("feedback/admin-complaints.jsp"));
+        assertTrue(admin.contains("Anonymous"),
+                "the admin queue must label identity-less concerns");
+    }
+
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
     // only inside the opened card, with the first one open.
     @Test

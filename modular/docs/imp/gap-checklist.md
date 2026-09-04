@@ -240,6 +240,15 @@ live, and each SRS row is marked **Fixed**.
       **Done:** `book.jsp` no-doctors card; `walkin.jsp` no-doctors notice. Tests green,
       verified live.
 
+- [x] **GAP-PAT-32** — a concern can only name a dentist the patient has seen: a general
+      concern about the clinic (no doctor involved, raisable before any visit) is impossible,
+      and every concern carries the patient's identity to the administrator.
+      **Accept:** a general-concern form needing no dentist and no history; stored and shown
+      to the administrator without the patient's identity (anonymous); named concerns unchanged.
+      **Done:** `raiseGeneral` stores NULL patient/dentist (`complaint` columns nullable);
+      General card on the page (works with no history); admin queue labels Anonymous +
+      general concern; `own()` can never return them. 366 green, verified live.
+
 - [x] **GAP-PAT-22** — remove the **"Book this service &rarr;"** link that appears under each
       service on the public home page.
       **Accept:** a service description is shown with no "Book" call-to-action inviting a

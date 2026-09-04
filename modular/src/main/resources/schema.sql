@@ -250,8 +250,9 @@ CREATE TABLE IF NOT EXISTS notification (
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS complaint (
     id              VARCHAR(64)   NOT NULL,
-    patient_id      VARCHAR(64)   NOT NULL,
-    dentist_id      VARCHAR(64)   NOT NULL,
+    patient_id      VARCHAR(64),           -- GAP-PAT-32: NULL for an anonymous general
+    dentist_id      VARCHAR(64),           -- concern naming no dentist. Named concerns
+                                           -- always carry both, as before.
     appointment_no  VARCHAR(32),
     category        ENUM('CONDUCT','CLINICAL_CONCERN','WAIT_TIME','BILLING','OTHER') NOT NULL,
     detail          TEXT          NOT NULL,
