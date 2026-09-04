@@ -32,6 +32,21 @@ class V102UxPolishTest {
                 "the removed call-to-action must leave no class behind");
     }
 
+    // Dentist cards fill evenly: the grey body stretches so a dentist without a
+    // phone number never ends with a white stump.
+    @Test
+    void dentistCardsFillEvenly() {
+        String css = read(CSS);
+        assertTrue(css.contains(".dentist-card__body"),
+                "the card body style must exist");
+        int card = css.indexOf(".dentist-card {");
+        assertTrue(card >= 0 && css.indexOf("flex-direction: column", card) > card,
+                "the card must stack as a flex column");
+        int body = css.indexOf(".dentist-card__body {");
+        assertTrue(body >= 0 && css.indexOf("flex: 1", body) > body,
+                "the grey body must stretch to fill short cards");
+    }
+
     // Public dentist cards: below the publishable threshold no rating metric
     // shows at all — neither stars nor a "more reviews needed" hint.
     @Test

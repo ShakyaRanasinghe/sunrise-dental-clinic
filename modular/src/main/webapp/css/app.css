@@ -279,6 +279,10 @@ main {
     background: var(--surface);
     box-shadow: var(--shadow);
     overflow: hidden;
+    /* The grey body fills short cards: without this, a dentist with no phone
+       number ends with a white stump where the body runs out. */
+    display: flex;
+    flex-direction: column;
 }
 .dentist-card__summary {
     list-style: none;
@@ -322,6 +326,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex: 1;
 }
 .dentist-card__rating { margin: 0; color: var(--ink-soft); }
 .dentist-card__fee { margin: 0; font-size: 13.5px; color: var(--ink-faint); }
