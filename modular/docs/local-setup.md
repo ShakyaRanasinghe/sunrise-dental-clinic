@@ -47,13 +47,13 @@ cloud account.
 
 Every account uses the password **`Password123`**.
 
-| Portal | Address | Email |
+| Portal | Address | Sign in with |
 |---|---|---|
-| Patient | `/login/patient` | `nimal@example.lk` |
-| Reception | `/login/reception` | `reception@sunrisedental.lk` |
-| Dentist | `/login/dentist` | `silva@sunrisedental.lk` |
-| Dentist (second) | `/login/dentist` | `jayasuriya@sunrisedental.lk` |
-| Administrator | `/login/admin` | `admin@sunrisedental.lk` |
+| Patient | `/login/patient` | email `nimal@example.lk` |
+| Reception | `/login/reception` | username `reception` |
+| Dentist | `/login/dentist` | username `silva` |
+| Dentist (second) | `/login/dentist` | username `jayasuriya` |
+| Administrator | `/login/admin` | username `admin` |
 
 A patient starts at the public home page and signs in via `/login/patient`. Staff go
 straight to their issued portal address: `/login/reception`, `/login/dentist` or

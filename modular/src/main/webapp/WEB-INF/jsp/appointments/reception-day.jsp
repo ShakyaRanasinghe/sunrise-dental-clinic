@@ -52,7 +52,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Time</th><th>Patient</th><th>Dentist</th>
+                            <%-- GAP-ADM-13: sortable columns — plain links, no script. --%>
+                            <th><a href="${ctx}/reception/home?date=${date}&sort=${sort eq 'time_desc' ? 'time_asc' : 'time_desc'}">Time ${sort eq 'time_desc' ? '&#9660;' : '&#9650;'}</a></th><th>Patient</th><th><a href="${ctx}/reception/home?date=${date}&sort=dentist">Dentist</a></th>
                             <th>Treatment</th><th>Number</th><th>Status</th><th></th>
                         </tr>
                     </thead>
@@ -98,6 +99,7 @@
                                                     <input type="hidden" name="appointmentNo"
                                                            value="${a.appointmentNo()}">
                                                     <input type="hidden" name="date" value="${date}">
+                                                    <input type="hidden" name="sort" value="${sort}">
                                                     <button type="submit" class="btn small">Yes, cancel</button>
                                                 </form>
                                             </div>

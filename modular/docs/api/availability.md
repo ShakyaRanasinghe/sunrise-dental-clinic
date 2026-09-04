@@ -237,7 +237,7 @@ Publish, read, book, then confirm the slot has left the open list:
 BASE=http://localhost:8080
 curl -s -c r.txt -o /dev/null -X POST $BASE/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"reception@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"reception","password":"Password123"}'
 
 # Publish one hour, two slots
 curl -s -b r.txt -X POST $BASE/api/sessions -H 'Content-Type: application/json' \

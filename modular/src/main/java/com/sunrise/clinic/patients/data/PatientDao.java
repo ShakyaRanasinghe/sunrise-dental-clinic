@@ -19,8 +19,9 @@ import java.util.Optional;
 public class PatientDao extends JdbcDao<Patient, String> implements PatientRepository {
 
     // GAP-PAT-27: diagnosis_details carries the patient's own history details.
+    // GAP-PAT-33: patient_no is the readable desk number.
     private static final String COLUMNS =
-            "id, user_uid, name, address, contact_number, email, dob, diagnosis_details";
+            "id, user_uid, name, address, contact_number, email, dob, diagnosis_details, patient_no";
 
     public PatientDao(Database db) {
         super(db);
@@ -29,8 +30,8 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
     @Override
     public Patient save(Patient patient) {
         update("""
-                INSERT INTO patient (id, user_uid, name, address, contact_number, email, dob, diagnosis_details)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO patient (id, user_uid, name, address, contact_number, email, dob, diagnosis_details, patient_no)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     user_uid = VALUES(user_uid),
                     name = VALUES(name),
@@ -38,7 +39,8 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                     contact_number = VALUES(contact_number),
                     email = VALUES(email),
                     dob = VALUES(dob),
-                    diagnosis_details = VALUES(diagnosis_details)
+                    diagnosis_details = VALUES(diagnosis_details),
+                    patient_no = VALUES(patient_no)
                 """, statement -> bindPatient(statement, patient));
         return patient;
     }
@@ -74,6 +76,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                     statement.setString(1, pattern);
                     statement.setString(2, pattern);
                     statement.setString(3, pattern);
+                    statement.setString(4, pattern);
                 },
                 PatientDao::mapPatient);
     }
@@ -100,8 +103,9 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                     statement.setString(1, pattern);
                     statement.setString(2, pattern);
                     statement.setString(3, pattern);
-                    statement.setInt(4, limit);
-                    statement.setLong(5, offset);
+                    statement.setString(4, pattern);
+                    statement.setInt(5, limit);
+                    statement.setLong(6, offset);
                 },
                 PatientDao::mapPatient);
     }
@@ -118,6 +122,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                     statement.setString(1, pattern);
                     statement.setString(2, pattern);
                     statement.setString(3, pattern);
+                    statement.setString(4, pattern);
                 });
     }
 
@@ -125,8 +130,9 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
         return term == null || term.isBlank();
     }
 
+    // GAP-REC-14: the desk can search the readable number too.
     private static final String WHERE_TERM =
-            "name LIKE ? OR contact_number LIKE ? OR email LIKE ?";
+            "name LIKE ? OR contact_number LIKE ? OR email LIKE ? OR patient_no LIKE ?";
 
     /**
      * Exact match on the contact number, for the duplicate warning (FR-REC-25).
@@ -160,6 +166,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
         statement.setString(6, p.getEmail());
         statement.setDate(7, toSqlDate(p.getDob()));
         statement.setString(8, p.getDiagnosisDetails());
+        statement.setString(9, p.getPatientNo());
     }
 
     private static Patient mapPatient(ResultSet rs) throws SQLException {
@@ -172,6 +179,7 @@ public class PatientDao extends JdbcDao<Patient, String> implements PatientRepos
                 .email(rs.getString("email"))
                 .dob(readDate(rs, "dob"))
                 .diagnosisDetails(rs.getString("diagnosis_details"))
+                .patientNo(rs.getString("patient_no"))
                 .build();
     }
 }

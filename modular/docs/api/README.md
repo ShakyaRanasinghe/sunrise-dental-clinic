@@ -47,7 +47,7 @@ Authenticate once, then reuse the cookie:
 # Sign in and keep the session cookie
 curl -s -c jar.txt -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"reception@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"reception","password":"Password123"}'
 
 # Every later call sends it back
 curl -s -b jar.txt http://localhost:8080/api/treatments
@@ -277,7 +277,7 @@ BASE=http://localhost:8080
 
 # 1. Reception signs in
 curl -s -c jar.txt -X POST $BASE/api/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"reception@sunrisedental.lk","password":"Password123"}'
+  -d '{"identity":"reception","password":"Password123"}'
 
 # 2. Publish tomorrow's availability for Dr Silva
 curl -s -b jar.txt -X POST $BASE/api/sessions -H 'Content-Type: application/json' \

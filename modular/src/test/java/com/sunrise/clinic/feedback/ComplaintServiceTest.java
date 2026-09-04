@@ -15,6 +15,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,6 +44,38 @@ class ComplaintServiceTest {
     }
 
     // --- raising -------------------------------------------------------
+
+    // GAP-PAT-32: general concerns name nobody and belong to nobody.
+
+    @Test
+    void aGeneralConcernIsStoredWithoutIdentities() {
+        ComplaintResponse raised = fixture.complaintService.raiseGeneral(
+                nimal, ComplaintCategory.WAIT_TIME, DETAIL);
+
+        assertEquals(ComplaintStatus.SUBMITTED, raised.status());
+        assertNull(raised.patientName());
+        assertNull(raised.dentistName());
+        assertEquals(DETAIL, raised.detail());
+        var stored = fixture.complaints.findById(raised.id()).orElseThrow();
+        assertNull(stored.getPatientId());
+        assertNull(stored.getDentistId());
+    }
+
+    @Test
+    void aGeneralConcernNeedsNoHistory() {
+        // kamala was never treated — the named flow would refuse her.
+        ComplaintResponse raised = fixture.complaintService.raiseGeneral(
+                kamala, ComplaintCategory.BILLING, DETAIL);
+
+        assertTrue(raised.isOpen());
+    }
+
+    @Test
+    void anonymousConcernsAppearInNobodysList() {
+        fixture.complaintService.raiseGeneral(nimal, ComplaintCategory.OTHER, DETAIL);
+
+        assertTrue(fixture.complaintService.own(nimal).isEmpty());
+    }
 
     @Test
     void aPatientRaisesAConcernAboutADentistWhoTreatedThem() {

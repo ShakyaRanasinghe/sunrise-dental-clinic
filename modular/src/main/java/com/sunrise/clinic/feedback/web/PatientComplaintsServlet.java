@@ -32,11 +32,19 @@ public class PatientComplaintsServlet extends PageServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         page(request, response, () -> {
-            app().complaintService().raise(currentUser(request),
-                    requiredField(request, "dentistId", "Dentist"),
-                    field(request, "appointmentNo"),
-                    category(request),
-                    requiredField(request, "detail", "What happened"));
+            // GAP-PAT-32: a general concern names no dentist and needs no history;
+            // it is stored anonymously. Everything else is the named flow as before.
+            if ("general".equals(field(request, "action"))) {
+                app().complaintService().raiseGeneral(currentUser(request),
+                        category(request),
+                        requiredField(request, "detail", "What happened"));
+            } else {
+                app().complaintService().raise(currentUser(request),
+                        requiredField(request, "dentistId", "Dentist"),
+                        field(request, "appointmentNo"),
+                        category(request),
+                        requiredField(request, "detail", "What happened"));
+            }
             redirect(request, response, "/patient/complaints?raised=1");
         });
     }

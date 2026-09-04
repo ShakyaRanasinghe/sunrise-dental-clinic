@@ -67,7 +67,8 @@ public class InMemoryPatientRepository
         return store.values().stream()
                 .filter(p -> contains(p.getName(), needle)
                         || contains(p.getContactNumber(), needle)
-                        || contains(p.getEmail(), needle))
+                        || contains(p.getEmail(), needle)
+                        || contains(p.getPatientNo(), needle))
                 .sorted(Comparator.comparing(Patient::getName,
                         Comparator.nullsLast(String::compareTo)))
                 .toList();

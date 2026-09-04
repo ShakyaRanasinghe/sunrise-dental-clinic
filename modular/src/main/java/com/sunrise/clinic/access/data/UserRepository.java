@@ -17,4 +17,7 @@ public interface UserRepository extends Repository<UserAccount, String> {
 
     /** Look up an account by the address the user types at the login screen. */
     Optional<UserAccount> findByEmail(String email);
+
+    /** Look up a staff account by its sign-in name (GAP-ADM-12). */
+    Optional<UserAccount> findByUsername(String username);
 }

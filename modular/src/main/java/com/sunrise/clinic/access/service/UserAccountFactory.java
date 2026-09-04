@@ -38,9 +38,16 @@ public class UserAccountFactory {
     private static final Logger log = Logger.getLogger(UserAccountFactory.class.getName());
 
     private final UserRepository users;
+    private final com.sunrise.clinic.platform.service.PersonNumberGenerator numbers;
 
     public UserAccountFactory(UserRepository users) {
+        this(users, null);
+    }
+
+    public UserAccountFactory(UserRepository users,
+                              com.sunrise.clinic.platform.service.PersonNumberGenerator numbers) {
         this.users = users;
+        this.numbers = numbers;
     }
 
     /** Creates a patient account. The role is fixed here and nowhere else. */
@@ -49,21 +56,49 @@ public class UserAccountFactory {
     }
 
     /** Creates a staff account. Refuses {@code PATIENT}. */
-    public UserAccount createStaff(String email, String password, String displayName, Role role) {
+    public UserAccount createStaff(String email, String password, String displayName, Role role,
+                                   String username) {
         if (role == Role.PATIENT) {
             throw new IllegalArgumentException(
                     "Patients register themselves; an administrator does not create them.");
         }
-        return create(email, password, displayName, role);
+        return create(email, password, displayName, role, validUsername(username));
+    }
+
+    /**
+     * GAP-ADM-12: staff sign-in names — lowercase letters, digits, dot, dash and
+     * underscore, 3 to 32 long, unique. Stored lowercase so sign-in is case-blind.
+     */
+    public static String validUsername(String username) {
+        String clean = username == null ? "" : username.trim().toLowerCase();
+        if (!clean.matches("[a-z0-9._-]{3,32}")) {
+            throw new IllegalArgumentException(
+                    "Username must be 3 to 32 lowercase letters, digits, dots, dashes or underscores.");
+        }
+        return clean;
     }
 
     private UserAccount create(String email, String password, String displayName, Role role) {
+        return create(email, password, displayName, role, null);
+    }
+
+    private UserAccount create(String email, String password, String displayName, Role role,
+                               String username) {
         String key = normalise(email);
         if (users.findByEmail(key).isPresent()) {
             throw new IllegalArgumentException("An account already exists for " + key);
         }
+        if (username != null && users.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException(
+                    "That username is taken. Choose another.");
+        }
         UserAccount account = UserAccount.builder()
                 .uid(UUID.randomUUID().toString())
+                // GAP-ADM-11: every account gets a quotable number; unwired callers
+                // (older tests) leave it null and are backfilled by migration.
+                .accountNo(numbers == null ? null
+                        : numbers.next(java.time.LocalDate.now(), roleCode(role)))
+                .username(username)
                 .email(key)
                 .passwordHash(PasswordHasher.hash(password))
                 .displayName(displayName)
@@ -76,6 +111,11 @@ public class UserAccountFactory {
         users.save(account);
         log.log(Level.INFO, "account_created email={0} role={1}", new Object[]{key, role});
         return account;
+    }
+
+    /** PATIENT → PAT, RECEPTIONIST → REC, DENTIST → DEN, ADMIN → ADM. */
+    static String roleCode(Role role) {
+        return role.name().substring(0, 3);
     }
 
     private static String normalise(String email) {

@@ -10,7 +10,9 @@ import com.sunrise.clinic.patients.domain.PatientResponse;
 import com.sunrise.clinic.patients.service.PatientService;
 import com.sunrise.clinic.patients.service.PatientService.NewPatient;
 import com.sunrise.clinic.patients.service.PatientService.Registration;
+import com.sunrise.clinic.platform.data.InMemoryPersonSequenceRepository;
 import com.sunrise.clinic.platform.error.ResourceNotFoundException;
+import com.sunrise.clinic.platform.service.PersonNumberGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -91,6 +93,28 @@ class PatientServiceTest {
         Patient stored = patients.findById(created.patient().id()).orElseThrow();
         assertNull(stored.getUserUid(), "a walk-in has no portal account");
         assertFalse(created.patient().hasPortalAccount());
+    }
+
+    // GAP-PAT-33: readable desk numbers.
+
+    @Test
+    void walkInRegisterAssignsAQuotableNumber() {
+        PatientService numbered = new PatientService(patients,
+                new PersonNumberGenerator(new InMemoryPersonSequenceRepository()));
+
+        PatientResponse created = numbered.register(RECEPTION, walkIn()).patient();
+
+        assertTrue(created.patientNumber().matches("\\d{6}PAT\\d{4}"),
+                "walk-ins get YYMMDDPATNNNN, not a uuid: " + created.patientNumber());
+    }
+
+    @Test
+    void deskCanSearchByTheNumber() {
+        PatientService numbered = new PatientService(patients,
+                new PersonNumberGenerator(new InMemoryPersonSequenceRepository()));
+        String number = numbered.register(RECEPTION, walkIn()).patient().patientNumber();
+
+        assertEquals(List.of("Sunil Bandara"), names(numbered.search(RECEPTION, number)));
     }
 
     @Test

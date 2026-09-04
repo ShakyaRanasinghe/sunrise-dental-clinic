@@ -144,7 +144,11 @@
                                 the price for this specific work here. Named-treatment
                                 visits price from the catalog and show no field.
                             --%>
-                            <c:if test="${empty a.treatmentId}">
+                            <%-- Method call, not property access: EL cannot resolve
+                                 record components as properties (no getX), so
+                                 ${empty a.treatmentId} 500s while ${empty a.treatmentId()}
+                                 tests the returned value. --%>
+                            <c:if test="${empty a.treatmentId()}">
                                 <div class="field">
                                     <label for="p-${a.appointmentNo()}">Price for this work (Rs)</label>
                                     <input type="text" id="p-${a.appointmentNo()}" name="customPrice"

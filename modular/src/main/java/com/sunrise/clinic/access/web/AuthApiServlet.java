@@ -66,10 +66,15 @@ public class AuthApiServlet extends BaseServlet {
 
     private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Map<String, Object> body = readBody(request);
-        String email = required(body, "email");
+        // GAP-ADM-12: staff sign in with a username; "email" stays accepted so older
+        // clients keep working.
+        String identity = Json.string(body, "identity");
+        if (identity == null || identity.isBlank()) {
+            identity = required(body, "email");
+        }
         String password = required(body, "password");
 
-        AuthService.LoginResult result = app().authService().login(email, password);
+        AuthService.LoginResult result = app().authService().login(identity, password);
         if (!result.success()) {
             writeJson(response, HttpServletResponse.SC_UNAUTHORIZED, Map.of(
                     "errorCode", result.lockStatus().locked() ? "account_locked" : "invalid_credentials",

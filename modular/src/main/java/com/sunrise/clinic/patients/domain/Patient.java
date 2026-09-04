@@ -27,6 +27,9 @@ public class Patient {
     // GAP-PAT-27: the patient's own diagnosis / dental-history details, declared
     // from the profile. Free text; null when the patient has written nothing.
     private String diagnosisDetails;
+    // GAP-PAT-33: the readable desk number (YYMMDDPATNNNN). The uuid id stays the
+    // primary key; this is what people quote.
+    private String patientNo;
 
     public Patient() {
     }
@@ -36,6 +39,10 @@ public class Patient {
     }
 
     public Patient(String id, String userUid, String name, String address, String contactNumber, String email, LocalDate dob, String diagnosisDetails) {
+        this(id, userUid, name, address, contactNumber, email, dob, diagnosisDetails, null);
+    }
+
+    public Patient(String id, String userUid, String name, String address, String contactNumber, String email, LocalDate dob, String diagnosisDetails, String patientNo) {
         this.id = id;
         this.userUid = userUid;
         this.name = name;
@@ -44,6 +51,7 @@ public class Patient {
         this.email = email;
         this.dob = dob;
         this.diagnosisDetails = diagnosisDetails;
+        this.patientNo = patientNo;
     }
 
     public String getId() {
@@ -110,6 +118,14 @@ public class Patient {
         this.diagnosisDetails = diagnosisDetails;
     }
 
+    public String getPatientNo() {
+        return patientNo;
+    }
+
+    public void setPatientNo(String patientNo) {
+        this.patientNo = patientNo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -141,6 +157,7 @@ public class Patient {
         private String email;
         private LocalDate dob;
         private String diagnosisDetails;
+        private String patientNo;
 
         public Builder id(String id) {
             this.id = id;
@@ -182,8 +199,13 @@ public class Patient {
             return this;
         }
 
+        public Builder patientNo(String patientNo) {
+            this.patientNo = patientNo;
+            return this;
+        }
+
         public Patient build() {
-            return new Patient(id, userUid, name, address, contactNumber, email, dob, diagnosisDetails);
+            return new Patient(id, userUid, name, address, contactNumber, email, dob, diagnosisDetails, patientNo);
         }
     }
 }

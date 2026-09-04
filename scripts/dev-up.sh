@@ -120,8 +120,7 @@ if curl -sf -o /dev/null "http://localhost:$PORT/help"; then
 
     up:        http://localhost:$PORT
     database:  jdbc:mysql://localhost:3308/$DB
-    accounts:  admin@sunrisedental.lk · reception@sunrisedental.lk
-               silva@sunrisedental.lk · nimal@example.lk
+    accounts:  admin · reception · silva (usernames; patient: nimal@example.lk)
     password:  Password123   (all of them)
 
     logs:  docker logs -f $APP

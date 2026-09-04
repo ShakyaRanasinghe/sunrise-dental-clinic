@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -368,6 +370,110 @@ class V102UxPolishTest {
                 "the time windows must come before the treatments list");
         assertTrue(page.contains("pill open") && page.contains(">Full<"),
                 "open windows read as pills and exhausted ones as Full");
+    }
+
+    // Records expose components as methods, not bean properties: ${empty a.x}
+    // 500s at render while ${empty a.x()} tests the value. Scan every view.
+    @Test
+    void noRecordPropertyAccessInViews() throws IOException {
+        java.util.regex.Pattern bad = java.util.regex.Pattern.compile(
+                "\\$\\{(not )?empty [a-zA-Z_$][\\w$]*\\.[a-zA-Z_$][\\w$]*\\s*\\}");
+        List<String> offenders = new ArrayList<>();
+        try (var paths = Files.walk(JSP)) {
+            for (Path file : paths.filter(f -> f.toString().endsWith(".jsp")).toList()) {
+                String body = Files.readString(file);
+                // JSP comments never evaluate — strip them before matching.
+                body = body.replaceAll("(?s)<%--.*?--%>", "");
+                if (bad.matcher(body).find()) {
+                    offenders.add(JSP.relativize(file).toString());
+                }
+            }
+        }
+        assertTrue(offenders.isEmpty(),
+                "record property access (use method calls): " + offenders);
+    }
+
+    // An "Other" visit names its type on the patient dashboard, with the reason
+    // beneath it — never a blank cell.
+    @Test
+    void dashboardNamesOtherVisits() {
+        String home = read(JSP.resolve("appointments/patient-home.jsp"));
+        assertTrue(home.contains("a.patientReason()"),
+                "an Other row must show the stated reason under its type");
+    }
+
+    // GAP-PAT-32: a general concern needs no dentist and no history, and the
+    // admin queue names neither identity.
+    @Test
+    void generalConcernsAreAnonymous() {
+        String page = read(JSP.resolve("feedback/patient-complaints.jsp"));
+        assertTrue(page.contains("name=\"action\" value=\"general\""),
+                "the general form must post the general action");
+        assertTrue(page.contains("Anonymous"),
+                "the general form must say it is anonymous");
+        String admin = read(JSP.resolve("feedback/admin-complaints.jsp"));
+        assertTrue(admin.contains("Anonymous"),
+                "the admin queue must label identity-less concerns");
+    }
+
+    // GAP-PAT-33/REC-14/ADM-11: quotable numbers where people are listed.
+    @Test
+    void peopleScreensListQuotableNumbers() {
+        assertTrue(read(JSP.resolve("reporting/accounts.jsp")).contains("Account ID"),
+                "the Accounts table must list the number leftmost");
+        assertTrue(read(JSP.resolve("patients/register.jsp")).contains("patientNumber()"),
+                "the register must show the desk number");
+    }
+
+    // GAP-ADM-12: staff portals ask for a username (patient keeps email), and the
+    // administrator provisions and lists usernames.
+    @Test
+    void staffPortalsAskForUsernames() {
+        String form = read(JSP.resolve("access/login-form.jspf"));
+        assertTrue(form.contains("name=\"identity\""),
+                "the shared form must post the identity field");
+        assertTrue(form.contains("identityLabel"),
+                "the label must come from the portal (Username vs Email address)");
+        String base = read(JAVA.resolve("com/sunrise/clinic/access/web/AbstractLoginServlet.java"));
+        assertTrue(base.contains("\"Username\"") && base.contains("\"Email address\""),
+                "the base servlet must derive the label from the role");
+        String accounts = read(JSP.resolve("reporting/accounts.jsp"));
+        assertTrue(accounts.contains("name=\"username\""),
+                "staff creation must ask for a username");
+        assertTrue(accounts.contains("${a.username()}"),
+                "the Accounts table must show usernames");
+    }
+
+    // GAP-ADM-13: role filter on Accounts; sortable day/billing tables; newest /
+    // oldest complaints — all server-side links.
+    @Test
+    void tablesFilterAndSort() {
+        String accounts = read(JSP.resolve("reporting/accounts.jsp"));
+        assertTrue(accounts.contains("name=\"roleFilter\""),
+                "the Accounts table needs a role filter");
+        String day = read(JSP.resolve("appointments/reception-day.jsp"));
+        assertTrue(day.contains("sort=") && day.contains("time_desc"),
+                "the day view needs time asc/desc links");
+        String billing = read(JSP.resolve("billing/billing.jsp"));
+        assertTrue(billing.contains("sort="),
+                "the billing list needs sort links");
+        String complaints = read(JSP.resolve("feedback/admin-complaints.jsp"));
+        assertTrue(complaints.contains("name=\"sort\""),
+                "the complaints queue needs a newest/oldest control");
+    }
+
+    // GAP-ADM-14: staff doors render the bare bar (flag set, nav gated with
+    // `not`, never `empty` on a Boolean); sign-out returns staff to /staff.
+    @Test
+    void staffDoorsAreBareAndSignOutReturns() {
+        String header = read(JSP.resolve("shared/header.jspf"));
+        assertTrue(header.contains("${not hidePublicNav}"),
+                "the public nav must gate on `not`, not `empty`");
+        assertFalse(header.contains("${empty hidePublicNav}"),
+                "`empty` on a Boolean flag hides the patient bar too");
+        String logout = read(JAVA.resolve("com/sunrise/clinic/access/web/LogoutServlet.java"));
+        assertTrue(logout.contains("\"/staff\""),
+                "sign-out must land staff on the staff portal");
     }
 
     // GAP-DEN-12: pending patients are expandable cards; the record form lives
