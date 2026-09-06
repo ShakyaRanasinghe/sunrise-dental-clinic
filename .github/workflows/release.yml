@@ -7,7 +7,7 @@ name: Release
 #
 # Before packaging, the released prod code is verified identical to the latest
 # qa_v* tag: every file prod ships that also exists on the QA tag must be
-# byte-identical. Files that only exist on QA (docs, layered/, frontend/,
+# byte-identical. Files that only exist on QA (docs, frontend/,
 # scripts/, dev testimony — intentionally absent from prod) are ignored; the
 # check is exactly "did the passed candidate's deployable code reach prod".
 on:

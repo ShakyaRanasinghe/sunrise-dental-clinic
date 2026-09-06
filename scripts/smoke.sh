@@ -23,10 +23,10 @@
 #
 # None of those could fail a unit test. This script would have caught all four.
 #
-# The migration plan called for a different gate here - deploy layered/ and
-# modular/ side by side and diff the HTML. That gate is moot: layered/ is not a
-# submission candidate and is not maintained, so a diff against it would compare
-# the shipped application to code nobody runs. This is the useful thing instead.
+# The migration plan once called for a different gate here - deploy the old
+# layered/ arrangement and modular/ side by side and diff the HTML. That gate is
+# moot since layered/ was removed: a diff would compare the shipped application
+# to code nobody runs. This is the useful thing instead.
 #
 set -uo pipefail
 

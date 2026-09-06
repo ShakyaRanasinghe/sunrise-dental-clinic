@@ -151,7 +151,7 @@ gh pr create --base main --head develop \
 Write the body properly — this is the one pull request somebody will actually read. Cover:
 
 - what the application now is, in three sentences;
-- that `modular/` is the code path and `layered/` is kept as history;
+- that `modular/` is the code path (the earlier `layered/` arrangement has been removed; its history survives in git);
 - the six brief functions and where each is demonstrated;
 - the test position: 266 unit tests, 53 smoke checks, and what each kind catches;
 - the defects found by running it rather than reading it — that list is the most convincing
