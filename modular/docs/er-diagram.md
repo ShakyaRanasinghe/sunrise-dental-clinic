@@ -1,10 +1,10 @@
 # Entity–Relationship Design
 
 Database design for the Sunrise Dental Clinic Appointment & Patient Management System.
-Fourteen tables, MySQL 8, InnoDB throughout.
+Sixteen tables, MySQL 8, InnoDB throughout.
 
 This document is generated from the live schema in
-[`../../layered/src/main/resources/schema.sql`](../../layered/src/main/resources/schema.sql) — if the two ever
+[`../src/main/resources/schema.sql`](../src/main/resources/schema.sql) — if the two ever
 disagree, the schema is right and this file is stale.
 
 ---
@@ -56,10 +56,15 @@ Relationship lines carry meaning:
   the application's responsibility. See §4.
 
 ```mermaid
+%% Sunrise Dental Clinic - entity relationship diagram
+%% Solid = FOREIGN KEY enforced.  Dotted = uid reference, no constraint.
+
 erDiagram
     USER_ACCOUNT {
         varchar uid PK
-        varchar email UK "unique, used as the login"
+        varchar account_no UK "readable YYMMDD+ROLE+NNNN"
+        varchar username UK "staff sign-in, NULL for patients"
+        varchar email UK "unique, the patient login"
         varchar password_hash "PBKDF2 iterations:salt:hash"
         varchar display_name
         enum role "PATIENT RECEPTIONIST DENTIST ADMIN"
@@ -77,13 +82,16 @@ erDiagram
         varchar contact_number
         varchar email
         date dob
+        text diagnosis_details "the patient's own history"
+        varchar patient_no UK "readable YYMMDDPATNNNN"
     }
 
     DENTIST {
-        varchar id PK
+        varchar id PK "YYMMDDDENNNNN for new dentists"
         varchar user_uid FK "null until a login is issued"
         varchar name
         varchar specialization
+        varchar phone "public, edited on the profile"
         decimal consultation_fee "charged per appointment"
         bool active
     }
@@ -137,6 +145,8 @@ erDiagram
         time appointment_time
         enum status "CONFIRMED COMPLETED BILLED CANCELLED"
         text diagnosis "CONFIDENTIAL: treating dentist and patient only"
+        text patient_reason "the Other booking in own words"
+        decimal custom_price "dentist-entered, NULL for catalog visits"
         varchar created_by_uid "who booked it"
         enum created_by_role
         timestamp created_at
@@ -174,8 +184,8 @@ erDiagram
 
     COMPLAINT {
         varchar id PK
-        varchar patient_id FK "who raised it"
-        varchar dentist_id FK "who it names - never shown to them"
+        varchar patient_id FK "who raised it, NULL when anonymous"
+        varchar dentist_id FK "who it names - never shown to them, NULL for general"
         varchar appointment_no FK "optional, the visit it concerns"
         enum category "CONDUCT CLINICAL_CONCERN WAIT_TIME BILLING OTHER"
         text detail "the patient's own account, never edited by staff"
@@ -212,12 +222,29 @@ erDiagram
         int counter_value "last number issued that day"
     }
 
+    DENTIST_TREATMENT {
+        varchar dentist_id PK,FK "what this dentist performs"
+        varchar treatment_id PK,FK
+    }
+
+    PERSON_COUNTER {
+        varchar seq_key PK "ROLE-yyyyMMdd, e.g. PAT-20260904"
+        int counter_value "last person number issued"
+    }
+
+    CLINIC_SETTING {
+        varchar setting_key PK "identity, revenue shares, charges"
+        varchar setting_value "edited on admin screens"
+    }
+
     USER_ACCOUNT |o--o| PATIENT  : "portal account for"
     USER_ACCOUNT |o--o| DENTIST  : "staff login for"
 
     DENTIST      ||--o{ DENTIST_SESSION : "works"
     DENTIST_SESSION ||--o{ SLOT         : "divides into"
     SLOT         |o--o| APPOINTMENT     : "booked as"
+    DENTIST      ||--o{ DENTIST_TREATMENT : "offers"
+    DENTIST_TREATMENT }o--|| TREATMENT   : "lists"
 
     PATIENT      ||--o{ PATIENT_NOTE : "declares"
     PATIENT      ||--o{ COMPLAINT : "raises"

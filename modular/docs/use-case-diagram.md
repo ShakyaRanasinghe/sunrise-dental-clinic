@@ -27,7 +27,7 @@ Derived from [`srs/srs.md`](srs/srs.md) and the four role documents, and consist
 | 2a | [`2a-reception-register.puml`](use-case/2a-reception-register.puml) | The register and publishing availability |
 | 2b | [`2b-reception-booking.puml`](use-case/2b-reception-booking.puml) | Booking on behalf, and billing |
 | 3 | [`3-dentist.puml`](use-case/3-dentist.puml) | Schedule, medical notes, treatment |
-| 4a | [`4a-admin-manage.puml`](use-case/4a-admin-manage.puml) | Reports and accounts |
+| 4a | [`4a-admin-manage.puml`](use-case/4a-admin-manage.puml) | Reports, accounts and pricing |
 | 4b | [`4b-admin-governance.puml`](use-case/4b-admin-governance.puml) | Concerns and reviews |
 
 **Why nine diagrams and not one.** A single frame holding every use case was drawn first and was

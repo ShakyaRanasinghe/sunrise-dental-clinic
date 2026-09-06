@@ -36,11 +36,18 @@ box "Data tier" #FBFCFD
   database "MySQL" as DB
 end box
 
-U -> SV : POST /patient/book\n(slotId, treatmentId)
+U -> SV : POST /patient/book\n(slotId, treatmentId?, patientReason?)
 activate SV
 
 SV -> AS : book(patientId, slotId,\ntreatmentId, actor)
 activate AS
+note right of AS
+  An "Other" booking sends no
+  treatmentId: the free-text reason
+  is stored on the appointment and
+  the dentist prices it at completion
+  (GAP-DEN-13), not here.
+end note
 
 AS -> TX : inTransaction( ... )
 activate TX

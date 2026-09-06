@@ -51,5 +51,7 @@ note bottom of UC_WALKIN
   Creates a patient record, not
   an account. The patient may
   register for a login themselves.
+  Every record mints a readable
+  patient number for the desk.
 end note
 @enduml

@@ -14,10 +14,10 @@
         No application framework is used: dependency wiring, request routing, JSON and
         transaction handling are all implemented in this project.
 
-        This is the restructured implementation. It carries the same behaviour as
-        ../layered, packaged by feature rather than by technical layer: each feature
-        module holds its own presentation, business and data tiers, so one capability
-        can be read, changed and tested without opening the rest of the system.
+        This is the restructured implementation, packaged by feature rather than by
+        technical layer: each feature module holds its own presentation, business and
+        data tiers, so one capability can be read, changed and tested without opening
+        the rest of the system.
     </description>
 
     <properties>

@@ -7,6 +7,8 @@ classDiagram
     namespace access {
         class UserAccount {
             -uid : String
+            -accountNo : String
+            -username : String
             -email : String
             -passwordHash : String
             -displayName : String
@@ -108,6 +110,8 @@ classDiagram
             -contactNumber : String
             -email : String
             -dob : LocalDate
+            -diagnosisDetails : String
+            -patientNo : String
             +getId() String
             +getName() String
             +getContactNumber() String
@@ -121,6 +125,7 @@ classDiagram
             -userUid : String
             -name : String
             -specialization : String
+            -phone : String
             -consultationFee : double
             -active : boolean
             +getConsultationFee() double
@@ -175,12 +180,14 @@ classDiagram
             -time : LocalTime
             -status : AppointmentStatus
             -diagnosis : String
+            -patientReason : String
+            -customPrice : double
             -createdByUid : String
             -createdByRole : Role
             -createdAt : Instant
             +getAppointmentNo() String
             +getDiagnosis() String
-            +complete(diagnosis) void
+            +complete(diagnosis, customPrice) void
             +cancel() void
             +canTransitionTo(status) boolean
         }

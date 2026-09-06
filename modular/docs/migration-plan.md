@@ -8,7 +8,7 @@ lost if the conversation that produced it was.
 
 | | |
 |---|---|
-| Source | [`../../layered/`](../../layered/) — 125 classes, 15 views, 48 passing tests |
+| Source | `layered/` — 125 classes, 15 views, 48 passing tests (removed after the migration; survives in git history) |
 | Target | `modular/` — scaffolding complete, no code yet |
 | Order | Dependency order, so every step compiles |
 | Estimate | 7–9 hours of focused work |

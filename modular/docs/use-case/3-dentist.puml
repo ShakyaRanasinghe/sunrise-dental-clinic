@@ -31,6 +31,8 @@ rectangle "Sunrise Dental Clinic System" {
   usecase "Read Patient\nMedical Notes" as UC_NOTES
   usecase "Complete Treatment" as UC_DONE
   usecase "Record Diagnosis" as UC_DIAG
+  usecase "Record Ad-Hoc\nPrice" as UC_PRICE
+  usecase "Edit Own Profile" as UC_PROF
   usecase "Write Audit Event" as UC_AUDIT
   usecase "View My Rating" as UC_RATE
 }
@@ -39,14 +41,27 @@ DN --> UC_LOGIN
 DN --> UC_SCHED
 DN --> UC_OPEN
 DN --> UC_DONE
+DN --> UC_PROF
 DN --> UC_RATE
 
 UC_LOGIN ..> UC_AUTH  : <<include>>
 UC_OPEN  ..> UC_NOTES : <<include>>
 UC_DONE  ..> UC_AUDIT : <<include>>
 
-UC_WARN ..> UC_SCHED : <<extend>>
-UC_DIAG ..> UC_DONE  : <<extend>>
+UC_WARN  ..> UC_SCHED : <<extend>>
+UC_DIAG  ..> UC_DONE  : <<extend>>
+UC_PRICE ..> UC_DONE  : <<extend>>
+
+note bottom of UC_PRICE
+  Required exactly when the visit
+  names no catalog treatment, so
+  the visit stays billable.
+end note
+
+note bottom of UC_PROF
+  Name, specialisation, phone.
+  Fee stays administrator-owned.
+end note
 
 note bottom of UC_RATE
   Aggregate only: mean and count.

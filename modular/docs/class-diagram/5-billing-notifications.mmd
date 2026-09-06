@@ -10,8 +10,8 @@ classDiagram
             -appointments : AppointmentRepository
             -pricing : BillingStrategy
             -split : RevenueSplitStrategy
-            -serviceCharge : double
-            +generateBill(no, issuedByUid) Bill
+            -serviceCharge : Supplier~BigDecimal~
+            +issue(no, issuedByUid) Bill
             +findForAppointment(no) Optional~Bill~
         }
         class BillingStrategy {
@@ -26,7 +26,8 @@ classDiagram
             +split(breakdown)* RevenueSplit
         }
         class DefaultRevenueSplitStrategy {
-            -dentistShare : double
+            -dentistShare : Supplier~BigDecimal~
+            -receptionistShare : Supplier~BigDecimal~
             +split(breakdown) RevenueSplit
         }
     }

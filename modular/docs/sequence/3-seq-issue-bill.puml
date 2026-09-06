@@ -39,7 +39,7 @@ end box
 U -> SV : POST /reception/billing\n(appointmentNo)
 activate SV
 
-SV -> BS : generateBill(appointmentNo,\nissuedByUid)
+SV -> BS : issue(appointmentNo,\nissuedByUid)
 activate BS
 
 BS -> BR : findByAppointmentNo(no)
@@ -61,10 +61,19 @@ alt no bill exists yet
     DR --> BS : Dentist (consultationFee 1500)
     deactivate DR
 
-    BS -> TR : findById(treatmentId)
-    activate TR
-    TR --> BS : Treatment (baseCost 3500)
-    deactivate TR
+    alt named treatment
+      BS -> TR : findById(treatmentId)
+      activate TR
+      TR --> BS : Treatment (baseCost 3500)
+      deactivate TR
+    else "Other" visit
+      note over BS
+        No catalog treatment: the price
+        is the dentist-entered custom_price
+        recorded at completion (GAP-DEN-13).
+        Missing too, billing refuses.
+      end note
+    end
 
     BS -> PS : calculate(1500, 3500, 200)
     activate PS
@@ -80,6 +89,11 @@ alt no bill exists yet
     activate RS
     RS --> BS : RevenueSplit(dentist,\nclinic, reception)
     deactivate RS
+    note right of RS
+      Shares read live from the Pricing
+      tab settings: the next bill follows
+      the current dials (GAP-ADM-10).
+    end note
 
     BS -> BR : save(bill)
     activate BR

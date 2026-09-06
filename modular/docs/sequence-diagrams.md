@@ -44,7 +44,8 @@ Shows the portal role check that makes four sign-in pages safe.
 The `alt` fragment is the point of the diagram. On the success branch the servlet asks the role's
 own `RolePolicy` for its home path and redirects. On the other branch — **correct password, wrong
 portal** — it re-renders with the *same* generic message and comparable timing, so a portal cannot
-be used to discover which role an email belongs to (**FR-AUTH-03**).
+be used to discover which role an identity belongs to (**FR-AUTH-03**). Staff sign in with
+a username, patients with an email; the lookup tries the username first and falls back to email.
 
 Worth noticing what the servlet does *not* do: it never compares a password, never reads
 `user_account`, and never decides where to send anyone. `AuthService` verifies, `PasswordHasher`

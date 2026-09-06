@@ -18,7 +18,7 @@ The checklist is in [`tasks.md`](tasks.md). This page is the status board. The e
 | First deployable | **done** — sign in as any of the four roles at http://localhost:8080 |
 | First real screen | **done** — the patient register and publish-availability |
 | Core journey working | **done** — publish, book, day view, schedule, diagnosis |
-| `layered/` | **out of scope** — source and history only, not run or shipped |
+| `layered/` | **removed** — the earlier arrangement, deleted once the migration completed; its history survives in git |
 | `modular/` | 168 Java files, 29 views, **266 tests green**, deploys and answers |
 
 ```
@@ -120,8 +120,7 @@ and not just a question. See [`tasks.md`](tasks.md).
 
 ## Rules while this board exists
 
-1. **`layered/` is frozen.** The only edits it accepts are the two in step 0 — defects that would
-   block submission.
+1. **`layered/` is gone.** It was frozen during the migration and removed afterwards; its history survives in git. The only edits it ever accepted are the two in step 0.
 2. **One commit per step**, named for its module: `refactor(billing): move to feature module`.
 3. **A step is not done until its gate passes.** The gates are in
    [`../migration-plan.md`](../migration-plan.md) §5, and each step below repeats its own.

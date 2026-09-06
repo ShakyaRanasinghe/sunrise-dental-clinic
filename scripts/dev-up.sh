@@ -7,9 +7,8 @@
 # Idempotent: safe to re-run after every change. Recreates the app container and
 # reloads the database; leaves the MySQL container alone.
 #
-# layered/ is not deployed by this script. It stays in the repository as the
-# source the migration copies from and as the git history, but it is not run,
-# maintained or shipped — see docs/imp/README.md.
+# Deploys modular/ only — the sole code path since the earlier layered/
+# arrangement was removed (its history survives in git).
 #
 set -euo pipefail
 

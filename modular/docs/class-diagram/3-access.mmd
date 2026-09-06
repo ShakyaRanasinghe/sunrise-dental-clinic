@@ -26,6 +26,21 @@ classDiagram
             #viewName()* String
             #allowsSelfRegistration() boolean
             #auditFailedAttempts() boolean
+            -usernamePortal() boolean
+        }
+        class StaffPortalServlet {
+            +doGet(req, res) void
+        }
+        class RegisterServlet {
+            +doGet(req, res) void
+            +doPost(req, res) void
+        }
+        class HelpServlet {
+            +doGet(req, res) void
+        }
+        class LogoutServlet {
+            +doGet(req, res) void
+            +doPost(req, res) void
         }
         class PatientLoginServlet {
             #acceptedRole() Role
@@ -45,9 +60,6 @@ classDiagram
             #viewName() String
             #auditFailedAttempts() boolean
         }
-        class PortalChooserServlet {
-            +doGet(req, res) void
-        }
         class AuthenticationFilter {
             -PUBLIC_PREFIXES : List~String~$
             +doFilter(req, res, chain) void
@@ -61,14 +73,15 @@ classDiagram
             -users : UserRepository
             -hasher : PasswordHasher
             -attempts : LoginAttemptService
-            +login(email, password) LoginResult
+            +login(identifier, password) LoginResult
             +unlock(email) void
         }
         class UserAccountFactory {
             -users : UserRepository
             -patients : PatientRepository
             -dentists : DentistRepository
-            +create(role, details) UserAccount
+            +createStaff(email, password, displayName, role, username) UserAccount
+            +validUsername(username) String
         }
         class PasswordHasher {
             -ITERATIONS : int$
@@ -91,6 +104,7 @@ classDiagram
             +role()* Role
             +homePath()* String
             +loginPath()* String
+            +navigation() List~NavItem~
             +permits(action)* boolean
         }
         class PatientPolicy
@@ -105,9 +119,13 @@ classDiagram
             REGISTER_PATIENT
             PUBLISH_AVAILABILITY
             RECORD_DIAGNOSIS
+            COMPLETE_TREATMENT
+            EDIT_OWN_PROFILE
+            RAISE_CONCERN
             ISSUE_BILL
             READ_REPORTS
             MANAGE_ACCOUNTS
+            MANAGE_CLINIC_SETTINGS
             READ_AUDIT
         }
         class ClinicPrincipal {
@@ -123,12 +141,14 @@ classDiagram
         class UserRepository {
             <<interface>>
             +findByEmail(email) Optional~UserAccount~
+            +findByUsername(username) Optional~UserAccount~
             +findStaff() List~UserAccount~
         }
         class UserDao {
             -db : Database
             +save(user) UserAccount
             +findByEmail(email) Optional~UserAccount~
+            +findByUsername(username) Optional~UserAccount~
         }
     }
 
@@ -138,7 +158,10 @@ classDiagram
     AbstractLoginServlet <|-- ReceptionLoginServlet
     AbstractLoginServlet <|-- DentistLoginServlet
     AbstractLoginServlet <|-- AdminLoginServlet
-    PageServlet <|-- PortalChooserServlet
+    PageServlet <|-- StaffPortalServlet
+    PageServlet <|-- RegisterServlet
+    PageServlet <|-- HelpServlet
+    PageServlet <|-- LogoutServlet
 
     RolePolicy <|-- PatientPolicy
     RolePolicy <|-- ReceptionPolicy
