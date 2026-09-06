@@ -3,9 +3,8 @@
 Everything needed to get Sunrise Dental Clinic running on a development machine, and how to
 check each piece independently when it does not.
 
-> `layered/` is not part of this. It stays in the repository as the earlier arrangement the
-> restructure copied from and as the git history, but it is not run, maintained or deployed.
-> Every command below is about `modular/`.
+> Every command below is about `modular/` — the only code path. (The earlier `layered/`
+> arrangement was removed once the migration completed; its history survives in git.)
 
 ---
 

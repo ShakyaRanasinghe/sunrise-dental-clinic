@@ -99,7 +99,8 @@ repositories. That is **NFR-MNT-02**, and it is checkable by grep rather than by
 it takes **two** checks, not one, and [`3-growth.md`](3-growth.md) explains why an import grep alone
 would have reported `layered/` as clean while two thirds of its servlets talked to the database.
 
-Worth having, because in `layered/` 12 of 20 servlets currently break it.
+Worth having, because in the removed `layered/` arrangement 12 of 20 servlets broke it
+(the evidence survives in git history).
 
 ---
 

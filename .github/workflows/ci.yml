@@ -3,10 +3,8 @@ name: QA
 # Quality gate: build, test and package on every PR and on pushes to the long-lived
 # branches.
 #
-# Builds modular/ and not layered/. layered/ remains in the repository as the source
-# the migration copied from and as the git history, but it is not run, maintained or
-# shipped - so building it here would spend minutes proving something about code
-# nobody deploys, and would fail the moment it drifted.
+# Builds modular/ only. The earlier layered/ arrangement was removed once the
+# migration completed; its history survives in git, but nothing here builds it.
 on:
   pull_request:
     branches: [main, qa, develop]
@@ -69,8 +67,9 @@ jobs:
       - uses: actions/checkout@v4
 
       # The two greps that keep the three tiers honest. An import grep alone finds
-      # only two of the twelve violations layered/ had: app().patients().search(term)
-      # names no type, so nothing to import. Both checks must print nothing.
+      # only two of the twelve violations the old layered/ arrangement had:
+      # app().patients().search(term) names no type, so nothing to import.
+      # Both checks must print nothing.
       - name: The web tier must not reach the data tier
         run: |
           set -e

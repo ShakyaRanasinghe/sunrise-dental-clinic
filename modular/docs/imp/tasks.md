@@ -618,7 +618,8 @@ application match.
 - [ ] Write the diff script into `modular/docs/` — it is a regression suite for a project whose
       tests are all unit-level
 - [ ] Update every `Specified` status in the SRS that is now `Built`
-- [ ] Update `layered/` references in `README.md` and `CONTRIBUTING.md` to describe both folders
+- [x] Update `layered/` references in `README.md` and `CONTRIBUTING.md` to describe both folders
+      — done by removing `layered/` outright and trimming the root README to an overview once the migration completed
 - [ ] Rewrite the deploy workflows — they still run `npm ci` in the deleted `frontend/` and push to
       Firebase Hosting
 - [ ] Tag a release

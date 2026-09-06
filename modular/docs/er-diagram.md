@@ -1,10 +1,10 @@
 # Entity–Relationship Design
 
 Database design for the Sunrise Dental Clinic Appointment & Patient Management System.
-Fourteen tables, MySQL 8, InnoDB throughout.
+Sixteen tables, MySQL 8, InnoDB throughout.
 
 This document is generated from the live schema in
-[`../../layered/src/main/resources/schema.sql`](../../layered/src/main/resources/schema.sql) — if the two ever
+[`../src/main/resources/schema.sql`](../src/main/resources/schema.sql) — if the two ever
 disagree, the schema is right and this file is stale.
 
 ---
